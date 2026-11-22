@@ -133,7 +133,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 ## FASE 0 — Cimientos (Team lead, bloqueante)
 
 ### [C-01] `base-proyecto-y-modelo-dominio`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-22) — archivado; handoff en `knowledge-base/entrega/C-01.md`
 - **Responsable**: Team lead
 - **Objetivo**: dejar el esqueleto ejecutable y el modelo de dominio base sobre el que trabajan las 6 personas.
 - **Resultado**: `npm test` corre Vitest en verde, `npm run dev` levanta Express con `GET /api/health` y `GET /api/catalogo`, y los repos en memoria devuelven el seed ficticio.
