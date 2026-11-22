@@ -1,0 +1,484 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Demo Bot y Agenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
+<style>
+  /* Demo en vivo: a la izquierda el WhatsApp del paciente, al centro la agenda de la doctora que reacciona a cada mensaje,
+     a la derecha el registro de lo que hizo el sistema. Arriba, cuatro escenas para recorrer en la reunión. */
+  :root {
+    --bg: #F2F5F4; --surface: #FFFFFF; --ink: #10242B; --muted: #4F6368; --line: #DCE4E2;
+    --accent: #0E6B70; --accent-soft: #DCEFEE; --on-accent: #FFFFFF;
+    --chat-bg: #EFE9E1; --bubble-bot: #FFFFFF; --bubble-me: #D7F1DF; --chat-bar: #F7F3EE;
+    --free: #F7FAF9; --past: #E9EEED;
+    --t-control: #DCEFEE; --t-control-fg: #0B4A4E;
+    --t-orto: #E7E4F6; --t-orto-fg: #372E78;
+    --t-trat: #FFF0C7; --t-trat-fg: #5E4500;
+    --t-est: #E1ECFA; --t-est-fg: #183F70;
+    --t-urg: #FBDDD2; --t-urg-fg: #7A2710;
+    --ok: #1A7A45; --warn: #9A6A00; --alert: #B23A1E;
+    --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
+    --font-body: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1517; --surface: #162024; --ink: #E6EEEE; --muted: #9DB0B3; --line: #2A3A3F;
+      --accent: #3FB6B9; --accent-soft: #163A3D; --on-accent: #06181A;
+      --chat-bg: #1B1F1D; --bubble-bot: #262D2B; --bubble-me: #1F4A35; --chat-bar: #141918;
+      --free: #182226; --past: #121A1D;
+      --t-control: #163A3D; --t-control-fg: #A6E3E1; --t-orto: #2A2650; --t-orto-fg: #CFC8FF;
+      --t-trat: #3A3016; --t-trat-fg: #F3D68A; --t-est: #1A2C48; --t-est-fg: #B5CEF5;
+      --t-urg: #45211A; --t-urg-fg: #FFB9A6; --ok: #5FD08A; --warn: #F0C04A; --alert: #FF8A6E; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1517; --surface: #162024; --ink: #E6EEEE; --muted: #9DB0B3; --line: #2A3A3F;
+    --accent: #3FB6B9; --accent-soft: #163A3D; --on-accent: #06181A;
+    --chat-bg: #1B1F1D; --bubble-bot: #262D2B; --bubble-me: #1F4A35; --chat-bar: #141918;
+    --free: #182226; --past: #121A1D;
+    --t-control: #163A3D; --t-control-fg: #A6E3E1; --t-orto: #2A2650; --t-orto-fg: #CFC8FF;
+    --t-trat: #3A3016; --t-trat-fg: #F3D68A; --t-est: #1A2C48; --t-est-fg: #B5CEF5;
+    --t-urg: #45211A; --t-urg-fg: #FFB9A6; --ok: #5FD08A; --warn: #F0C04A; --alert: #FF8A6E; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-body); }
+  button { font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .page { max-width: 1440px; margin-inline: auto; padding-inline: clamp(16px, 3vw, 32px); padding-block: 24px 48px; box-sizing: border-box; display: grid; gap: 20px; }
+
+  .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; }
+  .head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: -.02em; text-wrap: balance; }
+  .head p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: .92rem; font-weight: 500; min-height: 44px; cursor: pointer; }
+  .toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .ghost { min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 500; cursor: pointer; }
+
+  .scenes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .scene { text-align: left; display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; transition: border-color .2s, transform .2s; }
+  .scene:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .scene[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .scene b { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-family: var(--font-display); }
+  .scene strong { display: block; font-size: .98rem; }
+  .scene span { font-size: .84rem; color: var(--muted); line-height: 1.35; }
+
+  .demo { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+
+  /* Teléfono */
+  .phone { flex: 0 0 360px; max-width: 100%; margin-inline: auto; border-radius: 40px; background: #12181C; padding: 10px; box-sizing: border-box; box-shadow: 0 24px 50px rgba(16,36,43,.22); }
+  .screen { height: 660px; border-radius: 31px; overflow: hidden; display: flex; flex-direction: column; background: var(--chat-bg); }
+  .wa-top { display: flex; align-items: center; gap: 10px; padding: 18px 14px 12px; background: #0E6B70; color: #FFFFFF; }
+  .wa-top .av { width: 38px; height: 38px; border-radius: 50%; background: #FFFFFF; color: #0E6B70; display: grid; place-items: center; flex: none; }
+  .wa-top b { display: block; font-size: .98rem; }
+  .wa-top small { font-size: .76rem; opacity: .9; }
+  .chat { flex: 1; overflow-y: auto; padding: 12px 10px; display: flex; flex-direction: column; gap: 7px; scroll-behavior: smooth; }
+  .b { max-width: 82%; padding: 8px 11px 5px; border-radius: 12px; font-size: .9rem; line-height: 1.4; box-shadow: 0 1px .5px rgba(0,0,0,.12); white-space: pre-line; animation: pop .25s ease-out; }
+  .b.bot { align-self: flex-start; background: var(--bubble-bot); border-top-left-radius: 3px; }
+  .b.me { align-self: flex-end; background: var(--bubble-me); border-top-right-radius: 3px; }
+  .b time { display: block; text-align: right; font-size: .68rem; color: var(--muted); margin-top: 2px; }
+  .b.card { border: 2px solid var(--accent); }
+  .b.card strong { color: var(--accent); display: block; margin-bottom: 2px; }
+  .divider { align-self: center; font-size: .74rem; color: var(--muted); background: var(--bubble-bot); padding: 4px 10px; border-radius: 8px; text-align: center; max-width: 90%; }
+  .typing { align-self: flex-start; background: var(--bubble-bot); border-radius: 12px; padding: 10px 14px; display: flex; gap: 4px; }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: dot 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 50% { transform: translateY(-4px); opacity: .5; } }
+  @keyframes pop { from { transform: translateY(6px) scale(.97); opacity: 0; } }
+  .opts { padding: 10px; background: var(--chat-bar); border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 6px; min-height: 64px; box-sizing: border-box; align-content: flex-start; }
+  .opts .hint { font-size: .78rem; color: var(--muted); width: 100%; }
+  .opts button { min-height: 40px; padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--accent); background: var(--bubble-bot); color: var(--accent); font-weight: 500; font-size: .86rem; cursor: pointer; }
+  .opts button:hover { background: var(--accent); color: var(--on-accent); }
+  .opts button.auto { background: var(--accent); color: var(--on-accent); }
+
+  /* Agenda */
+  .agenda { flex: 999 1 540px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; display: flex; flex-direction: column; position: relative; }
+  .ag-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  .ag-head h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; }
+  .ag-head small { color: var(--muted); }
+  .kpis { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kpi { padding: 6px 12px; border-radius: 10px; background: var(--bg); font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .kpi b { color: var(--ink); font-size: 1rem; margin-right: 4px; }
+  .kpi.bump { animation: bump .6s ease-out; }
+  @keyframes bump { 40% { transform: scale(1.12); background: var(--accent-soft); } }
+  .grid-box { overflow-x: auto; }
+  .grid { min-width: 600px; display: grid; grid-template-columns: 54px repeat(4, minmax(0, 1fr)); }
+  .grid .dh { padding: 10px 6px; text-align: center; font-size: .82rem; font-weight: 700; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .grid .dh.today { color: var(--accent); }
+  .grid .tm { font-size: .72rem; color: var(--muted); text-align: right; padding: 0 8px; height: 30px; display: flex; align-items: center; justify-content: flex-end; font-variant-numeric: tabular-nums; }
+  .grid .tm.lunch, .grid .cell.lunch { height: 14px; background: repeating-linear-gradient(135deg, transparent 0 5px, var(--line) 5px 6px); }
+  .cell { height: 30px; border-left: 1px solid var(--line); border-top: 1px solid var(--bg); padding: 2px 4px; box-sizing: border-box; }
+  .appt { height: 100%; border-radius: 6px; padding: 0 7px; display: flex; align-items: center; gap: 5px; font-size: .74rem; overflow: hidden; white-space: nowrap; transition: transform .2s; }
+  .appt .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .appt svg { width: 11px; height: 11px; flex: none; }
+  .appt .st { flex: none; font-size: .64rem; font-weight: 700; padding: 1px 5px; border-radius: 6px; background: rgba(255,255,255,.55); }
+  .t-control { background: var(--t-control); color: var(--t-control-fg); } .t-orto { background: var(--t-orto); color: var(--t-orto-fg); }
+  .t-trat { background: var(--t-trat); color: var(--t-trat-fg); } .t-est { background: var(--t-est); color: var(--t-est-fg); }
+  .t-urg { background: var(--t-urg); color: var(--t-urg-fg); }
+  .free { height: 100%; border-radius: 6px; border: 1px dashed var(--line); background: var(--free); color: var(--muted); font-size: .7rem; display: flex; align-items: center; padding: 0 7px; }
+  .hold { height: 100%; border-radius: 6px; border: 1px dashed var(--alert); color: var(--alert); font-size: .7rem; display: flex; align-items: center; padding: 0 7px; }
+  .past .appt, .past .free { opacity: .45; }
+  .offered { outline: 2px solid var(--accent); outline-offset: 1px; animation: glow 1.1s ease-in-out infinite; color: var(--accent); font-weight: 700; }
+  @keyframes glow { 50% { outline-color: transparent; } }
+  .flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { 0% { transform: scale(1.08); box-shadow: 0 0 0 4px var(--accent); } 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
+  .freed { border-color: var(--alert); color: var(--alert); font-weight: 700; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--line); font-size: .78rem; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  .toast { position: absolute; right: 16px; top: 70px; width: min(330px, calc(100% - 32px)); background: var(--surface); border: 2px solid var(--alert); border-radius: 14px; padding: 14px 16px; box-shadow: 0 18px 40px rgba(0,0,0,.2); display: grid; gap: 4px; z-index: 5; animation: drop .35s ease-out; }
+  .toast b { color: var(--alert); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; }
+  .toast p { margin: 0; font-size: .9rem; line-height: 1.4; }
+  @keyframes drop { from { transform: translateY(-14px); opacity: 0; } }
+
+  /* Registro */
+  .side { flex: 1 1 280px; min-width: 0; display: grid; gap: 16px; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; }
+  .box h2 { margin: 0 0 10px; font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-height: 420px; overflow-y: auto; }
+  .log li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: .86rem; line-height: 1.4; animation: pop .3s ease-out; }
+  .log li i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-style: normal; background: var(--accent-soft); color: var(--accent); }
+  .log li.alert i { background: var(--t-urg); color: var(--alert); }
+  .log li.ok i { color: var(--ok); }
+  .log svg { width: 15px; height: 15px; }
+  .log .empty { color: var(--muted); display: block; }
+  .wait { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .wait li { display: flex; justify-content: space-between; gap: 8px; font-size: .88rem; padding: 8px 10px; border-radius: 10px; background: var(--bg); }
+  .wait li small { color: var(--muted); }
+  .wait li.done { text-decoration: line-through; opacity: .6; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+    .chat { scroll-behavior: auto; }
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-wa" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-tooth" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 3c-2.5 0-4 2-4 4.5 0 3 1.5 4.5 2 7.5.4 2.5 1 6 2.5 6s1.8-3 2.5-5c.4-1 1.6-1 2 0 .7 2 1 5 2.5 5s2.1-3.5 2.5-6c.5-3 2-4.5 2-7.5C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></g></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></g></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+</svg>
+
+<div class="page">
+  <div class="head">
+    <div>
+      <h1>Así trabaja el bot con tu agenda</h1>
+      <p>Elegí una escena. Lo que pasa en el WhatsApp del paciente se ve al instante en la agenda del consultorio, sin que nadie atienda el teléfono.</p>
+    </div>
+    <div class="controls">
+      <label class="toggle"><input type="checkbox" id="auto" checked> Avanzar solo</label>
+      <button type="button" class="ghost" id="resetAll">Reiniciar agenda</button>
+    </div>
+  </div>
+
+  <div class="scenes" role="group" aria-label="Escenas de la demo">
+    <button type="button" class="scene" data-scene="0" aria-pressed="true"><b>1</b><span><strong>Un paciente reserva</strong>El bot ofrece solo horarios libres y anota el turno.</span></button>
+    <button type="button" class="scene" data-scene="1" aria-pressed="false"><b>2</b><span><strong>Recordatorio 24 h antes</strong>El paciente confirma y la agenda lo marca.</span></button>
+    <button type="button" class="scene" data-scene="2" aria-pressed="false"><b>3</b><span><strong>Cancela y se reocupa</strong>El horario se ofrece a la lista de espera.</span></button>
+    <button type="button" class="scene" data-scene="3" aria-pressed="false"><b>4</b><span><strong>Urgencia</strong>Turno del día y aviso inmediato a la doctora.</span></button>
+  </div>
+
+  <div class="demo">
+    <div class="phone">
+      <div class="screen">
+        <div class="wa-top">
+          <span class="av"><svg width="22" height="22" aria-hidden="true"><use href="#i-tooth"/></svg></span>
+          <div><b>Consultorio Sonríe</b><small>Asistente de turnos · en línea</small></div>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="opts" id="opts"></div>
+      </div>
+    </div>
+
+    <section class="agenda" aria-label="Agenda del consultorio">
+      <div class="ag-head">
+        <div><h2>Agenda de la Dra. [Apellido]</h2><small>Lo que ve el consultorio, en vivo</small></div>
+        <div class="kpis" id="kpis"></div>
+      </div>
+      <div class="grid-box"><div class="grid" id="grid"></div></div>
+      <div class="legend">
+        <span><i class="t-control"></i>Control</span><span><i class="t-orto"></i>Ortodoncia</span><span><i class="t-trat"></i>Tratamiento</span><span><i class="t-est"></i>Estética</span><span><i class="t-urg"></i>Urgencia</span>
+        <span><svg width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#i-wa"/></svg>Reservó por WhatsApp</span>
+      </div>
+      <div id="toastBox"></div>
+    </section>
+
+    <div class="side">
+      <div class="box">
+        <h2>Lo que hizo el sistema</h2>
+        <ul class="log" id="log"></ul>
+      </div>
+      <div class="box">
+        <h2>Lista de espera</h2>
+        <ul class="wait" id="wait"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DAYS = [
+    { key: "mie", label: "Hoy · Mié 14", long: "hoy miércoles 14/10", today: true },
+    { key: "jue", label: "Jue 15", long: "jueves 15/10" },
+    { key: "vie", label: "Vie 16", long: "viernes 16/10" },
+    { key: "lun", label: "Lun 19", long: "lunes 19/10" }
+  ];
+  const SLOTS = ["9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","LUNCH","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30"];
+  const NOW = 7; // hoy, los horarios anteriores a las 12:30 ya pasaron
+  const POOL = ["Carlos Méndez","Sofía Díaz","Juan Pérez","Valentina Ruiz","Diego Torres","Camila Ortiz","Nicolás Vega","Rocío Benítez","Elena Ramos","Gabriel Núñez","Hernán Díaz","Micaela Paz","Bruno Castro","Florencia Luna","Agustina Rey","Laura Castro","Tomás Romero","Federico Gil","Julieta Molina","Lucas Herrera","Ana Gómez","Pedro Acosta","Paula Sosa","Marcos López","Ignacio Vera","Carla Medina","Ramiro Soto","Sergio Álvarez","Mora Quiroga","Iván Ledesma"];
+  const TYPES = ["control","orto","trat","control","est","control","trat","orto"];
+  const FREE = { mie: ["16:30"], jue: ["10:00","15:00","17:30"], vie: ["9:00","11:00","16:30"], lun: ["9:30","10:30","11:00","14:30","16:00","17:00","18:00"] };
+
+  let agenda, waitlist, log, lucia, offered, freed, flashKey;
+  function seed() {
+    agenda = {}; let k = 0;
+    DAYS.forEach(d => {
+      agenda[d.key] = {};
+      SLOTS.forEach((s, i) => {
+        if (s === "LUNCH" || FREE[d.key].includes(s)) return;
+        if (d.key === "mie" && s === "18:30") { agenda.mie[s] = { hold: true }; return; }
+        if (d.key === "lun" && i % 2 === 0) return;
+        agenda[d.key][s] = { name: POOL[k % POOL.length], type: TYPES[k % TYPES.length], src: k % 3 === 0 ? "wa" : "tel", status: d.today && i < NOW ? "done" : (k % 4 === 0 ? "pend" : "ok") };
+        k++;
+      });
+    });
+    waitlist = [{ name: "Martina Silva", pref: "Cualquier día, mañana", done: false }, { name: "Joaquín Ferreyra", pref: "Tardes", done: false }];
+    log = []; lucia = null; offered = []; freed = null; flashKey = null;
+  }
+
+  /* ---------- Agenda ---------- */
+  const STLABEL = { ok: "Confirmó", pend: "Sin confirmar", done: "Atendido" };
+  function renderAgenda() {
+    const g = $("grid"); let h = '<div></div>';
+    DAYS.forEach(d => h += `<div class="dh ${d.today ? "today" : ""}">${d.label}</div>`);
+    SLOTS.forEach((s, i) => {
+      if (s === "LUNCH") { h += '<div class="tm lunch"></div>' + DAYS.map(() => '<div class="cell lunch"></div>').join(""); return; }
+      h += `<div class="tm">${s}</div>`;
+      DAYS.forEach(d => {
+        const a = agenda[d.key][s], key = d.key + " " + s;
+        const past = d.today && i < NOW;
+        let inner;
+        if (a && a.hold) inner = '<div class="hold">Reservado urgencias</div>';
+        else if (a) {
+          inner = `<div class="appt t-${a.type} ${flashKey === key ? "flash" : ""}"><span class="nm">${a.name}</span>${a.src === "wa" ? '<svg aria-label="por WhatsApp"><use href="#i-wa"/></svg>' : ""}${a.status !== "done" ? `<span class="st">${STLABEL[a.status]}</span>` : ""}</div>`;
+        } else if (offered.includes(key)) inner = '<div class="free offered">Ofrecido</div>';
+        else if (freed === key) inner = '<div class="free freed">Liberado</div>';
+        else inner = '<div class="free">Libre</div>';
+        h += `<div class="cell ${past ? "past" : ""}">${inner}</div>`;
+      });
+    });
+    g.innerHTML = h;
+    renderKpis();
+  }
+  let lastK = {};
+  function renderKpis() {
+    let total = 0, wa = 0, ok = 0, free = 0;
+    DAYS.forEach(d => SLOTS.forEach((s, i) => {
+      if (s === "LUNCH") return;
+      const a = agenda[d.key][s];
+      if (a && !a.hold) { total++; if (a.src === "wa") wa++; if (a.status === "ok") ok++; }
+      else if (!a && !(d.today && i < NOW)) free++;
+    }));
+    const k = { total, wa, ok, free };
+    const lab = { total: "turnos", wa: "por WhatsApp", ok: "confirmados", free: "libres" };
+    $("kpis").innerHTML = Object.keys(k).map(x => `<span class="kpi ${lastK[x] !== undefined && lastK[x] !== k[x] ? "bump" : ""}"><b>${k[x]}</b>${lab[x]}</span>`).join("");
+    lastK = k;
+  }
+  function freeSlots(n, skip) {
+    const out = [];
+    DAYS.forEach(d => SLOTS.forEach((s, i) => {
+      if (out.length >= n || s === "LUNCH" || d.today) return;
+      const key = d.key + " " + s;
+      if (!agenda[d.key][s] && !(skip || []).includes(key)) out.push(key);
+    }));
+    return out;
+  }
+  const dayOf = key => DAYS.find(d => d.key === key.split(" ")[0]);
+  const pretty = key => { const [k, s] = key.split(" "); const d = DAYS.find(x => x.key === k); return `${d.label.replace("Hoy · ", "")} · ${s}`; };
+  function book(key, data) { const [k, s] = key.split(" "); agenda[k][s] = data; flashKey = key; if (freed === key) freed = null; renderAgenda(); setTimeout(() => { if (flashKey === key) { flashKey = null; } }, 1700); }
+  function unbook(key) { const [k, s] = key.split(" "); delete agenda[k][s]; freed = key; renderAgenda(); }
+
+  /* ---------- Registro y lista de espera ---------- */
+  const ICON = { cal: "i-cal", bell: "i-bell", check: "i-check", alert: "i-alert", wa: "i-wa", list: "i-list" };
+  function note(text, icon, kind) { log.unshift({ text, icon, kind }); renderLog(); }
+  function renderLog() {
+    $("log").innerHTML = log.length ? log.map(l => `<li class="${l.kind || ""}"><i><svg aria-hidden="true"><use href="#${ICON[l.icon]}"/></svg></i><span>${l.text}</span></li>`).join("")
+      : '<li><span class="empty" style="grid-column:1/-1">Todavía nada. Elegí una escena o tocá una opción en el teléfono.</span></li>';
+    $("wait").innerHTML = waitlist.map(w => `<li class="${w.done ? "done" : ""}"><span>${w.name}</span><small>${w.pref}</small></li>`).join("");
+  }
+  function toast(title, text) {
+    $("toastBox").innerHTML = `<div class="toast" role="status"><b>${title}</b><p>${text}</p></div>`;
+    clearTimeout(toast.t); toast.t = setTimeout(() => $("toastBox").innerHTML = "", 7000);
+  }
+
+  /* ---------- Chat ---------- */
+  let chat = [], options = [], typing = false, runId = 0, script = [], clock = 0;
+  const stamp = () => { clock++; const m = 2 + clock; return "10:" + (m < 10 ? "0" + m : m); };
+  function renderChat() {
+    const c = $("chat");
+    c.innerHTML = chat.map(m => m.from === "div" ? `<div class="divider">${m.text}</div>`
+      : `<div class="b ${m.from} ${m.card ? "card" : ""}">${m.card ? `<strong>${m.card}</strong>` : ""}${m.text}<time>${m.time}</time></div>`).join("")
+      + (typing ? '<div class="typing" aria-label="Escribiendo"><i></i><i></i><i></i></div>' : "");
+    c.scrollTop = c.scrollHeight;
+    const o = $("opts");
+    o.innerHTML = options.length ? '<span class="hint">Tocá una opción</span>' : "";
+    options.forEach(op => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = op.label;
+      b.onclick = () => choose(op);
+      op.el = b; o.appendChild(b);
+    });
+  }
+  function me(text) { chat.push({ from: "me", text, time: stamp() + " ✓✓" }); renderChat(); }
+  function div(text) { chat.push({ from: "div", text }); renderChat(); }
+  function bot(msgs, opts, after) {
+    const id = runId; options = []; let i = 0;
+    const next = () => {
+      if (id !== runId) return;
+      if (i < msgs.length) {
+        typing = true; renderChat();
+        setTimeout(() => {
+          if (id !== runId) return;
+          typing = false; const m = msgs[i++];
+          chat.push(Object.assign({ from: "bot", time: stamp() }, typeof m === "string" ? { text: m } : m));
+          renderChat(); next();
+        }, reduce ? 150 : 850);
+      } else { options = opts || []; renderChat(); if (after) after(); auto(); }
+    };
+    next();
+  }
+  function choose(op) { if (!options.includes(op)) return; options = []; me(op.label); op.fn(); }
+  function auto() {
+    if (!$("auto").checked || !script.length || !options.length) return;
+    const want = script[0], op = options.find(o => o.label.startsWith(want));
+    if (!op) return;
+    script.shift();
+    const id = runId;
+    setTimeout(() => { if (id === runId && op.el) op.el.classList.add("auto"); }, 900);
+    setTimeout(() => { if (id === runId) choose(op); }, reduce ? 500 : 1700);
+  }
+  const later = (ms, fn) => { const id = runId; setTimeout(() => { if (id === runId) fn(); }, reduce ? 200 : ms); };
+
+  /* ---------- Escenas ---------- */
+  function menu() {
+    bot(["Hola, soy el asistente del Consultorio Sonríe.\n¿En qué te puedo ayudar?"], [
+      { label: "Pedir un turno", fn: motivo },
+      { label: "Ver o cambiar mi turno", fn: () => lucia ? reminder(true) : bot(["No encontré turnos para este número. ¿Querés pedir uno?"], [{ label: "Pedir un turno", fn: motivo }]) },
+      { label: "Hablar con la doctora", fn: () => { note("Conversación derivada a la doctora", "bell"); toast("Mensaje para la doctora", "Un paciente pidió hablar con vos por WhatsApp."); bot(["Le aviso a la Dra. [Apellido]. Te responde en horario de atención."], [{ label: "Volver al menú", fn: menu }]); } }
+    ]);
+  }
+  function motivo() {
+    bot(["¿Qué tipo de consulta necesitás?"], [
+      { label: "Control y limpieza", fn: () => offer("control", "Control y limpieza") },
+      { label: "Ortodoncia", fn: () => offer("orto", "Ortodoncia") },
+      { label: "Blanqueamiento", fn: () => offer("est", "Blanqueamiento") },
+      { label: "Dolor o urgencia", fn: urgencia }
+    ]);
+  }
+  function offer(type, label, skip, moving) {
+    const slots = freeSlots(3, skip);
+    offered = slots; renderAgenda();
+    note(`El bot leyó la agenda y encontró ${slots.length} horarios libres`, "cal");
+    const opts = slots.map(k => ({ label: pretty(k), fn: () => moving ? move(k) : askName(k, type, label) }));
+    opts.push({ label: "Ver más días", fn: () => offer(type, label, (skip || []).concat(slots), moving) });
+    bot(["Estos son los próximos horarios libres:"], opts);
+  }
+  function askName(key, type, label) {
+    offered = []; renderAgenda();
+    bot(["Genial. ¿Me pasás tu nombre completo y DNI?"], [{ label: "Lucía Fernández, 38.456.112", fn: () => confirmBooking(key, type, label) }]);
+  }
+  function confirmBooking(key, type, label) {
+    lucia = { key, label, type };
+    book(key, { name: "Lucía Fernández", type, src: "wa", status: "pend" });
+    note(`Turno creado: Lucía Fernández, ${pretty(key)}`, "check", "ok");
+    note(`Recordatorio programado para 24 h antes`, "bell");
+    bot([{ card: "Turno reservado", text: `${pretty(key)}\n${label} · Dra. [Apellido]\n[Dirección del consultorio]\n\nTe escribo 24 h antes para confirmar.` }],
+      [{ label: "Siguiente: recordatorio →", fn: () => startScene(1, true) }]);
+  }
+  function ensureLucia() {
+    if (lucia && agenda[lucia.key.split(" ")[0]][lucia.key.split(" ")[1]]) return;
+    const key = freeSlots(1)[0];
+    lucia = { key, label: "Control y limpieza", type: "control" };
+    book(key, { name: "Lucía Fernández", type: "control", src: "wa", status: "pend" });
+  }
+  function reminder(fromMenu) {
+    ensureLucia();
+    if (!fromMenu) div(`24 h antes del turno · el bot escribe solo`);
+    if (!fromMenu) note("Se envió el recordatorio automático a Lucía", "bell");
+    bot([`Hola Lucía, te recordamos tu turno:\n${pretty(lucia.key)}\n${lucia.label} · Dra. [Apellido]\n\n¿Confirmás tu asistencia?`], [
+      { label: "Confirmo", fn: () => {
+        const [k, s] = lucia.key.split(" "); agenda[k][s].status = "ok"; flashKey = lucia.key; renderAgenda();
+        note("Lucía confirmó. La agenda la marca como confirmada", "check", "ok");
+        bot(["Gracias, te esperamos. Si se te complica, avisame por acá."], [{ label: "Siguiente: cancelación →", fn: () => startScene(2, true) }]);
+      } },
+      { label: "Necesito cambiarlo", fn: () => offer(lucia.type, lucia.label, [lucia.key], true) },
+      { label: "Cancelar turno", fn: cancel }
+    ]);
+  }
+  function move(key) {
+    offered = [];
+    const old = lucia.key; unbook(old);
+    lucia.key = key;
+    book(key, { name: "Lucía Fernández", type: lucia.type, src: "wa", status: "ok" });
+    note(`Turno movido de ${pretty(old)} a ${pretty(key)}. El horario anterior quedó libre`, "cal");
+    bot([{ card: "Turno cambiado", text: `${pretty(key)}\n${lucia.label} · Dra. [Apellido]` }], [{ label: "Siguiente: cancelación →", fn: () => startScene(2, true) }]);
+  }
+  function cancel() {
+    const key = lucia.key; unbook(key); lucia = null;
+    note(`Lucía canceló. Se liberó ${pretty(key)}`, "alert", "alert");
+    bot(["Listo, tu turno quedó cancelado. Gracias por avisar.\n¿Querés que te busque otro día?"], [
+      { label: "Ahora no, gracias", fn: () => bot(["Perfecto. Cuando quieras, escribime."], [{ label: "Siguiente: urgencia →", fn: () => startScene(3, true) }]) }
+    ], () => {
+      const w = waitlist.find(x => !x.done);
+      if (!w) return;
+      later(1400, () => { note(`Lista de espera: el bot le ofreció el turno a ${w.name} por WhatsApp`, "list"); });
+      later(3600, () => {
+        w.done = true;
+        book(key, { name: w.name, type: "control", src: "wa", status: "ok" });
+        note(`${w.name} aceptó. El horario volvió a ocuparse solo`, "check", "ok");
+        toast("Agenda actualizada", `${w.name} tomó el turno que liberó Lucía (${pretty(key)}). No hiciste nada.`);
+      });
+    });
+  }
+  function urgencia() {
+    bot(["Lamento que te duela. ¿Cómo es el dolor?"], [
+      { label: "Fuerte, no me deja dormir", fn: () => {
+        bot(["Te guardo el turno de urgencia de hoy a las 18:30.\n¿Me decís tu nombre?"], [{ label: "Martín Ríos", fn: () => {
+          book("mie 18:30", { name: "Martín Ríos", type: "urg", src: "wa", status: "ok" });
+          note("Urgencia: turno de hoy 18:30 asignado a Martín Ríos", "alert", "alert");
+          note("Aviso enviado a la doctora", "bell");
+          toast("Urgencia por WhatsApp", "Martín Ríos, dolor fuerte en una muela. Le di el turno de hoy a las 18:30.");
+          bot([{ card: "Turno de urgencia", text: "Hoy miércoles 14/10 · 18:30\nLa doctora ya está avisada.\nSi el dolor empeora, escribí URGENTE." }], [{ label: "Volver a empezar", fn: () => startScene(0, true) }]);
+        } }]);
+      } },
+      { label: "Molestia leve", fn: () => offer("control", "Consulta por molestia") }
+    ]);
+  }
+
+  const SCENES = [
+    { run: () => { me("Hola! Quería sacar un turno"); menu(); }, script: ["Pedir un turno", "Control y limpieza", "Jue", "Lucía"] },
+    { run: () => reminder(false), script: ["Confirmo"] },
+    { run: () => { ensureLucia(); div("24 h antes del turno · el bot escribe solo"); note("Se envió el recordatorio automático a Lucía", "bell"); reminder(true); }, script: ["Cancelar turno", "Ahora no"] },
+    { run: () => { me("Hola, me duele mucho una muela"); motivo(); }, script: ["Dolor o urgencia", "Fuerte", "Martín"] }
+  ];
+  function startScene(i, keepAgenda) {
+    runId++; chat = []; options = []; typing = false; clock = i * 10; offered = [];
+    if (!keepAgenda) renderAgenda();
+    document.querySelectorAll(".scene").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.scene === i)));
+    script = SCENES[i].script.slice();
+    renderChat();
+    SCENES[i].run();
+  }
+
+  document.querySelectorAll(".scene").forEach(b => b.onclick = () => startScene(+b.dataset.scene));
+  $("auto").onchange = () => auto();
+  $("resetAll").onclick = () => { seed(); renderAgenda(); renderLog(); $("toastBox").innerHTML = ""; startScene(0); };
+
+  seed(); renderAgenda(); renderLog(); startScene(0);
+</script>
+
+</body></html>
