@@ -1,0 +1,66 @@
+# Built from the Zona of each ficha in CHANGES.md and the risk reviewers.
+# Format: <path> @owner @reviewer
+# Primary reviewer: @zfacundo (team lead). Backup reviewer: @amaro3012-droid.
+# Later lines win: member zones first, shared risk zones last.
+
+# Default
+*                                   @zfacundo @amaro3012-droid
+
+# C-01 / C-02 — Team lead (núcleo)
+src/domain/                         @zfacundo @amaro3012-droid
+src/application/agenda/             @zfacundo @amaro3012-droid
+src/infrastructure/                 @zfacundo @amaro3012-droid
+
+# C-03 / C-04 — Integrante 1
+src/domain/agenda/estados.ts                    @Yacosantoro @zfacundo
+src/domain/agenda/ventanaCancelacion.ts         @Yacosantoro @zfacundo
+src/application/agenda/cambiarEstadoTurno.ts    @Yacosantoro @zfacundo
+src/application/agenda/cancelarTurno.ts         @Yacosantoro @zfacundo
+src/application/agenda/reprogramarTurno.ts      @Yacosantoro @zfacundo
+
+# C-05 / C-06 — Integrante 2
+src/domain/agenda/huecos.ts                     @MatiasUT607 @zfacundo
+src/application/agenda/consultarHuecos.ts       @MatiasUT607 @zfacundo
+src/api/routes/disponibilidad.ts                @MatiasUT607 @zfacundo
+src/simulators/whatsapp/                        @MatiasUT607 @zfacundo
+public/bot.html                                 @MatiasUT607 @zfacundo
+public/js/bot.js                                @MatiasUT607 @zfacundo
+
+# C-07 / C-08 — Integrante 3
+src/application/configuracion/                  @amaro3012-droid @zfacundo
+src/api/routes/configuracion.ts                 @amaro3012-droid @zfacundo
+src/application/pacientes/                      @amaro3012-droid @zfacundo
+src/api/routes/pacientes.ts                     @amaro3012-droid @zfacundo
+src/simulators/obras-sociales/                  @amaro3012-droid @zfacundo
+public/sim/obras-sociales.html                  @amaro3012-droid @zfacundo
+
+# C-09 / C-10 — Integrante 4
+public/index.html                               @francisco-morales-hub @zfacundo
+public/js/agenda.js                             @francisco-morales-hub @zfacundo
+src/application/auditoria/                      @francisco-morales-hub @zfacundo
+src/api/routes/auditoria.ts                     @francisco-morales-hub @zfacundo
+src/domain/odontograma/                         @francisco-morales-hub @zfacundo
+src/application/odontograma/                    @francisco-morales-hub @zfacundo
+src/api/routes/odontograma.ts                   @francisco-morales-hub @zfacundo
+public/odontograma.html                         @francisco-morales-hub @zfacundo
+public/js/odontograma.js                        @francisco-morales-hub @zfacundo
+
+# C-11 / C-12 — Integrante 5
+src/simulators/mercadopago/                     @sofiZarate10 @zfacundo
+public/sim/mercadopago.html                     @sofiZarate10 @zfacundo
+src/simulators/arca/                            @sofiZarate10 @zfacundo
+public/sim/arca.html                            @sofiZarate10 @zfacundo
+
+# Zonas compartidas de riesgo (solo aditivas, revisa el team lead)
+package.json                                    @zfacundo @amaro3012-droid
+package-lock.json                               @zfacundo @amaro3012-droid
+tsconfig.json                                   @zfacundo @amaro3012-droid
+vitest.config.ts                                @zfacundo @amaro3012-droid
+src/api/app.ts                                  @zfacundo @amaro3012-droid
+src/application/ports/                          @zfacundo @amaro3012-droid
+src/domain/agenda/turno.ts                      @zfacundo @amaro3012-droid
+src/domain/agenda/validarNuevoTurno.ts          @zfacundo @amaro3012-droid
+src/application/agenda/crearTurno.ts            @zfacundo @amaro3012-droid
+src/api/routes/turnos.ts                        @zfacundo @amaro3012-droid
+public/styles/tokens.css                        @zfacundo @amaro3012-droid
+public/js/api.js                                @zfacundo @amaro3012-droid

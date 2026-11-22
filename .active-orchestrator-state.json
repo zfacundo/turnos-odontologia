@@ -1,0 +1,454 @@
+{
+  "version": 5,
+  "step": "done",
+  "owner": "active-orchestrator",
+  "openspec_init": {
+    "status": "done",
+    "completed_on": "2026-11-22",
+    "command": "openspec init --tools claude --language es --scope project --no-animation",
+    "openspec_version": "2.1.1",
+    "schema": "spec-driven",
+    "outputs": [
+      "openspec/config.yaml",
+      "openspec/specs/",
+      "openspec/changes/archive/",
+      ".claude/skills/",
+      ".agents/skills/"
+    ]
+  },
+  "foundation": {
+    "version": 1,
+    "approved_on": "2026-11-22",
+    "route": "foundation",
+    "market_research": true,
+    "order": [
+      "discovery",
+      "kb",
+      "roadmap",
+      "task-management",
+      "team-mode",
+      "memory-policy",
+      "find-skill",
+      "registry",
+      "agents"
+    ],
+    "phases": {
+      "discovery": {
+        "variant": "interview+competitors",
+        "status": "done",
+        "requires": [],
+        "outputs": [
+          "docs/discovery/discovery.md",
+          "docs/discovery/informe-discovery.md",
+          "docs/discovery/research/",
+          "docs/discovery/prototipo/"
+        ],
+        "completed_on": "2026-11-22",
+        "pending_manual": [
+          "Verificación personal de 5+ fuentes (sección 7 del informe)",
+          "Integrantes en la portada",
+          "Versión PDF del informe"
+        ]
+      },
+      "kb": {
+        "variant": "import",
+        "status": "done",
+        "requires": [
+          "discovery"
+        ],
+        "outputs": [
+          "knowledge-base/"
+        ],
+        "completed_on": "2026-11-22"
+      },
+      "visual-design": {
+        "variant": "reuse",
+        "status": "done",
+        "decided_on": "2026-11-22",
+        "reason": "El equipo sumó interfaz: se reutiliza el estilo del prototipo del equipo como referencia visual (skill design-system no instalada).",
+        "requires": [],
+        "outputs": [
+          "docs/discovery/prototipo/agenda_odontologia.html",
+          "docs/discovery/prototipo/odontograma-referencia.png"
+        ]
+      },
+      "roadmap": {
+        "variant": "local-markdown",
+        "status": "done",
+        "requires": [
+          "kb"
+        ],
+        "outputs": [
+          "CHANGES.md"
+        ],
+        "completed_on": "2026-11-22"
+      },
+      "task-management": {
+        "variant": "local",
+        "status": "done",
+        "requires": [
+          "roadmap"
+        ],
+        "outputs": [
+          ".active-stack/roadmap.json"
+        ],
+        "completed_on": "2026-11-22"
+      },
+      "team-mode": {
+        "variant": "new",
+        "status": "done",
+        "requires": [
+          "task-management"
+        ],
+        "outputs": [
+          ".active-stack/team.json",
+          ".github/pull_request_template.md",
+          ".github/CODEOWNERS",
+          ".gitignore"
+        ],
+        "notes": "Equipo de 6 (5 integrantes + team lead). active-delivery no disponible: validación manual.",
+        "completed_on": "2026-11-22",
+        "branch_protection": "not-offered: gh CLI no instalado; convención en reglas",
+        "pending": [
+          "nombres reales (opcional)"
+        ]
+      },
+      "memory-policy": {
+        "variant": "local",
+        "status": "done",
+        "requires": [],
+        "outputs": [],
+        "decided_on": "2026-11-22",
+        "note": "cloud-branch no disponible (active-stack sin memory init); el usuario eligió local."
+      },
+      "find-skill": {
+        "variant": "recommend",
+        "status": "done",
+        "requires": [
+          "kb"
+        ],
+        "outputs": [],
+        "completed_on": "2026-11-22",
+        "note": "Solo recomendación; sin instalaciones (variante recommend)."
+      },
+      "registry": {
+        "variant": "index",
+        "status": "done",
+        "requires": [
+          "find-skill"
+        ],
+        "outputs": [
+          ".atl/skill-registry.md"
+        ],
+        "completed_on": "2026-11-22",
+        "note": "Versionado en el repo: la consigna del TP lo exige en la estructura."
+      },
+      "agents": {
+        "variant": "generate",
+        "status": "done",
+        "requires": [
+          "kb",
+          "roadmap",
+          "registry",
+          "team-mode"
+        ],
+        "outputs": [
+          "AGENTS.md",
+          "CLAUDE.md"
+        ],
+        "completed_on": "2026-11-22"
+      }
+    }
+  },
+  "discovery": {
+    "created_by": "discovery-research",
+    "sources_fetched_at": "2026-11-22",
+    "report": "docs/discovery/informe-discovery.md",
+    "sources": [
+      "https://dentalsoft.com.ar/",
+      "https://agendapro.com/ar/dental/software-odontologico",
+      "https://www.clinia.com.ar/odontologia",
+      "https://web.dentaltec.com.ar/software-odontologos-argentina",
+      "https://bilog.com.ar/",
+      "https://ayuda.softwaredentalink.com/es/collections/19196578-modulo-exclusivo-para-argentina",
+      "https://opendental.com/site/fees.html",
+      "https://www.dentally.com/en-gb/pricing",
+      "https://www.nexhealth.com/pricing"
+    ],
+    "competitors": [
+      {
+        "name": "DentalSoft",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "AgendaPro",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "ClinIA",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "DentalTec",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Bilog",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Dentalink",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Odonto.ar",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "OdontoGRAMA",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Klinicos",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Odeen",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "NexHealth",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Open Dental",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Dentidesk",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Simples Dental",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Clinicorp",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Dentally",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Curve Dental",
+        "notes_file": "docs/discovery/research/"
+      },
+      {
+        "name": "Ascend by Dentrix",
+        "notes_file": "docs/discovery/research/"
+      }
+    ],
+    "problema": "Consultorios odontológicos chicos de Argentina (1-3 sillones, 1-4 odontólogos) con agenda en papel/Excel/WhatsApp manual sufren choques de profesional y sillón, huecos sin reocupar y ausentismo.",
+    "usuarios": [
+      "Recepcionista",
+      "Odontólogo",
+      "Administrador del consultorio",
+      "Paciente"
+    ],
+    "casos_de_uso": [
+      "Crear turno sin choques (paciente, prestación, profesional, sillón)",
+      "Cancelar o reprogramar turno liberando el horario",
+      "Configurar duración de prestaciones y disponibilidad de profesionales",
+      "Ver agenda diaria/semanal y bloquear horarios"
+    ],
+    "funcionalidades_necesarias": [
+      "Profesionales, sillones y prestaciones con duración variable",
+      "Bloqueos de agenda",
+      "Crear turno sin solapamientos por profesional y sillón",
+      "Cancelar y reprogramar",
+      "Estados del turno",
+      "Vistas diaria/semanal",
+      "Ficha mínima de paciente",
+      "Roles y auditoría",
+      "Simulador WhatsApp",
+      "Simulador Mercado Pago",
+      "Simulador obras sociales",
+      "Simulador ARCA",
+      "Odontograma FDI"
+    ],
+    "funcionalidades_opcionales": [
+      "Lista de espera",
+      "Reglas de autogestión configurables",
+      "Sobreturno con permiso",
+      "Indicadores de agenda"
+    ],
+    "reglas_de_negocio": [
+      "R1 intervalo [inicio, fin)",
+      "R2 sin solapamiento por profesional ni sillón",
+      "R3 duración por prestación, bloques de 15 min",
+      "R4 dentro del horario y fuera de bloqueos",
+      "R5 paciente sin turnos superpuestos",
+      "R6 cancelar libera y avisa lista de espera; paciente hasta 24 h antes",
+      "R7 sobreturno solo recepción/admin con auditoría"
+    ],
+    "integraciones": [
+      "Ninguna real en el MVP; WhatsApp, Mercado Pago, obras sociales y ARCA simulados"
+    ],
+    "restricciones": [
+      "TypeScript + Node + Express + Vitest; UI HTML/JS basada en prototipo",
+      "Solo datos ficticios",
+      "6 integrantes, changes repartidos equitativamente",
+      "TP universitario"
+    ],
+    "riesgos": [
+      "Conflictos de merge con 6 personas",
+      "Simuladores confundidos con integraciones reales",
+      "Crecimiento del alcance",
+      "Datos de salud reales",
+      "Supuesto: pacientes prefieren bot",
+      "Supuesto: agenda por sillón es dolor real"
+    ],
+    "preguntas_abiertas": [
+      "Habilitación HCE Ley 26.529",
+      "Costo real API WhatsApp Business",
+      "Validación de padrones de obras sociales",
+      "Fecha de entrega y despliegue",
+      "Puntos No evidenciado del informe"
+    ]
+  },
+  "kb": {
+    "created_by": "kb-creator",
+    "source": "ingest",
+    "discovery": {
+      "problem": "Consultorios odontológicos chicos de Argentina (1-3 sillones, 1-4 odontólogos) con agenda en papel/Excel/WhatsApp manual sufren choques de profesional y sillón, huecos sin reocupar y ausentismo.",
+      "system_type": "web_app",
+      "domain": "salud / odontología — gestión de turnos",
+      "scale": "team",
+      "stack": "TypeScript + Node + Express + Vitest; UI HTML/JS; repos en memoria",
+      "needs_infra": false
+    },
+    "files": [
+      "knowledge-base/01_vision_y_objetivos.md",
+      "knowledge-base/02_descripcion_general.md",
+      "knowledge-base/03_actores_y_roles.md",
+      "knowledge-base/04_modelo_de_datos.md",
+      "knowledge-base/05_reglas_de_negocio.md",
+      "knowledge-base/06_funcionalidades.md",
+      "knowledge-base/07_flujos_principales.md",
+      "knowledge-base/08_arquitectura_propuesta.md",
+      "knowledge-base/09_decisiones_y_supuestos.md",
+      "knowledge-base/10_preguntas_abiertas.md",
+      "knowledge-base/README.md"
+    ]
+  },
+  "roadmap": {
+    "created_by": "roadmap-generator",
+    "source": "CHANGES.md",
+    "changes_file": "CHANGES.md",
+    "changes": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13",
+      "C-14"
+    ]
+  },
+  "skills": {
+    "recommended": [
+      {
+        "id": "mattpocock/skills@tdd",
+        "installs": "1.3M",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "wshobson/agents@javascript-testing-patterns",
+        "installs": "21.6K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "mindrally/skills@express-typescript",
+        "installs": "1.5K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "sickn33/agentic-awesome-skills@nodejs-best-practices",
+        "installs": "14.1K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "ibelick/ui-skills@fixing-accessibility",
+        "installs": "24.5K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "vercel-labs/agent-skills@web-design-guidelines",
+        "installs": "892K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "mattpocock/skills@code-review",
+        "installs": "921.8K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "obra/superpowers@requesting-code-review",
+        "installs": "289.6K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "obra/superpowers@receiving-code-review",
+        "installs": "247.5K",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      },
+      {
+        "id": "laurigates/claude-plugins@git-branch-pr-workflow",
+        "installs": "91",
+        "source": "skills.sh",
+        "recommended_on": "2026-11-22"
+      }
+    ],
+    "installed": []
+  },
+  "agents": {
+    "created_by": "agent-instruction",
+    "files": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "reglas_applied": [
+      "no-push-main-rama-por-change",
+      "conventional-commits",
+      "sin-secretos",
+      "ts-strict-sin-any",
+      "dominio-puro-clock",
+      "intervalo-semiabierto-tz-ar",
+      "sin-mocks-de-dominio",
+      "test-por-escenario",
+      "datos-ficticios",
+      "simuladores-sin-red",
+      "respetar-zona",
+      "no-inventar-en-apply",
+      "409-con-codigo-rn"
+    ],
+    "team_rules": true
+  }
+}

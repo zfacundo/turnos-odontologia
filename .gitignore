@@ -1,0 +1,4 @@
+# >>> active-stack:team-mode
+.active-stack/team.local.json
+.active-stack/me.local.json
+# <<< active-stack:team-mode
