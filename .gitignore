@@ -2,3 +2,6 @@
 .active-stack/team.local.json
 .active-stack/me.local.json
 # <<< active-stack:team-mode
+
+node_modules/
+dist/

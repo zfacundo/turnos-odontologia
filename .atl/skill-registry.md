@@ -10,20 +10,20 @@ Project-level (`.claude/skills/`, identical copy in `.agents/skills/`) wins over
 
 | Trigger | Skill | Path |
 |---------|-------|------|
-| Implement/continue tasks of an OpenSpec change; "openspec apply", "opsx apply" | openspec-apply-change | C:\Users\z8\Documents\globalds\turnos-odontologia\.claude\skills\openspec-apply-change\SKILL.md |
-| Archive a completed change; "openspec archive", "opsx archive" | openspec-archive-change | C:\Users\z8\Documents\globalds\turnos-odontologia\.claude\skills\openspec-archive-change\SKILL.md |
-| Think/investigate before or during a change; "openspec explore", "opsx explore" | openspec-explore | C:\Users\z8\Documents\globalds\turnos-odontologia\.claude\skills\openspec-explore\SKILL.md |
-| Create a change with all artifacts in one step; "openspec propose", "opsx propose" | openspec-propose | C:\Users\z8\Documents\globalds\turnos-odontologia\.claude\skills\openspec-propose\SKILL.md |
-| Sync delta specs into main specs without archiving; "openspec sync", "opsx sync" | openspec-sync-specs | C:\Users\z8\Documents\globalds\turnos-odontologia\.claude\skills\openspec-sync-specs\SKILL.md |
-| Revise/reconcile planning artifacts of a change; "openspec update change", "opsx update" | openspec-update-change | C:\Users\z8\Documents\globalds\turnos-odontologia\.claude\skills\openspec-update-change\SKILL.md |
-| Start/resume project foundation (openspec init, KB, roadmap, skills, instructions); /active-orchestrator init | active-orchestrator | C:\Users\z8\.claude\skills\active-orchestrator\SKILL.md |
-| Generate/update AGENTS.md / CLAUDE.md; "armar las reglas del proyecto", "generar claude.md" | agent-instruction | C:\Users\z8\.claude\skills\agent-instruction\SKILL.md |
-| Discovery/research before the KB (competitors, Q&A checklist) | discovery-research | C:\Users\z8\.claude\skills\discovery-research\SKILL.md |
-| "how do I do X", "find a skill for X", discover/install skills | find-skill | C:\Users\z8\.claude\skills\find-skill\SKILL.md |
-| Create/build knowledge base; "armar base de conocimiento", "crear KB" | kb-creator | C:\Users\z8\.claude\skills\kb-creator\SKILL.md |
-| Create/regenerate CHANGES.md / roadmap; "armar CHANGES", "armar roadmap" | roadmap-generator | C:\Users\z8\.claude\skills\roadmap-generator\SKILL.md |
-| Create, edit, evaluate or optimize skills | skill-creator | C:\Users\z8\.claude\skills\skill-creator\SKILL.md |
-| Research a competitor/solution from a URL (WebFetch/WebSearch) | web-scraper | C:\Users\z8\.claude\skills\web-scraper\SKILL.md |
+| Implement/continue tasks of an OpenSpec change; "openspec apply", "opsx apply" | openspec-apply-change | .claude/skills/openspec-apply-change/SKILL.md |
+| Archive a completed change; "openspec archive", "opsx archive" | openspec-archive-change | .claude/skills/openspec-archive-change/SKILL.md |
+| Think/investigate before or during a change; "openspec explore", "opsx explore" | openspec-explore | .claude/skills/openspec-explore/SKILL.md |
+| Create a change with all artifacts in one step; "openspec propose", "opsx propose" | openspec-propose | .claude/skills/openspec-propose/SKILL.md |
+| Sync delta specs into main specs without archiving; "openspec sync", "opsx sync" | openspec-sync-specs | .claude/skills/openspec-sync-specs/SKILL.md |
+| Revise/reconcile planning artifacts of a change; "openspec update change", "opsx update" | openspec-update-change | .claude/skills/openspec-update-change/SKILL.md |
+| Start/resume project foundation (openspec init, KB, roadmap, skills, instructions); /active-orchestrator init | active-orchestrator | ~/.claude/skills/active-orchestrator/SKILL.md |
+| Generate/update AGENTS.md / CLAUDE.md; "armar las reglas del proyecto", "generar claude.md" | agent-instruction | ~/.claude/skills/agent-instruction/SKILL.md |
+| Discovery/research before the KB (competitors, Q&A checklist) | discovery-research | ~/.claude/skills/discovery-research/SKILL.md |
+| "how do I do X", "find a skill for X", discover/install skills | find-skill | ~/.claude/skills/find-skill/SKILL.md |
+| Create/build knowledge base; "armar base de conocimiento", "crear KB" | kb-creator | ~/.claude/skills/kb-creator/SKILL.md |
+| Create/regenerate CHANGES.md / roadmap; "armar CHANGES", "armar roadmap" | roadmap-generator | ~/.claude/skills/roadmap-generator/SKILL.md |
+| Create, edit, evaluate or optimize skills | skill-creator | ~/.claude/skills/skill-creator/SKILL.md |
+| Research a competitor/solution from a URL (WebFetch/WebSearch) | web-scraper | ~/.claude/skills/web-scraper/SKILL.md |
 
 ## Compact Rules
 

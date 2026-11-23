@@ -1,0 +1,38 @@
+/* Tokens de diseno del prototipo (docs/discovery/prototipo/agenda_odontologia.html). Solo lectura (zona C-01). */
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap");
+
+:root {
+  --bg: #F2F5F4; --surface: #FFFFFF; --ink: #10242B; --muted: #4F6368; --line: #DCE4E2;
+  --accent: #0E6B70; --accent-soft: #DCEFEE; --on-accent: #FFFFFF;
+  --chat-bg: #EFE9E1; --bubble-bot: #FFFFFF; --bubble-me: #D7F1DF; --chat-bar: #F7F3EE;
+  --free: #F7FAF9; --past: #E9EEED;
+  --t-control: #DCEFEE; --t-control-fg: #0B4A4E;
+  --t-orto: #E7E4F6; --t-orto-fg: #372E78;
+  --t-trat: #FFF0C7; --t-trat-fg: #5E4500;
+  --t-est: #E1ECFA; --t-est-fg: #183F70;
+  --t-urg: #FBDDD2; --t-urg-fg: #7A2710;
+  --ok: #1A7A45; --warn: #9A6A00; --alert: #B23A1E;
+  --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
+  --font-body: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1517; --surface: #162024; --ink: #E6EEEE; --muted: #9DB0B3; --line: #2A3A3F;
+    --accent: #3FB6B9; --accent-soft: #163A3D; --on-accent: #06181A;
+    --chat-bg: #1B1F1D; --bubble-bot: #262D2B; --bubble-me: #1F4A35; --chat-bar: #141918;
+    --free: #182226; --past: #121A1D;
+    --t-control: #163A3D; --t-control-fg: #A6E3E1; --t-orto: #2A2650; --t-orto-fg: #CFC8FF;
+    --t-trat: #3A3016; --t-trat-fg: #F3D68A; --t-est: #1A2C48; --t-est-fg: #B5CEF5;
+    --t-urg: #45211A; --t-urg-fg: #FFB9A6; --ok: #5FD08A; --warn: #F0C04A; --alert: #FF8A6E; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1517; --surface: #162024; --ink: #E6EEEE; --muted: #9DB0B3; --line: #2A3A3F;
+  --accent: #3FB6B9; --accent-soft: #163A3D; --on-accent: #06181A;
+  --chat-bg: #1B1F1D; --bubble-bot: #262D2B; --bubble-me: #1F4A35; --chat-bar: #141918;
+  --free: #182226; --past: #121A1D;
+  --t-control: #163A3D; --t-control-fg: #A6E3E1; --t-orto: #2A2650; --t-orto-fg: #CFC8FF;
+  --t-trat: #3A3016; --t-trat-fg: #F3D68A; --t-est: #1A2C48; --t-est-fg: #B5CEF5;
+  --t-urg: #45211A; --t-urg-fg: #FFB9A6; --ok: #5FD08A; --warn: #F0C04A; --alert: #FF8A6E; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); }
