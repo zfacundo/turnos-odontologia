@@ -265,7 +265,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 ## FASE 2 — Motor de huecos y bot de WhatsApp SIMULADO (Integrante 2)
 
 ### [C-05] `calcular-huecos-libres`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-23) — archivado; handoff en `knowledge-base/entrega/C-05.md`
 - **Responsable**: Integrante 2
 - **Objetivo**: calcular los horarios libres para una prestación/profesional/fecha con el mismo motor que valida la creación.
 - **Resultado**: `GET /api/disponibilidad?prestacionId&profesionalId&fecha` devuelve solo inicios que `validarNuevoTurno` aceptaría.
@@ -285,10 +285,10 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/07_flujos_principales.md` §Flujo 4 paso 3, §Flujo 11
   - `knowledge-base/08_arquitectura_propuesta.md` §Patrones aplicados
 - **Criterios de aceptación (tests)**:
-  - [ ] Día sin turnos, tratamiento 60': el último hueco de la mañana empieza 12:00 (no 12:15).
-  - [ ] Un turno 10:00-10:30 en ambos sillones elimina los huecos que lo solapan; 10:30 sigue libre (R1).
-  - [ ] Bloqueo "reservado urgencias" no aparece como hueco.
-  - [ ] Todo hueco devuelto es aceptado por `validarNuevoTurno` (test de propiedad sobre el seed).
+  - [x] Día sin turnos, tratamiento 60': el último hueco de la mañana empieza 12:00 (no 12:15).
+  - [x] Un turno 10:00-10:30 en ambos sillones elimina los huecos que lo solapan; 10:30 sigue libre (R1).
+  - [x] Bloqueo "reservado urgencias" no aparece como hueco.
+  - [x] Todo hueco devuelto es aceptado por `validarNuevoTurno` (test de propiedad sobre el seed).
 
 ### [C-06] `bot-whatsapp-simulado`
 - **Estado**: `[ ]` pendiente
