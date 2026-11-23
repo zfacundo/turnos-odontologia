@@ -8,6 +8,7 @@ import type {
   SillonRepository,
   TurnoRepository,
 } from '../application/ports/repositorios';
+import type { Turno } from '../domain/agenda/turno';
 import type { Usuario } from '../domain/shared/rol';
 
 export interface Deps {
@@ -16,7 +17,7 @@ export interface Deps {
   readonly profesionales: ProfesionalRepository;
   readonly bloqueos: BloqueoRepository;
   readonly pacientes: PacienteRepository;
-  readonly turnos: TurnoRepository;
+  readonly turnos: TurnoRepository<Turno>;
   readonly clock: Clock;
   readonly auditoria: Auditoria;
   /** Usuarios simulados del seed (solo lectura; sin repositorio). */

@@ -166,7 +166,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - [ ] El seed no contiene DNI/teléfonos fuera del rango ficticio.
 
 ### [C-02] `crear-turno-sin-solapamientos`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-23) — archivado; handoff en `knowledge-base/entrega/C-02.md`
 - **Responsable**: Team lead
 - **Objetivo**: primer change OPSX obligatorio — crear un turno validando R1–R5 como función pura de dominio.
 - **Resultado**: `POST /api/turnos` crea turnos válidos (201) y rechaza con 409 + regla + dimensión + turno en conflicto; la validación pura está cubierta por Vitest sin Express.
@@ -189,15 +189,15 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/04_modelo_de_datos.md` §Turno, §Intervalo
   - `knowledge-base/09_decisiones_y_supuestos.md` DD-01, DD-06, DD-08, SU-06
 - **Criterios de aceptación (tests)**:
-  - [ ] Control (30') a las 10:00 → `fin` 10:30 (R3).
-  - [ ] Turno que empieza 10:30 cuando otro del mismo profesional termina 10:30 → aceptado (R1).
-  - [ ] Solapamiento con el mismo profesional en otro sillón → 409 `RN-AG-02`, `dimension: "profesional"`, con el turno en conflicto.
-  - [ ] Solapamiento con el mismo sillón y otro profesional → 409 `RN-AG-02`, `dimension: "sillon"`.
-  - [ ] Turno que termina después de las 13:00 (corte de almuerzo) o cae en un bloqueo → 409 `RN-AG-04`.
-  - [ ] Paciente con turno superpuesto en otro profesional/sillón → 409 `RN-AG-05`.
-  - [ ] Un turno cancelado en el mismo horario no bloquea la creación (RN-AG-10).
-  - [ ] Inicio 10:10 → rechazo `RN-AG-03`.
-  - [ ] Cada alta genera un evento de auditoría con usuario, rol y fecha.
+  - [x] Control (30') a las 10:00 → `fin` 10:30 (R3).
+  - [x] Turno que empieza 10:30 cuando otro del mismo profesional termina 10:30 → aceptado (R1).
+  - [x] Solapamiento con el mismo profesional en otro sillón → 409 `RN-AG-02`, `dimension: "profesional"`, con el turno en conflicto.
+  - [x] Solapamiento con el mismo sillón y otro profesional → 409 `RN-AG-02`, `dimension: "sillon"`.
+  - [x] Turno que termina después de las 13:00 (corte de almuerzo) o cae en un bloqueo → 409 `RN-AG-04`.
+  - [x] Paciente con turno superpuesto en otro profesional/sillón → 409 `RN-AG-05`.
+  - [x] Un turno cancelado en el mismo horario no bloquea la creación (RN-AG-10).
+  - [x] Inicio 10:10 → rechazo `RN-AG-03`.
+  - [x] Cada alta genera un evento de auditoría con usuario, rol y fecha.
 
 ---
 
