@@ -1,4 +1,4 @@
-import { Router, type Request } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 import type { OrigenTurno } from '../../domain/agenda/turno';
 import type { Usuario } from '../../domain/shared/rol';
 import {
@@ -6,6 +6,12 @@ import {
   type EntradaCrearTurno,
   type ErrorCrearTurno,
 } from '../../application/agenda/crearTurno';
+import {
+  cambiarEstadoTurno,
+  type AccionCambioEstado,
+  type ErrorCambioEstado,
+} from '../../application/agenda/cambiarEstadoTurno';
+import { cancelarTurno } from '../../application/agenda/cancelarTurno';
 import type { FiltroTurnos } from '../../application/ports/repositorios';
 import type { Deps } from '../deps';
 import { ErrorDeEntrada, ErrorDePermiso, FalloDeRegla } from '../middleware/errores';
@@ -91,6 +97,35 @@ function parsearFiltro(query: Request['query']): FiltroTurnos {
   return { ...base, rango: { inicio, fin } };
 }
 
+/** Traduce ErrorCambioEstado: 403 / 400 / 409 por el middleware; 404 directo (design D6). */
+function aErrorHttpEstado(error: ErrorCambioEstado): Error | { noEncontrado: string } {
+  switch (error.tipo) {
+    case 'permiso':
+      return new ErrorDePermiso(error.mensaje);
+    case 'entrada':
+      return new ErrorDeEntrada(error.mensaje);
+    case 'regla':
+      return new FalloDeRegla(error.error);
+    case 'no-encontrado':
+      return { noEncontrado: error.mensaje };
+  }
+}
+
+/** Usuario completo: si deps.usuarios tiene el mismo id y rol, usa ese (trae profesionalId; design D4). */
+function resolverUsuario(deps: Deps, usuario: Usuario | undefined): Usuario | undefined {
+  if (usuario === undefined) return undefined;
+  return deps.usuarios.find((u) => u.id === usuario.id && u.rol === usuario.rol) ?? usuario;
+}
+
+function responderErrorEstado(error: ErrorCambioEstado, res: Response, next: NextFunction): void {
+  const http = aErrorHttpEstado(error);
+  if (http instanceof Error) {
+    next(http);
+    return;
+  }
+  res.status(404).json({ error: { tipo: 'no-encontrado', mensaje: http.noEncontrado } });
+}
+
 export function turnosRouter(deps: Deps): Router {
   const router = Router();
 
@@ -110,6 +145,32 @@ export function turnosRouter(deps: Deps): Router {
       .listarActivos(filtro)
       .sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
     res.json({ turnos });
+  });
+
+  for (const accion of ['confirmar', 'atender', 'ausente'] as const satisfies readonly AccionCambioEstado[]) {
+    router.post(`/turnos/:id/${accion}`, (req, res, next) => {
+      const usuario = resolverUsuario(deps, res.locals.usuario as Usuario | undefined);
+      const resultado = cambiarEstadoTurno(deps, usuario, { turnoId: req.params.id, accion });
+      if (!resultado.ok) {
+        responderErrorEstado(resultado.error, res, next);
+        return;
+      }
+      res.status(200).json(resultado.valor);
+    });
+  }
+
+  router.post('/turnos/:id/cancelar', (req, res, next) => {
+    const usuario = resolverUsuario(deps, res.locals.usuario as Usuario | undefined);
+    const cuerpo: unknown = req.body;
+    // El caso de uso valida rol -> motivo (design D3); un motivo no textual llega como ausente.
+    const crudo = esObjeto(cuerpo) ? cuerpo.motivo : undefined;
+    const motivo = typeof crudo === 'string' ? crudo : undefined;
+    const resultado = cancelarTurno(deps, usuario, { turnoId: req.params.id, motivo });
+    if (!resultado.ok) {
+      responderErrorEstado(resultado.error, res, next);
+      return;
+    }
+    res.status(200).json(resultado.valor.turno);
   });
 
   return router;
