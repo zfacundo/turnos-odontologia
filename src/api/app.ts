@@ -6,6 +6,7 @@ import { rolSimulado } from './middleware/rol-simulado';
 import { catalogoRouter } from './routes/catalogo';
 import { disponibilidadRouter } from './routes/disponibilidad';
 import { turnosRouter } from './routes/turnos';
+import { odontogramaRouter } from './routes/odontograma';
 
 export function createApp(deps: Deps): Express {
   const app = express();
