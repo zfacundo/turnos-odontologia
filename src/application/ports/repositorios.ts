@@ -26,12 +26,12 @@ export interface FiltroTurnos {
   readonly rango?: Intervalo;
 }
 
-export interface TurnoRepository {
-  guardar(turno: TurnoRegistro): void;
-  actualizar(turno: TurnoRegistro): Result<TurnoRegistro, ErrorDeRegla>;
-  buscarPorId(id: string): TurnoRegistro | undefined;
+export interface TurnoRepository<T extends TurnoRegistro = TurnoRegistro> {
+  guardar(turno: T): void;
+  actualizar(turno: T): Result<T, ErrorDeRegla>;
+  buscarPorId(id: string): T | undefined;
   /** Solo turnos con estado distinto de 'cancelado' (RN-AG-10). */
-  listarActivos(filtro?: FiltroTurnos): TurnoRegistro[];
+  listarActivos(filtro?: FiltroTurnos): T[];
 }
 
 export interface PacienteRepository {
