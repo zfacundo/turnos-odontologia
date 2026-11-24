@@ -7,6 +7,7 @@ import { catalogoRouter } from './routes/catalogo';
 import { disponibilidadRouter } from './routes/disponibilidad';
 import { turnosRouter } from './routes/turnos';
 import { odontogramaRouter } from './routes/odontograma';
+import { mercadoPagoRouter } from '../simulators/mercadopago/router';
 
 export function createApp(deps: Deps): Express {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp(deps: Deps): Express {
   app.use('/api', catalogoRouter(deps));
   app.use('/api', turnosRouter(deps));
   app.use('/api', disponibilidadRouter(deps));
+  app.use('/api', mercadoPagoRouter(deps));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: { tipo: 'no-encontrado', mensaje: 'Ruta inexistente' } });

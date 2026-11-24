@@ -184,4 +184,4 @@ El sistema SHALL servir `/sim/mercadopago.html?turnoId=<id>`, una pantalla con e
 
 #### Scenario: La pantalla solo llama al servidor propio
 - **WHEN** se revisa el HTML y el script de la pantalla de pago
-- **THEN** la única llamada de red es a la ruta relativa `/api/sim/mercadopago/pagos`, se envía con el rol `paciente` y no hay URLs absolutas a dominios externos
+- **THEN** la única llamada de red es a la ruta relativa `/api/sim/mercadopago/pagos`, se envía con el rol `paciente`, toma el `turnoId` de la URL y no hay URLs absolutas a dominios externos
