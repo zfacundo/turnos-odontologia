@@ -11,7 +11,7 @@
 - [x] Implementar GET y PUT de piezas.
 - [x] Registrar el router en Express.
 - [x] Crear pruebas de API.
-- [ ] Verificar explícitamente en tests que paciente no puede marcar hecho.
+- [x] Verificar explícitamente en tests que paciente no puede marcar hecho.
 
 ## 3. Interfaz
 - [x] Crear odontograma visual de 32 piezas.
@@ -21,8 +21,8 @@
 - [x] Probar manualmente cambio de rojo a azul.
 
 ## 4. Entrega
-- [ ] Validar OpenSpec.
-- [ ] Ejecutar verificación final de código y pruebas.
-- [ ] Revisar archivos del commit.
-- [ ] Crear commit y subir rama.
-- [ ] Abrir Pull Request para revisión.
+- [x] Validar OpenSpec.
+- [x] Ejecutar verificación final de código y pruebas.
+- [x] Revisar archivos del commit.
+- [x] Crear commit y subir rama.
+- [x] Abrir Pull Request para revisión.

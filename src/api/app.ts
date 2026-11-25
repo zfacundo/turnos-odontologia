@@ -13,6 +13,7 @@ import { mercadoPagoRouter } from '../simulators/mercadopago/router';
 import { obrasSocialesRouter } from '../simulators/obras-sociales/router';
 import { whatsappRouter } from '../simulators/whatsapp/router';
 import { arcaRouter } from '../simulators/arca/router';
+import { auditoriaRouter } from './routes/auditoria';
 
 export function createApp(deps: Deps): Express {
   const app = express();
@@ -33,6 +34,8 @@ export function createApp(deps: Deps): Express {
   app.use('/api', obrasSocialesRouter(deps));
   app.use('/api', whatsappRouter(deps));
   app.use('/api', arcaRouter(deps));
+  app.use('/api', auditoriaRouter(deps));
+app.use('/api', odontogramaRouter(deps));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: { tipo: 'no-encontrado', mensaje: 'Ruta inexistente' } });

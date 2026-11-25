@@ -424,6 +424,7 @@ async function cargarTurnos() {
     }
 
     turnos = respuesta.data.turnos;
+    actualizarTurnosCancelables();
 
     if (!fechaInput.value) {
       fechaInput.value = fechaArgentina(
@@ -608,5 +609,104 @@ async function iniciar() {
 
   await cargarRegistro();
 }
+
+
+/* ---------- Cancelar turnos ---------- */
+
+const panelCancelacion = document.createElement('section');
+panelCancelacion.id = 'panel-cancelacion';
+panelCancelacion.style.cssText =
+  'margin:16px 0;padding:16px;border:1px solid #ccc;border-radius:12px';
+
+panelCancelacion.innerHTML =
+  '<h3>Cancelar turno</h3>' +
+  '<form id="form-cancelar-turno">' +
+  '<label>Turno: <select id="turno-a-cancelar" required></select></label>' +
+  '<label>Motivo: <input id="motivo-cancelacion" required ' +
+  'placeholder="Motivo de cancelación"></label>' +
+  '<button type="submit" id="boton-cancelar-turno">Cancelar turno</button>' +
+  '</form>' +
+  '<p id="resultado-cancelacion" role="status"></p>';
+
+agenda.insertAdjacentElement('afterend', panelCancelacion);
+
+const selectorCancelar = document.getElementById('turno-a-cancelar');
+const motivoCancelar = document.getElementById('motivo-cancelacion');
+const resultadoCancelacion = document.getElementById('resultado-cancelacion');
+const botonCancelar = document.getElementById('boton-cancelar-turno');
+
+function actualizarTurnosCancelables() {
+  const rol = selectorRol.value;
+  const autorizado = rol === 'recepcion' || rol === 'admin';
+  panelCancelacion.style.display = autorizado ? '' : 'none';
+
+  const anterior = selectorCancelar.value;
+  selectorCancelar.replaceChildren();
+  selectorCancelar.add(new Option('Seleccioná un turno', ''));
+
+  const disponibles = turnos.filter(function (turno) {
+    return ['reservado', 'confirmado'].includes(turno.estado) &&
+      new Date(turno.inicio) > new Date();
+  });
+
+  for (const turno of disponibles) {
+    const etiqueta = turno.pacienteId + ' - ' +
+      fechaArgentina(turno.inicio) + ' ' + horaArgentina(turno.inicio);
+    selectorCancelar.add(new Option(etiqueta, turno.id));
+  }
+
+  if (disponibles.some(t => t.id === anterior)) {
+    selectorCancelar.value = anterior;
+  }
+
+  botonCancelar.disabled = !autorizado || disponibles.length === 0;
+}
+
+selectorRol.addEventListener('change', actualizarTurnosCancelables);
+
+document.getElementById('form-cancelar-turno')
+  .addEventListener('submit', async function (evento) {
+    evento.preventDefault();
+
+    const turnoId = selectorCancelar.value;
+    const motivo = motivoCancelar.value.trim();
+
+    if (!turnoId || !motivo) return;
+
+    if (!confirm('¿Confirmás la cancelación de este turno?')) return;
+
+    botonCancelar.disabled = true;
+    resultadoCancelacion.textContent = 'Cancelando...';
+    resultadoCancelacion.style.color = '';
+
+    try {
+      const respuesta = await api(
+        '/turnos/' + encodeURIComponent(turnoId) + '/cancelar',
+        { method: 'POST', body: { motivo } }
+      );
+
+      if (!respuesta.ok) {
+        resultadoCancelacion.style.color = 'crimson';
+        resultadoCancelacion.textContent =
+          respuesta.data?.error?.mensaje || 'No se pudo cancelar.';
+        return;
+      }
+
+      motivoCancelar.value = '';
+      await cargarTurnos();
+      await cargarRegistro();
+
+      resultadoCancelacion.style.color = 'green';
+      resultadoCancelacion.textContent =
+        'Turno cancelado. Consultá el WhatsApp simulado del paciente.';
+    } catch (error) {
+      resultadoCancelacion.style.color = 'crimson';
+      resultadoCancelacion.textContent = 'Error de conexión.';
+      console.error(error);
+    } finally {
+      actualizarTurnosCancelables();
+    }
+  });
+
 
 iniciar();

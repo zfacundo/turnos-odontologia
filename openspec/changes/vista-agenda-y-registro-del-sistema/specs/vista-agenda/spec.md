@@ -346,3 +346,41 @@ La pantalla SHALL mostrar un panel denominado "Lo que hizo el sistema".
 
 
 
+
+### Requirement: Cancelación desde la agenda y aviso simulado
+
+La agenda SHALL permitir que recepción y administración soliciten la cancelación de un turno activo, indicando un motivo y confirmando la operación.
+
+La cancelación SHALL utilizar POST /api/turnos/:id/cancelar y respetar las validaciones y permisos del servidor.
+
+Cuando la cancelación sea exitosa, el sistema SHALL registrar un aviso en el WhatsApp simulado del paciente correspondiente.
+
+#### Scenario: Cancelación exitosa
+
+- **GIVEN** que existe un turno activo
+- **AND** el usuario tiene rol recepción o administración
+- **WHEN** selecciona el turno, escribe el motivo y confirma
+- **THEN** el sistema solicita su cancelación al servidor
+- **AND** actualiza la agenda y el registro de auditoría
+- **AND** registra un aviso de cancelación en el WhatsApp simulado del paciente
+
+#### Scenario: Cancelación rechazada
+
+- **GIVEN** que el servidor rechaza una cancelación
+- **WHEN** el usuario intenta cancelar el turno
+- **THEN** la agenda informa el error
+- **AND** no se genera un aviso de cancelación
+
+#### Scenario: Rol sin permiso en la agenda
+
+- **GIVEN** que el usuario selecciona el rol odontólogo
+- **WHEN** consulta la agenda
+- **THEN** la interfaz no muestra el panel de cancelación
+
+#### Scenario: Privacidad del aviso
+
+- **GIVEN** que un turno fue cancelado correctamente
+- **WHEN** se consulta el WhatsApp simulado de otro paciente
+- **THEN** no se muestra el aviso de ese turno
+- **AND** el mensaje de cancelación no incluye información clínica ni el motivo registrado
+

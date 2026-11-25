@@ -12,6 +12,7 @@ import {
   type ErrorCambioEstado,
 } from '../../application/agenda/cambiarEstadoTurno';
 import { cancelarTurno } from '../../application/agenda/cancelarTurno';
+import { registrarAvisoCancelacion } from '../../simulators/whatsapp/avisosCancelacion';
 import {
   reprogramarTurno,
   type EntradaReprogramarTurno,
@@ -195,9 +196,37 @@ export function turnosRouter(deps: Deps): Router {
       responderErrorEstado(resultado.error, res, next);
       return;
     }
+    // El turno ya fue cancelado. La notificación no debe
+    // hacer fallar la operación si ocurre algún problema.
+    try {
+      const turno = resultado.valor.turno;
+      const paciente = deps.pacientes.buscarPorId(turno.pacienteId);
+
+      if (paciente?.telefono) {
+        const fecha = new Intl.DateTimeFormat('es-AR', {
+          timeZone: 'America/Argentina/Buenos_Aires',
+          dateStyle: 'short',
+          timeStyle: 'short',
+        }).format(turno.inicio);
+
+        const profesional =
+          deps.profesionales.buscarPorId(turno.profesionalId)?.nombre
+          ?? turno.profesionalId;
+
+        const texto = 'Hola, ' + paciente.nombre +
+          '. Te informamos que tu turno del ' + fecha +
+          ' con ' + profesional +
+          ' fue cancelado. Para solicitar otro turno, ' +
+          'comunicate con recepción.';
+
+        registrarAvisoCancelacion(deps, paciente.telefono, texto);
+      }
+    } catch (error) {
+      console.error('No se pudo registrar el aviso simulado:', error);
+    }
+
     res.status(200).json(resultado.valor.turno);
   });
-
   router.post('/turnos/:id/reprogramar', (req, res, next) => {
     const usuario = resolverUsuario(deps, res.locals.usuario as Usuario | undefined);
     const resultado = reprogramarTurno(deps, usuario, parsearReprogramacion(req.params.id, req.body));
