@@ -4,6 +4,8 @@
  * que bot.ts ejecuta con los casos de uso reales, y luego llama a resolver() con el resultado.
  */
 
+import { MONTO_SENA_SIMULADA } from '../mercadopago/pagoSena';
+
 export interface PrestacionCatalogo {
   readonly id: string;
   readonly codigo: string;
@@ -29,6 +31,16 @@ export interface TurnoResumen {
   readonly prestacion: string;
   readonly profesional: string;
   readonly estado: string;
+  readonly senado: boolean;
+}
+
+/** Datos de cobertura que muestra el bot (padron ficticio de C-08, sin nombre del paciente). */
+export interface CoberturaResumen {
+  readonly obraSocial: string;
+  readonly plan: string;
+  readonly cobertura: number;
+  readonly copagoPct: number;
+  readonly estado: string;
 }
 
 export interface Opcion {
@@ -51,7 +63,11 @@ export type Paso =
   | 'tipo'
   | 'profesional'
   | 'horarios'
+  | 'revisarHorario'
   | 'datos'
+  | 'ofrecerSena'
+  | 'pagoSena'
+  | 'afiliado'
   | 'gestion'
   | 'confirmarCancelacion'
   | 'fin'
@@ -77,7 +93,9 @@ export type Efecto =
     }
   | { readonly tipo: 'buscarProximoTurno'; readonly modo: 'ver' | 'recordatorio' }
   | { readonly tipo: 'confirmar'; readonly turnoId: string }
-  | { readonly tipo: 'cancelar'; readonly turnoId: string };
+  | { readonly tipo: 'cancelar'; readonly turnoId: string }
+  | { readonly tipo: 'pagarSena'; readonly turnoId: string; readonly resultado: 'aprobado' | 'rechazado' }
+  | { readonly tipo: 'consultarObraSocial'; readonly nro: string };
 
 export type ResultadoEfecto =
   | { readonly tipo: 'buscarHuecos'; readonly fecha?: string; readonly huecos: readonly HuecoOfrecido[] }
@@ -86,7 +104,9 @@ export type ResultadoEfecto =
   | { readonly tipo: 'reservar'; readonly turno?: TurnoResumen; readonly regla?: string }
   | { readonly tipo: 'buscarProximoTurno'; readonly turno?: TurnoResumen; readonly nombrePaciente?: string }
   | { readonly tipo: 'confirmar'; readonly regla?: string }
-  | { readonly tipo: 'cancelar'; readonly regla?: string };
+  | { readonly tipo: 'cancelar'; readonly regla?: string }
+  | { readonly tipo: 'pagarSena'; readonly resultado?: 'aprobado' | 'rechazado'; readonly regla?: string }
+  | { readonly tipo: 'consultarObraSocial'; readonly afiliado?: CoberturaResumen; readonly error?: 'no-encontrado' | 'falla' };
 
 export type Entrada =
   | { readonly tipo: 'texto'; readonly texto: string }
@@ -108,6 +128,8 @@ export interface Sesion {
   readonly elegido?: HuecoOfrecido;
   readonly turno?: TurnoResumen;
   readonly aviso?: AvisoHorarios;
+  /** Numero de afiliado consultado (para el aviso de "no encontrado"). */
+  readonly nroAfiliado?: string;
 }
 
 export type Salida = { readonly sesion: Sesion; readonly respuesta: Respuesta } | { readonly sesion: Sesion; readonly efecto: Efecto };
@@ -119,17 +141,28 @@ const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
 
 const OP = {
   pedir: { id: 'pedir', etiqueta: 'Pedir un turno' },
-  ver: { id: 'ver', etiqueta: 'Ver o cambiar mi turno' },
+  ver: { id: 'ver', etiqueta: 'Ver mi turno' },
+  os: { id: 'os', etiqueta: 'Consultar mi obra social' },
   menu: { id: 'menu', etiqueta: 'Volver al menú' },
   mas: { id: 'mas', etiqueta: 'Ver más días' },
+  reservar: { id: 'reservar', etiqueta: 'Confirmar turno' },
+  atras: { id: 'atras', etiqueta: 'Volver atrás' },
   confirmar: { id: 'confirmar', etiqueta: 'Confirmo' },
-  cambiar: { id: 'cambiar', etiqueta: 'Necesito cambiarlo' },
+  sena: { id: 'sena', etiqueta: 'Pagar seña' },
+  aprobarPago: { id: 'aprobar-pago', etiqueta: 'Aprobar pago (simulación)' },
+  rechazarPago: { id: 'rechazar-pago', etiqueta: 'Rechazar pago (simulación)' },
   cancelar: { id: 'cancelar', etiqueta: 'Cancelar turno' },
   cancelarSi: { id: 'cancelar-si', etiqueta: 'Sí, cancelar' },
   cancelarNo: { id: 'cancelar-no', etiqueta: 'No' },
 } as const satisfies Record<string, Opcion>;
 
 const EJEMPLO_DATOS = 'Ej.: Paciente Ficticio Once, 99.000.011';
+const EJEMPLO_AFILIADO = 'Ej.: AF-0001';
+
+/** '$5.000': separador de miles fijo, sin depender del locale del runtime. */
+export function montoPesos(monto: number): string {
+  return `$${String(Math.round(monto)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+}
 
 export function nuevaSesion(): Sesion {
   return { paso: 'inicio' };
@@ -166,7 +199,7 @@ function msg(texto: string): Mensaje {
 function menu(): Salida {
   return responder({ paso: 'menu' }, 'menu', {
     mensajes: [msg('Hola, soy el asistente del consultorio. ¿En qué te puedo ayudar?')],
-    opciones: [OP.pedir, OP.ver],
+    opciones: [OP.pedir, OP.ver, OP.os],
     pideTexto: false,
   });
 }
@@ -208,15 +241,17 @@ function lineaTurno(t: TurnoResumen): string {
   return `${etiquetaHorario(t.inicio)} · ${t.prestacion} · ${t.profesional}`;
 }
 
-function opcionesTurno(): readonly Opcion[] {
-  return [OP.confirmar, OP.cambiar, OP.cancelar];
+/** "Pagar seña" solo si el turno no esta señado (design D3). */
+function opcionesTurno(turno: TurnoResumen): readonly Opcion[] {
+  return turno.senado ? [OP.confirmar, OP.cancelar] : [OP.confirmar, OP.sena, OP.cancelar];
 }
 
 function mostrarTurno(sesion: Sesion, turno: TurnoResumen, encabezado: string, pie?: string): Salida {
-  const texto = [encabezado, lineaTurno(turno), ...(pie === undefined ? [] : [pie])].join('\n');
+  const lineas = [encabezado, lineaTurno(turno), ...(turno.senado ? ['Seña pagada'] : []), ...(pie === undefined ? [] : [pie])];
+  const texto = lineas.join('\n');
   return responder({ ...sesion, turno }, 'gestion', {
     mensajes: [msg(texto)],
-    opciones: opcionesTurno(),
+    opciones: opcionesTurno(turno),
     pideTexto: false,
   });
 }
@@ -244,6 +279,52 @@ function parsearDatos(t: string): { nombre: string; dni: string } | { error: str
   return { nombre, dni };
 }
 
+const INTRO_HORARIOS = 'Estos son los próximos horarios libres:';
+
+/** Muestra los huecos guardados en la sesion (oferta inicial o "Volver atrás", design D1). */
+function mostrarHorarios(sesion: Sesion, intro: string): Salida {
+  const huecos = sesion.huecos ?? [];
+  return responder({ ...sesion, elegido: undefined }, 'horarios', {
+    mensajes: [msg(intro)],
+    opciones: [...huecos.map((h, i) => ({ id: `hueco:${i}`, etiqueta: etiquetaHorario(h.inicio) })), OP.mas],
+    pideTexto: false,
+  });
+}
+
+function revisarHorario(sesion: Sesion, elegido: HuecoOfrecido): Salida {
+  const { prestacion, profesional } = sesion;
+  if (prestacion === undefined || profesional === undefined) return menu();
+  const texto = `Elegiste:\n${etiquetaHorario(elegido.inicio)} · ${prestacion.nombre} · ${profesional.nombre}\n¿Confirmás el turno?`;
+  return responder({ ...sesion, elegido }, 'revisarHorario', {
+    mensajes: [msg(texto)],
+    opciones: [OP.reservar, OP.atras],
+    pideTexto: false,
+  });
+}
+
+function ofrecerSena(sesion: Sesion, mensajes: readonly Mensaje[]): Salida {
+  return responder(sesion, 'ofrecerSena', { mensajes, opciones: [OP.sena, OP.menu], pideTexto: false });
+}
+
+/** Pantalla de pago SIMULADA dentro del chat (design D2). */
+function pantallaPago(sesion: Sesion, turno: TurnoResumen): Salida {
+  const texto = `Mercado Pago (SIMULACIÓN)\nSeña del turno ${etiquetaHorario(turno.inicio)}: ${montoPesos(MONTO_SENA_SIMULADA)} (monto ficticio)\nElegí el resultado del pago:`;
+  return responder({ ...sesion, turno }, 'pagoSena', {
+    mensajes: [msg(texto)],
+    opciones: [OP.aprobarPago, OP.rechazarPago, OP.menu],
+    pideTexto: false,
+  });
+}
+
+function pedirAfiliado(sesion: Sesion, motivo?: string): Salida {
+  const texto = motivo ?? `Escribí tu número de afiliado.\n${EJEMPLO_AFILIADO}`;
+  return responder(sesion, 'afiliado', { mensajes: [msg(texto)], opciones: [OP.menu], pideTexto: true });
+}
+
+function estadoLegible(estado: string): string {
+  return estado.replace(/_/g, ' ');
+}
+
 function buscarHuecos(sesion: Sesion, desdeFecha?: string): Salida {
   const { prestacion, profesional } = sesion;
   if (prestacion === undefined || profesional === undefined) return menu();
@@ -260,6 +341,10 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
   if (entrada.tipo === 'recordatorio') return declarar({ paso: 'inicio' }, { tipo: 'buscarProximoTurno', modo: 'recordatorio' });
   if (entrada.tipo === 'texto') {
     if (sesion.paso === 'inicio' || pideMenu(entrada.texto)) return menu();
+    if (sesion.paso === 'afiliado') {
+      const nro = entrada.texto.trim().toUpperCase();
+      return declarar({ ...sesion, nroAfiliado: nro }, { tipo: 'consultarObraSocial', nro });
+    }
     if (sesion.paso !== 'datos') return noEntendi(sesion);
     const datos = parsearDatos(entrada.texto);
     if ('error' in datos) return pedirDatos(sesion, datos.error);
@@ -278,6 +363,7 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
         });
       }
       if (id === OP.ver.id) return declarar(sesion, { tipo: 'buscarProximoTurno', modo: 'ver' });
+      if (id === OP.os.id) return pedirAfiliado(sesion);
       break;
     case 'fin':
       if (id === OP.pedir.id) return avanzar({ ...sesion, paso: 'menu' }, entrada, catalogo);
@@ -304,17 +390,30 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
       }
       const m = /^hueco:(\d+)$/.exec(id);
       const elegido = m === null ? undefined : sesion.huecos?.[Number(m[1])];
-      if (elegido !== undefined) return declarar({ ...sesion, elegido }, { tipo: 'identificarPorTelefono' });
+      if (elegido !== undefined) return revisarHorario(sesion, elegido);
+      break;
+    }
+    case 'revisarHorario': {
+      if (id === OP.reservar.id && sesion.elegido !== undefined) return declarar(sesion, { tipo: 'identificarPorTelefono' });
+      if (id === OP.atras.id) return mostrarHorarios(sesion, INTRO_HORARIOS);
+      break;
+    }
+    case 'ofrecerSena': {
+      if (id === OP.sena.id && sesion.turno !== undefined) return pantallaPago(sesion, sesion.turno);
+      break;
+    }
+    case 'pagoSena': {
+      const turno = sesion.turno;
+      if (turno === undefined) break;
+      if (id === OP.aprobarPago.id) return declarar(sesion, { tipo: 'pagarSena', turnoId: turno.id, resultado: 'aprobado' });
+      if (id === OP.rechazarPago.id) return declarar(sesion, { tipo: 'pagarSena', turnoId: turno.id, resultado: 'rechazado' });
       break;
     }
     case 'gestion': {
       const turno = sesion.turno;
       if (turno === undefined) break;
       if (id === OP.confirmar.id) return declarar(sesion, { tipo: 'confirmar', turnoId: turno.id });
-      if (id === OP.cambiar.id) {
-        const sigue = turno.estado === 'confirmado' ? 'confirmado' : 'reservado';
-        return fin(sesion, [msg(`Para cambiar el turno comunicate con recepción. Tu turno sigue ${sigue}.`)]);
-      }
+      if (id === OP.sena.id && !turno.senado) return pantallaPago(sesion, turno);
       if (id === OP.cancelar.id) {
         return responder(sesion, 'confirmarCancelacion', {
           mensajes: [msg(`¿Querés cancelar el turno del ${etiquetaHorario(turno.inicio)}?`)],
@@ -351,12 +450,8 @@ export function resolver(sesion: Sesion, resultado: ResultadoEfecto, catalogo: C
           ? 'Ese horario ya se ocupó. Te muestro otros:'
           : sesion.aviso === 'pacienteOcupado'
             ? 'Ya tenés otro turno a esa hora. Elegí otro horario:'
-            : 'Estos son los próximos horarios libres:';
-      return responder({ ...sesion, huecos, fechaMostrada: resultado.fecha, aviso: undefined }, 'horarios', {
-        mensajes: [msg(intro)],
-        opciones: [...huecos.map((h, i) => ({ id: `hueco:${i}`, etiqueta: etiquetaHorario(h.inicio) })), OP.mas],
-        pideTexto: false,
-      });
+            : INTRO_HORARIOS;
+      return mostrarHorarios({ ...sesion, huecos, fechaMostrada: resultado.fecha, aviso: undefined }, intro);
     }
     case 'identificarPorTelefono':
     case 'identificarPorDatos': {
@@ -377,7 +472,7 @@ export function resolver(sesion: Sesion, resultado: ResultadoEfecto, catalogo: C
     case 'reservar': {
       const t = resultado.turno;
       if (t !== undefined) {
-        return fin(sesion, [
+        return ofrecerSena({ ...sesion, turno: t }, [
           {
             texto: 'Listo, ya te anoté.',
             tarjeta: {
@@ -385,6 +480,7 @@ export function resolver(sesion: Sesion, resultado: ResultadoEfecto, catalogo: C
               lineas: [etiquetaHorario(t.inicio), `${t.prestacion} · ${t.profesional}`, 'Te escribo 24 h antes para confirmar.'],
             },
           },
+          msg('¿Querés pagar la seña ahora?'),
         ]);
       }
       const aviso: AvisoHorarios = resultado.regla === 'RN-AG-05' ? 'pacienteOcupado' : 'ocupado';
@@ -421,6 +517,56 @@ export function resolver(sesion: Sesion, resultado: ResultadoEfecto, catalogo: C
       return fin(sesion, [
         { texto: 'Listo.', tarjeta: { titulo: 'Turno cancelado', lineas: [etiquetaHorario(t.inicio), 'Si querés, pedí otro turno cuando quieras.'] } },
       ]);
+    }
+    case 'pagarSena': {
+      const t = sesion.turno;
+      if (resultado.regla === 'RN-SM-01') return fin(sesion, [msg('Este turno ya tiene la seña pagada.')]);
+      if (t === undefined || resultado.resultado === undefined) {
+        return fin(sesion, [msg('No pude registrar el pago. Comunicate con recepción.')]);
+      }
+      if (resultado.resultado === 'rechazado') {
+        return ofrecerSena(sesion, [msg('El pago fue rechazado (simulación). Tu turno sigue reservado, sin seña.')]);
+      }
+      return fin({ ...sesion, turno: { ...t, senado: true } }, [
+        {
+          texto: 'Pago recibido.',
+          tarjeta: {
+            titulo: 'Seña pagada',
+            lineas: [etiquetaHorario(t.inicio), `${montoPesos(MONTO_SENA_SIMULADA)} · Mercado Pago (simulación)`, 'Tu turno quedó señado.'],
+          },
+        },
+      ]);
+    }
+    case 'consultarObraSocial': {
+      const a = resultado.afiliado;
+      if (resultado.error === 'falla') {
+        return fin(sesion, [msg('El padrón de obras sociales no respondió (falla simulada). Probá de nuevo más tarde.')]);
+      }
+      if (a === undefined) {
+        return pedirAfiliado(
+          sesion,
+          `No encontré el afiliado ${sesion.nroAfiliado ?? ''} en el padrón simulado. Revisá el número y escribilo de nuevo (${EJEMPLO_AFILIADO}).`,
+        );
+      }
+      return responder(sesion, 'fin', {
+        mensajes: [
+          {
+            texto: 'Padrón ficticio: no se consultó ninguna obra social real.',
+            tarjeta: {
+              titulo: 'Tu cobertura (simulación)',
+              lineas: [
+                `Obra social: ${a.obraSocial}`,
+                `Plan: ${a.plan}`,
+                `Cobertura: ${a.cobertura}%`,
+                `Copago: ${a.copagoPct}%`,
+                `Estado: ${estadoLegible(a.estado)}`,
+              ],
+            },
+          },
+        ],
+        opciones: [OP.pedir, OP.menu],
+        pideTexto: false,
+      });
     }
   }
 }

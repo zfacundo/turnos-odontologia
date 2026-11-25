@@ -395,7 +395,8 @@ function mostrarAgenda() {
       const descripcion =
         `${icono}${horaArgentina(turno.inicio)}–${horaArgentina(turno.fin)}\n` +
         `${turno.pacienteId} · ${prestacion}\n` +
-        `${nombreEstado(turno.estado)} · ${profesional} · ${sillon}`;
+        `${nombreEstado(turno.estado)} · ${profesional} · ${sillon}` +
+        (turno.senado ? ' · Seña pagada' : '');
 
       tarjeta.textContent = descripcion;
       tarjeta.title = descripcion;

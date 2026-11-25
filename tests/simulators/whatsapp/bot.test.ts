@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { procesar, type DepsBot } from '../../../src/simulators/whatsapp/bot';
+import { procesar, type DepsBot, type SimuladoresBot } from '../../../src/simulators/whatsapp/bot';
+import { PagoSenaRepositoryEnMemoria } from '../../../src/simulators/mercadopago/pagoSenaRepository';
+import { PadronObraSocialEnMemoria } from '../../../src/simulators/obras-sociales/padronRepository';
 import { nuevaSesion, type Entrada, type Respuesta, type Sesion } from '../../../src/simulators/whatsapp/conversacion';
 import { consultarHuecos } from '../../../src/application/agenda/consultarHuecos';
 import { crearTurno } from '../../../src/application/agenda/crearTurno';
@@ -24,10 +26,11 @@ class Chat {
   constructor(
     private readonly deps: DepsBot,
     private readonly telefono: string,
+    readonly sims: SimuladoresBot = { pagos: new PagoSenaRepositoryEnMemoria(), padron: new PadronObraSocialEnMemoria() },
   ) {}
 
   enviar(entrada: Entrada): Respuesta {
-    const r = procesar(this.deps, this.telefono, this.sesion, entrada);
+    const r = procesar(this.deps, this.telefono, this.sesion, entrada, this.sims);
     this.sesion = r.sesion;
     this.ultima = r.respuesta;
     return r.respuesta;
@@ -45,6 +48,11 @@ class Chat {
   }
   texto(): string {
     return this.ultima.mensajes.map((m) => [m.texto, m.tarjeta?.titulo, ...(m.tarjeta?.lineas ?? [])].join('\n')).join('\n');
+  }
+  /** Elige el horario y confirma el resumen (design D1). */
+  reservar(horario: string): Respuesta {
+    this.elegir(horario);
+    return this.elegir('Confirmar turno');
   }
   hastaHorarios(prestacion = 'Control y limpieza', profesional = 'Dra. Ficticia Perez'): Respuesta {
     this.escribir('Hola! Quería sacar un turno');
@@ -104,7 +112,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     const deps = seed();
     const chat = new Chat(deps, TEL_UNO);
     chat.hastaHorarios();
-    chat.elegir('Lun 30/11 09:00');
+    chat.reservar('Lun 30/11 09:00');
     const [turno] = turnosDe(deps, 'pac-01');
     expect(turno).toMatchObject({
       profesionalId: 'prof-1',
@@ -124,7 +132,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     const chat = new Chat(deps, TEL_UNO);
     chat.hastaHorarios();
     crearTurno(deps, RECEPCION, { pacienteId: 'pac-05', prestacionId: 'prest-control', profesionalId: 'prof-1', sillonId: 'sillon-1', inicio: en('09:00') });
-    chat.elegir('Lun 30/11 09:00');
+    chat.reservar('Lun 30/11 09:00');
     expect(chat.texto()).toMatch(/ya se ocupó/);
     expect(chat.opciones()).toEqual(['Lun 30/11 09:30', 'Lun 30/11 09:45', 'Lun 30/11 10:00', 'Ver más días']);
     expect(turnosDe(deps, 'pac-01')).toEqual([]);
@@ -136,7 +144,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     crearTurno(deps, RECEPCION, { pacienteId: 'pac-01', prestacionId: 'prest-control', profesionalId: 'prof-2', sillonId: 'sillon-1', inicio: en('09:00') });
     const chat = new Chat(deps, TEL_UNO);
     chat.hastaHorarios();
-    chat.elegir('Lun 30/11 09:00');
+    chat.reservar('Lun 30/11 09:00');
     expect(chat.texto()).toMatch(/Ya tenés otro turno a esa hora/);
     expect(turnosDe(deps, 'pac-01')).toHaveLength(1);
   });
@@ -145,7 +153,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     const deps = seed();
     const chat = new Chat(deps, TEL_NUEVO);
     chat.hastaHorarios();
-    const pide = chat.elegir('Lun 30/11 09:00');
+    const pide = chat.reservar('Lun 30/11 09:00');
     expect(pide.pideTexto).toBe(true);
     chat.escribir('Paciente Ficticio Once, 99.000.011');
     const nuevo = deps.pacientes.buscarPorDni('99000011');
@@ -159,7 +167,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     const antes = deps.pacientes.listar().length;
     const chat = new Chat(deps, TEL_NUEVO);
     chat.hastaHorarios();
-    chat.elegir('Lun 30/11 09:00');
+    chat.reservar('Lun 30/11 09:00');
     chat.escribir('Paciente Ficticio Dos, 99000002');
     expect(deps.pacientes.listar()).toHaveLength(antes);
     expect(turnosDe(deps, 'pac-02')).toHaveLength(1);
@@ -169,7 +177,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     const deps = seed();
     const chat = new Chat(deps, TEL_NUEVO);
     chat.hastaHorarios();
-    chat.elegir('Lun 30/11 09:00');
+    chat.reservar('Lun 30/11 09:00');
     const r = chat.escribir('Juan 12345678');
     expect(r.pideTexto).toBe(true);
     expect(deps.turnos.listarActivos()).toEqual([]);
@@ -185,18 +193,18 @@ describe('bot - ver, confirmar y cancelar', () => {
   };
   const MARTES_10 = en('10:00', '2026-12-01');
 
-  it('dado un turno del martes cuando elige Ver o cambiar mi turno entonces lo muestra con las 3 opciones', () => {
+  it('dado un turno del martes cuando elige Ver mi turno entonces lo muestra con las 3 opciones', () => {
     const chat = new Chat(conTurno(MARTES_10), TEL_UNO);
     chat.escribir('hola');
-    chat.elegir('Ver o cambiar mi turno');
+    chat.elegir('Ver mi turno');
     expect(chat.texto()).toMatch(/Mar 1\/12 10:00 · Control y limpieza · Dra\. Ficticia Perez/);
-    expect(chat.opciones()).toEqual(['Confirmo', 'Necesito cambiarlo', 'Cancelar turno']);
+    expect(chat.opciones()).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
   });
 
-  it('dado un telefono sin turnos cuando elige Ver o cambiar mi turno entonces informa y ofrece Pedir un turno', () => {
+  it('dado un telefono sin turnos cuando elige Ver mi turno entonces informa y ofrece Pedir un turno', () => {
     const chat = new Chat(seed(), TEL_NUEVO);
     chat.escribir('hola');
-    chat.elegir('Ver o cambiar mi turno');
+    chat.elegir('Ver mi turno');
     expect(chat.texto()).toMatch(/No encontré turnos próximos/);
     expect(chat.opciones()).toEqual(['Pedir un turno']);
   });
@@ -205,12 +213,12 @@ describe('bot - ver, confirmar y cancelar', () => {
     const deps = conTurno(MARTES_10);
     const chat = new Chat(deps, TEL_UNO);
     chat.escribir('hola');
-    chat.elegir('Ver o cambiar mi turno');
+    chat.elegir('Ver mi turno');
     chat.elegir('Confirmo');
     expect(turnosDe(deps, 'pac-01')[0]?.estado).toBe('confirmado');
     expect(chat.texto()).toMatch(/Turno confirmado/);
     chat.elegir('Volver al menú');
-    chat.elegir('Ver o cambiar mi turno');
+    chat.elegir('Ver mi turno');
     chat.elegir('Confirmo');
     expect(chat.texto()).toMatch(/ya estaba confirmado/);
     expect(turnosDe(deps, 'pac-01')[0]?.estado).toBe('confirmado');
@@ -220,7 +228,7 @@ describe('bot - ver, confirmar y cancelar', () => {
     const deps = conTurno(MARTES_10);
     const chat = new Chat(deps, TEL_UNO);
     chat.escribir('hola');
-    chat.elegir('Ver o cambiar mi turno');
+    chat.elegir('Ver mi turno');
     chat.elegir('Cancelar turno');
     chat.elegir('Sí, cancelar');
     const turno = deps.turnos.listarActivos({ pacienteId: 'pac-01' });
@@ -232,21 +240,33 @@ describe('bot - ver, confirmar y cancelar', () => {
     const deps = conTurno(en('15:00'));
     const chat = new Chat(deps, TEL_UNO);
     chat.escribir('hola');
-    chat.elegir('Ver o cambiar mi turno');
+    chat.elegir('Ver mi turno');
     chat.elegir('Cancelar turno');
     chat.elegir('Sí, cancelar');
     expect(chat.texto()).toMatch(/menos de 24 h/);
     expect(turnosDe(deps, 'pac-01')[0]?.estado).toBe('reservado');
   });
 
-  it('dado el turno mostrado cuando elige Necesito cambiarlo entonces deriva a recepcion y el turno no cambia', () => {
+  it('dado el turno mostrado cuando llega la opcion cambiar eliminada entonces responde No entendi y el turno no cambia', () => {
     const deps = conTurno(MARTES_10);
     const chat = new Chat(deps, TEL_UNO);
     chat.escribir('hola');
-    chat.elegir('Ver o cambiar mi turno');
-    chat.elegir('Necesito cambiarlo');
-    expect(chat.texto()).toMatch(/comunicate con recepción/);
+    chat.elegir('Ver mi turno');
+    chat.enviar({ tipo: 'opcion', id: 'cambiar' });
+    expect(chat.texto()).toMatch(/No entendí/);
     expect(turnosDe(deps, 'pac-01')[0]).toMatchObject({ estado: 'reservado', inicio: MARTES_10 });
+  });
+
+  it('dado un turno señado cuando elige Ver mi turno entonces indica Seña pagada y no ofrece pagar', () => {
+    const deps = conTurno(MARTES_10);
+    const [t] = turnosDe(deps, 'pac-01');
+    if (t === undefined) throw new Error('sin turno');
+    deps.turnos.actualizar({ ...t, senado: true });
+    const chat = new Chat(deps, TEL_UNO);
+    chat.escribir('hola');
+    chat.elegir('Ver mi turno');
+    expect(chat.texto()).toMatch(/Seña pagada/);
+    expect(chat.opciones()).toEqual(['Confirmo', 'Cancelar turno']);
   });
 
   it('dado un turno del martes cuando se envia el recordatorio entonces el bot lo recuerda por nombre con las 3 opciones', () => {
@@ -254,12 +274,131 @@ describe('bot - ver, confirmar y cancelar', () => {
     chat.enviar({ tipo: 'recordatorio' });
     expect(chat.texto()).toMatch(/Hola Paciente Ficticio Uno, te recordamos tu turno/);
     expect(chat.texto()).toMatch(/Dra\. Ficticia Perez/);
-    expect(chat.opciones()).toEqual(['Confirmo', 'Necesito cambiarlo', 'Cancelar turno']);
+    expect(chat.opciones()).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
   });
 
   it('dado un turno ya pasado cuando se envia el recordatorio entonces informa que no hay turnos proximos', () => {
     const chat = new Chat(conTurno(en('09:00'), en('10:00')), TEL_UNO);
     chat.enviar({ tipo: 'recordatorio' });
     expect(chat.texto()).toMatch(/No hay turnos próximos/);
+  });
+});
+
+describe('bot - revisar el horario antes de reservar', () => {
+  it('dado horarios ofrecidos cuando elige uno entonces no crea turno hasta Confirmar turno', () => {
+    const deps = seed();
+    const chat = new Chat(deps, TEL_UNO);
+    chat.hastaHorarios();
+    chat.elegir('Lun 30/11 09:00');
+    expect(chat.opciones()).toEqual(['Confirmar turno', 'Volver atrás']);
+    expect(deps.turnos.listarActivos()).toEqual([]);
+  });
+
+  it('dado el resumen cuando elige Volver atras entonces ofrece los mismos horarios y no crea turno', () => {
+    const deps = seed();
+    const chat = new Chat(deps, TEL_UNO);
+    chat.hastaHorarios();
+    chat.elegir('Lun 30/11 09:00');
+    chat.elegir('Volver atrás');
+    expect(chat.opciones()).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días']);
+    expect(deps.turnos.listarActivos()).toEqual([]);
+  });
+});
+
+describe('bot - seña con el simulador de Mercado Pago (RN-SM-01)', () => {
+  function reservado(): { deps: DepsBot; chat: Chat } {
+    const deps = seed();
+    const chat = new Chat(deps, TEL_UNO);
+    chat.hastaHorarios();
+    chat.reservar('Lun 30/11 09:00');
+    return { deps, chat };
+  }
+
+  it('dado un turno recien reservado cuando aprueba el pago de la seña entonces el turno queda senado y hay un pago aprobado', () => {
+    const { deps, chat } = reservado();
+    expect(chat.opciones()).toEqual(['Pagar seña', 'Volver al menú']);
+    chat.elegir('Pagar seña');
+    chat.elegir('Aprobar pago (simulación)');
+    const [turno] = turnosDe(deps, 'pac-01');
+    expect(turno?.senado).toBe(true);
+    expect(chat.sims.pagos.listarPorTurno(turno?.id ?? '').map((p) => p.estado)).toEqual(['aprobado']);
+    expect(chat.texto()).toMatch(/Seña pagada/);
+    expect(chat.texto()).toMatch(/\$5\.000/);
+  });
+
+  it('dado la pantalla de pago cuando rechaza entonces el turno sigue sin seña y puede reintentar', () => {
+    const { deps, chat } = reservado();
+    chat.elegir('Pagar seña');
+    chat.elegir('Rechazar pago (simulación)');
+    const [turno] = turnosDe(deps, 'pac-01');
+    expect(turno?.senado).toBe(false);
+    expect(chat.sims.pagos.listarPorTurno(turno?.id ?? '').map((p) => p.estado)).toEqual(['rechazado']);
+    expect(chat.texto()).toMatch(/rechazado \(simulación\)/);
+    chat.elegir('Pagar seña');
+    chat.elegir('Aprobar pago (simulación)');
+    expect(turnosDe(deps, 'pac-01')[0]?.senado).toBe(true);
+  });
+
+  it('dado un turno que recepcion ya marco senado cuando el paciente aprueba el pago entonces informa y no registra otro pago aprobado', () => {
+    const { deps, chat } = reservado();
+    chat.elegir('Pagar seña');
+    const [t] = turnosDe(deps, 'pac-01');
+    if (t === undefined) throw new Error('sin turno');
+    deps.turnos.actualizar({ ...t, senado: true });
+    chat.elegir('Aprobar pago (simulación)');
+    expect(chat.texto()).toMatch(/ya tiene la seña pagada/);
+    expect(chat.sims.pagos.listarPorTurno(t.id)).toEqual([]);
+  });
+
+  it('dado un turno del martes cuando paga la seña desde Ver mi turno entonces queda senado', () => {
+    const deps = seed();
+    const r = crearTurno(deps, RECEPCION, {
+      pacienteId: 'pac-01',
+      prestacionId: 'prest-control',
+      profesionalId: 'prof-1',
+      sillonId: 'sillon-1',
+      inicio: en('10:00', '2026-12-01'),
+    });
+    if (!r.ok) throw new Error('no se creo el turno');
+    const chat = new Chat(deps, TEL_UNO);
+    chat.escribir('hola');
+    chat.elegir('Ver mi turno');
+    chat.elegir('Pagar seña');
+    chat.elegir('Aprobar pago (simulación)');
+    expect(deps.turnos.buscarPorId(r.valor.id)?.senado).toBe(true);
+  });
+});
+
+describe('bot - consultar mi obra social (padron ficticio)', () => {
+  function consultar(nro: string): Chat {
+    const chat = new Chat(seed(), TEL_NUEVO);
+    chat.escribir('hola');
+    chat.elegir('Consultar mi obra social');
+    chat.escribir(nro);
+    return chat;
+  }
+
+  it('dado AF-0001 cuando lo consulta entonces muestra OS-01, Plan Base, 80%, 20% y activo', () => {
+    const chat = consultar('AF-0001');
+    expect(chat.texto()).toMatch(/Tu cobertura \(simulación\)/);
+    expect(chat.texto()).toMatch(/Obra social: OS-01\nPlan: Plan Base\nCobertura: 80%\nCopago: 20%\nEstado: activo/);
+  });
+
+  it('dado " af-0002 " cuando lo consulta entonces normaliza y muestra OS-02 con copago', () => {
+    const chat = consultar(' af-0002 ');
+    expect(chat.texto()).toMatch(/Obra social: OS-02\nPlan: Plan Copago\nCobertura: 60%\nCopago: 40%\nEstado: con copago/);
+  });
+
+  it('dado AF-9999 cuando lo consulta entonces avisa que no esta en el padron y vuelve a pedir', () => {
+    const chat = consultar('AF-9999');
+    expect(chat.texto()).toMatch(/No encontré el afiliado AF-9999/);
+    expect(chat.ultima.pideTexto).toBe(true);
+  });
+
+  it('dado AF-0004 cuando lo consulta entonces informa la falla simulada sin datos de cobertura', () => {
+    const chat = consultar('AF-0004');
+    expect(chat.texto()).toMatch(/falla simulada/);
+    expect(chat.texto()).not.toMatch(/Cobertura:/);
+    expect(chat.opciones()).toEqual(['Volver al menú']);
   });
 });

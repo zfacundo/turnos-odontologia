@@ -42,7 +42,7 @@ describe('simulador de WhatsApp sin red (RN-SM-04)', () => {
     const tel = '+54 9 11 0000-0001';
     let sesion: Sesion = nuevaSesion();
     let r = procesar(deps, tel, sesion, { tipo: 'texto', texto: 'hola' });
-    for (const etiqueta of ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00']) {
+    for (const etiqueta of ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00', 'Confirmar turno']) {
       sesion = r.sesion;
       const o = r.respuesta.opciones.find((x) => x.etiqueta === etiqueta);
       const entrada: Entrada = { tipo: 'opcion', id: o?.id ?? '' };

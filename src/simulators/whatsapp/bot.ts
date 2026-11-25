@@ -6,6 +6,10 @@ import { crearTurno } from '../../application/agenda/crearTurno';
 import { registrarPaciente } from '../../application/pacientes/registrarPaciente';
 import type { Turno } from '../../domain/agenda/turno';
 import type { Usuario } from '../../domain/shared/rol';
+import { pagarSena } from '../mercadopago/pagarSena';
+import { PagoSenaRepositoryEnMemoria, type PagoSenaRepository } from '../mercadopago/pagoSenaRepository';
+import { consultarAfiliado } from '../obras-sociales/consultarAfiliado';
+import { PadronObraSocialEnMemoria, type PadronObraSocialRepository } from '../obras-sociales/padronRepository';
 import {
   avanzar,
   diaSiguiente,
@@ -26,6 +30,16 @@ export type DepsBot = Pick<
   Deps,
   'sillones' | 'prestaciones' | 'profesionales' | 'bloqueos' | 'pacientes' | 'turnos' | 'clock' | 'auditoria'
 >;
+
+/** Repositorios propios de los simuladores que usa el bot (design D4): no estan en Deps. */
+export interface SimuladoresBot {
+  readonly pagos: PagoSenaRepository;
+  readonly padron: PadronObraSocialRepository;
+}
+
+export function simuladoresPorDefecto(): SimuladoresBot {
+  return { pagos: new PagoSenaRepositoryEnMemoria(), padron: new PadronObraSocialEnMemoria() };
+}
 
 /** Busqueda de huecos hacia adelante (design D3). */
 export const DIAS_DE_BUSQUEDA = 14;
@@ -59,6 +73,7 @@ function resumen(deps: DepsBot, t: Turno): TurnoResumen {
     prestacion: deps.prestaciones.buscarPorId(t.prestacionId)?.nombre ?? t.prestacionId,
     profesional: deps.profesionales.buscarPorId(t.profesionalId)?.nombre ?? t.profesionalId,
     estado: t.estado,
+    senado: t.senado,
   };
 }
 
@@ -67,7 +82,7 @@ function pacientePorTelefono(deps: DepsBot, telefono: string) {
 }
 
 /** Ejecuta un efecto con los casos de uso reales (RN-WA-02). */
-function ejecutar(deps: DepsBot, telefono: string, efecto: Efecto): ResultadoEfecto {
+function ejecutar(deps: DepsBot, sims: SimuladoresBot, telefono: string, efecto: Efecto): ResultadoEfecto {
   const usuario = usuarioBot(telefono);
   switch (efecto.tipo) {
     case 'buscarHuecos': {
@@ -129,6 +144,21 @@ function ejecutar(deps: DepsBot, telefono: string, efecto: Efecto): ResultadoEfe
       const r = cancelarTurno(deps, usuario, { turnoId: efecto.turnoId, motivo: MOTIVO_CANCELACION });
       return r.ok ? { tipo: 'cancelar' } : { tipo: 'cancelar', regla: r.error.tipo === 'regla' ? r.error.error.regla : r.error.tipo };
     }
+    case 'pagarSena': {
+      // Mismo caso de uso que la pantalla de Mercado Pago SIMULADO (C-11), como paciente.
+      const depsPago = { turnos: deps.turnos, pagos: sims.pagos, clock: deps.clock, auditoria: deps.auditoria };
+      const r = pagarSena(depsPago, usuario, { turnoId: efecto.turnoId, resultado: efecto.resultado });
+      if (r.ok) return { tipo: 'pagarSena', resultado: r.valor.pago.estado };
+      return { tipo: 'pagarSena', regla: r.error.tipo === 'regla' ? r.error.error.regla : r.error.tipo };
+    }
+    case 'consultarObraSocial': {
+      const r = consultarAfiliado(sims.padron, efecto.nro);
+      if (r.ok) {
+        const { obraSocial, plan, cobertura, copagoPct, estado } = r.valor;
+        return { tipo: 'consultarObraSocial', afiliado: { obraSocial, plan, cobertura, copagoPct, estado } };
+      }
+      return { tipo: 'consultarObraSocial', error: r.error.tipo === 'regla' ? 'falla' : 'no-encontrado' };
+    }
   }
 }
 
@@ -138,11 +168,12 @@ export function procesar(
   telefono: string,
   sesion: Sesion,
   entrada: Entrada,
+  sims: SimuladoresBot = simuladoresPorDefecto(),
 ): { sesion: Sesion; respuesta: Respuesta } {
   const catalogo = catalogoDe(deps);
   let salida: Salida = avanzar(sesion, entrada, catalogo);
   for (let i = 0; i < MAX_PASOS && 'efecto' in salida; i++) {
-    salida = resolver(salida.sesion, ejecutar(deps, telefono, salida.efecto), catalogo);
+    salida = resolver(salida.sesion, ejecutar(deps, sims, telefono, salida.efecto), catalogo);
   }
   if ('efecto' in salida) throw new Error(`La conversación no llegó a una respuesta (efecto ${salida.efecto.tipo}).`);
   return salida;

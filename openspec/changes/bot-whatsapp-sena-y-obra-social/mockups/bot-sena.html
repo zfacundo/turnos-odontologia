@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Bot · Confirmar horario y seña</title>
+  <link rel="stylesheet" href="../../../../design-system/tokens.css">
+  <link rel="stylesheet" href="bot.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+  <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+  <header class="top">
+    <img src="../../../../design-system/assets/logo.svg" alt="Logo provisional (TBD)">
+    <strong data-brand-name>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="#">Agenda</a><a href="#" aria-current="page">Bot WhatsApp (sim.)</a></nav>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-panel">
+      <h1 id="t-panel">Chat del paciente</h1>
+      <p class="lead">Elegí un teléfono ficticio para escribir como ese paciente. Lo que reserves y señes aparece en la agenda real.</p>
+      <label for="tel">Teléfono del paciente</label>
+      <select class="input" id="tel">
+        <option selected>+54 9 11 0000-0001 · Paciente Ficticio Uno</option>
+        <option>+54 9 11 0000-0099 · número nuevo</option>
+      </select>
+      <p class="hint">Solo números ficticios del seed. Cambiar de teléfono empieza otra conversación.</p>
+      <button class="btn" type="button">Enviar recordatorio 24 h</button>
+      <p class="hint">Demo: el bot escribe el recordatorio del próximo turno de este número.</p>
+      <div class="meta"><strong>Estado mostrado</strong>Horario elegido → "Confirmar turno" → "Turno reservado" → "Pagar seña" → pago aprobado. Abajo: revisar el horario, pantalla de pago, pago rechazado, "Ver mi turno" y la tarjeta en la agenda.</div>
+    </section>
+
+    <section aria-label="Conversación simulada">
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" aria-live="polite">
+          <div class="b bot">Estos son los próximos horarios libres:<time>09:01</time></div>
+          <div class="b me">Lun 30/11 09:00<time>09:02</time></div>
+          <div class="b bot">Elegiste:
+Lun 30/11 09:00 · Control y limpieza · Dra. Ficticia Perez
+¿Confirmás el turno?<time>09:02</time></div>
+          <div class="b me">Confirmar turno<time>09:02</time></div>
+          <div class="b bot card-msg"><strong>Turno reservado</strong>Lun 30/11 09:00
+Control y limpieza · Dra. Ficticia Perez
+Te escribo 24 h antes para confirmar.<time>09:02</time></div>
+          <div class="b bot">¿Querés pagar la seña ahora?<time>09:02</time></div>
+          <div class="b me">Pagar seña<time>09:03</time></div>
+          <div class="b bot">Mercado Pago (SIMULACIÓN)
+Seña del turno Lun 30/11 09:00: $5.000 (monto ficticio)
+Elegí el resultado del pago:<time>09:03</time></div>
+          <div class="b me">Aprobar pago (simulación)<time>09:03</time></div>
+          <div class="b bot card-msg"><strong>Seña pagada</strong>Lun 30/11 09:00
+$5.000 · Mercado Pago (simulación)
+Tu turno quedó señado.<time>09:03</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+        <form class="bar" onsubmit="return false">
+          <label class="visually-hidden" for="msg">Mensaje</label>
+          <input class="input" id="msg" placeholder="Elegí una opción" disabled>
+          <button class="btn btn-primary" type="submit" disabled>Enviar</button>
+        </form>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: revisar el horario elegido</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b bot">Elegiste:
+Lun 30/11 09:00 · Control y limpieza · Dra. Ficticia Perez
+¿Confirmás el turno?<time>09:02</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Confirmar turno</button>
+          <button class="chip" type="button">Volver atrás</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: pantalla de pago</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b bot">Mercado Pago (SIMULACIÓN)
+Seña del turno Lun 30/11 09:00: $5.000 (monto ficticio)
+Elegí el resultado del pago:<time>09:03</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Aprobar pago (simulación)</button>
+          <button class="chip danger" type="button">Rechazar pago (simulación)</button>
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: pago rechazado</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b me">Rechazar pago (simulación)<time>09:04</time></div>
+          <div class="b bot alerta">El pago fue rechazado (simulación). Tu turno sigue reservado, sin seña.<time>09:04</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Pagar seña</button>
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: "Ver mi turno" sin seña y señado</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b bot">Tu próximo turno es:
+Mar 1/12 10:00 · Control y limpieza · Dra. Ficticia Perez<time>09:05</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Confirmo</button>
+          <button class="chip" type="button">Pagar seña</button>
+          <button class="chip danger" type="button">Cancelar turno</button>
+        </div>
+        <div class="msgs" style="min-height:0; padding-top:0">
+          <div class="b bot">Tu próximo turno es:
+Mar 1/12 10:00 · Control y limpieza · Dra. Ficticia Perez
+Seña pagada<time>09:06</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Confirmo</button>
+          <button class="chip danger" type="button">Cancelar turno</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Referencia: tarjeta en la agenda</p>
+      <div class="agenda-turno">💬 09:00–09:30
+pac-01 · Control y limpieza
+Reservado · Dra. Ficticia Perez · Sillón 1 · <span class="badge-sena">Seña pagada</span></div>
+    </section>
+  </main>
+</body>
+</html>
