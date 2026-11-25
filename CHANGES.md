@@ -291,7 +291,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - [ ] Todo hueco devuelto es aceptado por `validarNuevoTurno` (test de propiedad sobre el seed).
 
 ### [C-06] `bot-whatsapp-simulado`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` mergeado (PR #11) y archivado
 - **Responsable**: Integrante 2
 - **Objetivo**: chat SIMULADO del paciente que reserva, confirma, cancela y reprograma contra la agenda real.
 - **Resultado**: desde `public/bot.html` un paciente ficticio reserva un turno que aparece en `GET /api/turnos` con `origen: "whatsapp"` y estado `reservado`; puede confirmarlo, cancelarlo o cambiarlo.
