@@ -34,9 +34,9 @@ Simples Dental (Brasil, 2,21) quedó 3.º en la matriz pero se reemplaza por Bil
 | Actor | Objetivo principal | Objetivos secundarios |
 |---|---|---|
 | Recepcionista | Crear turnos sin choques de profesional ni de sillón | Cancelar y reprogramar liberando el horario; dar sobreturnos con permiso; ver la lista de espera |
-| Odontólogo | Ver su agenda diaria y semanal | Bloquear horarios; ver qué pieza marcó el paciente en el odontograma |
+| Odontólogo | Ver su agenda diaria y semanal | Bloquear horarios; registrar en el odontograma qué pieza le duele al paciente |
 | Administrador del consultorio | Configurar sillones, prestaciones (duración) y horarios de profesionales | Consultar auditoría e indicadores |
-| Paciente | Reservar, confirmar, cancelar o reprogramar por el bot de WhatsApp (simulado) | Marcar en el odontograma dónde le duele; pagar seña (simulado); consultar cobertura de obra social (simulado) |
+| Paciente | Reservar, confirmar, cancelar o reprogramar por el bot de WhatsApp (simulado) | Pagar seña (simulado); consultar cobertura de obra social (simulado) |
 
 ## Alcance v1.0 (MVP del TP)
 

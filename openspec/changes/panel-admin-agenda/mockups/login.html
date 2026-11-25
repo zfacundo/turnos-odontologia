@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Panel · Ingreso</title>
+  <link rel="stylesheet" href="adm.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+<div class="login-page">
+  <p class="sim" role="note">SIMULACIÓN — usuarios ficticios, sin contraseñas</p>
+  <div class="login-wrap">
+    <main class="login-card" aria-labelledby="t-login">
+      <span class="brand"><img src="../../../../design-system/assets/logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></span>
+      <div>
+        <h1 id="t-login">Ingresar al panel</h1>
+        <p class="muted small" style="margin:6px 0 0">Elegí con qué usuario ficticio querés entrar. Tu rol define qué secciones ves.</p>
+      </div>
+
+      <form class="form-grid" onsubmit="return false">
+        <fieldset class="role-group">
+          <legend>Administración</legend>
+          <label class="user-opt"><input type="radio" name="u" value="u-admin"><span><strong>Admin Ficticio</strong><span class="rol">Administrador · todo el panel</span></span></label>
+        </fieldset>
+        <fieldset class="role-group">
+          <legend>Recepción</legend>
+          <label class="user-opt"><input type="radio" name="u" value="u-recepcion" checked><span><strong>Recepcionista Ficticia</strong><span class="rol">Agenda, clientes y dashboard</span></span></label>
+        </fieldset>
+        <fieldset class="role-group">
+          <legend>Odontólogos</legend>
+          <label class="user-opt"><input type="radio" name="u" value="u-odonto-1"><span><strong>Dra. Ficticia Perez</strong><span class="rol">Su agenda e historial clínico</span></span></label>
+          <label class="user-opt"><input type="radio" name="u" value="u-odonto-2"><span><strong>Dr. Ficticio Gomez</strong><span class="rol">Su agenda e historial clínico</span></span></label>
+        </fieldset>
+
+        <div role="alert" aria-live="assertive"></div>
+        <button class="btn btn-primary" type="submit" style="justify-content:center">Ingresar como Recepcionista Ficticia</button>
+      </form>
+      <p class="muted small" style="margin:0">La sesión dura 8 horas o hasta que cierres la pestaña.</p>
+    </main>
+  </div>
+</div>
+
+<!-- Estados de referencia (no se muestran juntos en la pantalla real) -->
+<section class="content ref" aria-labelledby="t-ref" style="background:var(--adm-bg)">
+  <h2 id="t-ref">Otros estados</h2>
+  <div class="ref-grid">
+    <div class="card">
+      <h3>Error de ingreso (401 o sin red)</h3>
+      <div class="alert alert-error" role="alert" style="margin-top:10px">No pudimos iniciar la sesión. Probá de nuevo en unos segundos.</div>
+      <p class="small muted">La selección de usuario se conserva.</p>
+    </div>
+    <div class="card">
+      <h3>Sesión vencida</h3>
+      <div class="alert alert-info" role="status" style="margin-top:10px">Tu sesión venció, volvé a ingresar.</div>
+      <p class="small muted">Se muestra arriba del formulario tras un 401 dentro del panel.</p>
+    </div>
+    <div class="card">
+      <h3>Cargando usuarios</h3>
+      <p class="small muted" aria-busy="true">Cargando usuarios ficticios…</p>
+      <button class="btn btn-primary" disabled>Ingresar</button>
+    </div>
+  </div>
+</section>
+<script>
+  // Mockup: el texto del botón sigue al usuario elegido.
+  document.querySelectorAll('input[name=u]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      var n = r.closest('label').querySelector('strong').textContent;
+      document.querySelector('button[type=submit]').textContent = 'Ingresar como ' + n;
+    });
+  });
+</script>
+</body>
+</html>

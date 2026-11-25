@@ -1,5 +1,8 @@
 import type { Clock } from '../../application/ports/clock';
 import type { Deps } from '../../api/deps';
+import { GeneradorTokenAleatorio } from '../auth/generador-token';
+import { SesionRepositoryEnMemoria } from '../memory/sesion-repository';
+import { HistoriaRepositoryEnMemoria } from '../memory/historia-repository';
 import { AuditoriaEnMemoria } from '../memory/auditoria-en-memoria';
 import { BloqueoRepositoryEnMemoria } from '../memory/bloqueo-repository';
 import { PacienteRepositoryEnMemoria } from '../memory/paciente-repository';
@@ -20,5 +23,8 @@ export function crearDepsVacias(clock: Clock): Deps {
     clock,
     auditoria: new AuditoriaEnMemoria(),
     usuarios: [],
+    sesiones: new SesionRepositoryEnMemoria(),
+    generadorToken: new GeneradorTokenAleatorio(),
+    historia: new HistoriaRepositoryEnMemoria(),
   };
 }

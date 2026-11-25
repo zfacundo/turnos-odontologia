@@ -54,6 +54,8 @@
 **Decisión**: selector de usuario/rol en la UI; la autorización por rol sí se aplica y testea.
 **Justificación**: TP con datos ficticios; el foco es la agenda. Ver pregunta abierta sobre auth real.
 
+**Ampliación (`panel-admin-agenda`, aprobada 2026-11-25 por el usuario)**: login simulado con token opaco en memoria (8 h, `sessionStorage` en el panel) que convive con `X-Usuario`/`X-Rol`; con `Authorization` se ignoran los headers (S-4). Sin contraseñas, rate limiting ni CORS (S-1, S-9, S-10). Los headers simulados siguen activos (S-6; desactivarlos sería otro change). Historial clínico con mínimo privilegio (S-7) y agenda del panel coloreada por estado (S-8). Detalle: `openspec/changes/panel-admin-agenda/design.md` (S-1..S-10).
+
 ### DD-10 — Solo datos ficticios
 **Decisión**: nunca datos reales de pacientes en repo, ejemplos, tests ni capturas (RN-DA-01).
 **Contexto**: riesgo de datos de salud (Discovery §10); Ley 25.326/26.529.
@@ -102,3 +104,8 @@
 **Decisión**: en el MVP cada prestación tiene una única duración, sin sobrescritura por profesional.
 **Por qué**: mantiene chico el primer change y el modelo de Prestación.
 **Origen**: respuesta del equipo, 2026-11-22.
+
+### SU-09 — Solo el odontólogo ve y usa el odontograma (CONFIRMADO por el usuario, 2026-11-25)
+**Supuesto**: el odontograma lo registra y lo marca "hecho" únicamente el rol `odontologo`, desde el detalle del turno en el panel. Admin, recepción y paciente reciben 403 en `GET`/`PUT /api/turnos/:id/piezas`. Cualquier odontólogo accede a las piezas de cualquier turno (S-2); sin usuario sigue en 403 (S-4).
+**Reemplaza**: la matriz anterior (admin y recepción R, paciente C/U) y la HU "como paciente quiero tocar la pieza que me duele".
+**Origen**: change `panel-reemplaza-agenda-vieja` (decisiones S-1..S-5). **Riesgo si es falso**: volver a abrir el acceso de lectura a admin (S-3).

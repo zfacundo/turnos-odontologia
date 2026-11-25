@@ -9,6 +9,8 @@ import type {
   TurnoRepository,
 } from '../application/ports/repositorios';
 import type { Turno } from '../domain/agenda/turno';
+import type { HistoriaRepository } from '../application/historia/puertos';
+import type { GeneradorToken, SesionRepository } from '../application/auth/puertos';
 import type { Usuario } from '../domain/shared/rol';
 
 export interface Deps {
@@ -22,4 +24,9 @@ export interface Deps {
   readonly auditoria: Auditoria;
   /** Usuarios simulados del seed (solo lectura; sin repositorio). */
   readonly usuarios: readonly Usuario[];
+  /** Sesiones del login simulado (token opaco en memoria). */
+  readonly sesiones: SesionRepository;
+  readonly generadorToken: GeneradorToken;
+  /** Historial clínico ficticio (solo inserción). */
+  readonly historia: HistoriaRepository;
 }

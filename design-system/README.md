@@ -31,7 +31,6 @@ Una base visual compartida para las pantallas y los mockups del proyecto. Con la
 - Logo definitivo del producto.
 - Nombre del consultorio que se muestra en el bot.
 - Hosting de las fuentes: `public/styles/tokens.css` carga Bricolage Grotesque y DM Sans desde Google Fonts. Este design system no depende de fuentes remotas y cae en Arial Black o Helvetica/Arial cuando no están instaladas.
-- Inconsistencia conocida: `public/index.html` (agenda, C-09) usa Arial y colores propios. Alinearla con estos tokens le corresponde a su Zona o al team lead.
 
 ## Cómo reemplazar lo provisional
 

@@ -51,7 +51,7 @@ describe('C-10 - API del odontograma', () => {
 
     const respuesta = await request(app)
       .get(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION);
+      .set(ODONTOLOGO); // spec: panel-reemplaza-agenda-vieja
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.piezas).toEqual([]);
@@ -62,7 +62,7 @@ describe('C-10 - API del odontograma', () => {
 
     const guardado = await request(app)
       .put(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION)
+      .set(ODONTOLOGO) // spec: panel-reemplaza-agenda-vieja
       .send({
         pieza: 16,
         sintomas: ['dolor_masticar'],
@@ -80,7 +80,7 @@ describe('C-10 - API del odontograma', () => {
 
     const consulta = await request(app)
       .get(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION);
+      .set(ODONTOLOGO); // spec: panel-reemplaza-agenda-vieja
 
     expect(consulta.status).toBe(200);
     expect(consulta.body.piezas).toHaveLength(1);
@@ -92,7 +92,7 @@ describe('C-10 - API del odontograma', () => {
 
     const respuesta = await request(app)
       .put(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION)
+      .set(ODONTOLOGO) // spec: panel-reemplaza-agenda-vieja
       .send({
         pieza: 19,
         sintomas: ['dolor_masticar'],
@@ -106,7 +106,7 @@ describe('C-10 - API del odontograma', () => {
 
     const respuesta = await request(app)
       .put(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION)
+      .set(ODONTOLOGO) // spec: panel-reemplaza-agenda-vieja
       .send({
         pieza: 16,
         sintomas: ['sintoma_inventado'],
@@ -120,7 +120,7 @@ describe('C-10 - API del odontograma', () => {
 
     const respuesta = await request(app)
       .get('/api/turnos/turno-inexistente/piezas')
-      .set(RECEPCION);
+      .set(ODONTOLOGO); // spec: panel-reemplaza-agenda-vieja
 
     expect(respuesta.status).toBe(404);
   });
@@ -130,7 +130,7 @@ describe('C-10 - API del odontograma', () => {
 
     await request(app)
       .put(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION)
+      .set(ODONTOLOGO) // spec: panel-reemplaza-agenda-vieja
       .send({
         pieza: 16,
         sintomas: ['dolor_masticar'],
@@ -152,7 +152,7 @@ describe('C-10 - API del odontograma', () => {
 
     await request(app)
       .put(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION)
+      .set(ODONTOLOGO) // spec: panel-reemplaza-agenda-vieja
       .send({
         pieza: 16,
         sintomas: ['dolor_masticar'],
@@ -184,7 +184,7 @@ describe('C-10 - Permisos del paciente', () => {
 
     await request(app)
       .put(`/api/turnos/${turnoId}/piezas`)
-      .set(RECEPCION)
+      .set(ODONTOLOGO) // spec: panel-reemplaza-agenda-vieja
       .send({
         pieza: 16,
         sintomas: ['dolor_masticar'],
@@ -202,5 +202,72 @@ describe('C-10 - Permisos del paciente', () => {
       });
 
     expect(respuesta.status).toBe(403);
+  });
+});
+
+describe('panel-reemplaza-agenda-vieja - solo el odontólogo usa el odontograma', () => {
+  const PACIENTE = { 'X-Usuario': 'u-paciente', 'X-Rol': 'paciente' };
+  const ADMIN = { 'X-Usuario': 'u-admin', 'X-Rol': 'admin' };
+  const piezaValida = { pieza: 16, sintomas: ['dolor_masticar'] };
+
+  it('dado un turno cuando recepción pide las piezas entonces responde 403', async () => {
+    const { app, turnoId } = await preparar();
+    const r = await request(app).get(`/api/turnos/${turnoId}/piezas`).set(RECEPCION);
+    expect(r.status).toBe(403);
+  });
+
+  it('dado un turno cuando admin pide las piezas entonces responde 403', async () => {
+    const { app, turnoId } = await preparar();
+    const r = await request(app).get(`/api/turnos/${turnoId}/piezas`).set(ADMIN);
+    expect(r.status).toBe(403);
+  });
+
+  it('dado un turno cuando recepción registra una pieza entonces 403 y el turno sigue sin piezas', async () => {
+    const { app, turnoId } = await preparar();
+    const r = await request(app).put(`/api/turnos/${turnoId}/piezas`).set(RECEPCION).send(piezaValida);
+    expect(r.status).toBe(403);
+    const consulta = await request(app).get(`/api/turnos/${turnoId}/piezas`).set(ODONTOLOGO);
+    expect(consulta.body.piezas).toEqual([]);
+  });
+
+  it('dado un turno cuando un paciente registra una pieza entonces responde 403', async () => {
+    const { app, turnoId } = await preparar();
+    const r = await request(app).put(`/api/turnos/${turnoId}/piezas`).set(PACIENTE).send(piezaValida);
+    expect(r.status).toBe(403);
+  });
+
+  it('dado una request sin usuario cuando pide las piezas entonces responde 403', async () => {
+    const { app, turnoId } = await preparar();
+    const r = await request(app).get(`/api/turnos/${turnoId}/piezas`);
+    expect(r.status).toBe(403);
+  });
+
+  it('dado un token de odontólogo cuando registra la pieza 36 entonces 200 y queda a_revisar', async () => {
+    const { app, turnoId } = await preparar();
+    const login = await request(app).post('/api/auth/login').send({ usuarioId: 'u-odonto-1' });
+    expect(login.status).toBe(201);
+    const r = await request(app)
+      .put(`/api/turnos/${turnoId}/piezas`)
+      .set('Authorization', `Bearer ${login.body.token}`)
+      .send({ pieza: 36, sintomas: ['dolor_masticar'] });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ pieza: 36, estado: 'a_revisar' });
+  });
+
+  it('dado un token de recepción cuando manda X-Rol odontologo entonces el token gana y responde 403', async () => {
+    const { app, turnoId } = await preparar();
+    const login = await request(app).post('/api/auth/login').send({ usuarioId: 'u-recepcion' });
+    expect(login.status).toBe(201);
+    const r = await request(app)
+      .get(`/api/turnos/${turnoId}/piezas`)
+      .set('Authorization', `Bearer ${login.body.token}`)
+      .set('X-Rol', 'odontologo');
+    expect(r.status).toBe(403);
+  });
+
+  it('dado un turno inexistente cuando recepción pide las piezas entonces 403 (permiso antes que búsqueda)', async () => {
+    const { app } = await preparar();
+    const r = await request(app).get('/api/turnos/turno-inexistente/piezas').set(RECEPCION);
+    expect(r.status).toBe(403);
   });
 });

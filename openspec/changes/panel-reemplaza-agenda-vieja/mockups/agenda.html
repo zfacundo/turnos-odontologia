@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Panel · Agenda (reemplaza la vieja)</title>
+  <link rel="stylesheet" href="adm.css">
+  <style>
+    /* Aditivo propuesto para public/admin/admin.css (solo tokens --adm-* existentes). */
+    .turno.pasado { opacity: .55; }
+    .turno .wa { display: inline-block; width: 12px; height: 12px; vertical-align: -2px; margin-left: 4px; }
+    .turno .wa svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .registro { list-style: none; margin: 8px 0 0; padding: 0; display: grid; max-height: 260px; overflow: auto; }
+    .registro li { padding: 8px 0; border-top: 1px solid var(--adm-line); font-size: var(--adm-text-sm); }
+    .registro li:first-child { border-top: 0; }
+    .registro time { display: block; font-size: var(--adm-text-xs); color: var(--adm-text-muted); font-variant-numeric: tabular-nums; }
+    .mock-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 16px; background: var(--adm-blue-100); font-size: var(--adm-text-sm); }
+    .left-col { display: grid; gap: 16px; align-content: start; }
+  </style>
+  <script src="../../../../design-system/brand.js" defer></script>
+  <script src="shell.js" defer></script>
+</head>
+<body>
+<!-- Solo mockup: cambia el rol para ver qué muestra cada uno. En la app el rol sale de la sesión. -->
+<div class="mock-bar" role="group" aria-label="Solo mockup: ver como">
+  <strong>Solo mockup · ver como:</strong>
+  <button class="btn btn-secondary" type="button" data-rol="recepcion" aria-pressed="true">Recepción</button>
+  <button class="btn btn-secondary" type="button" data-rol="admin" aria-pressed="false">Admin</button>
+  <button class="btn btn-secondary" type="button" data-rol="odontologo" aria-pressed="false">Odontóloga</button>
+</div>
+<div class="shell">
+  <aside class="sidebar" id="sidebar" data-open="false" aria-label="Navegación del panel">
+    <a class="brand" href="#"><img src="../../../../design-system/assets/logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <span class="nav-label">Consultorio</span>
+      <a href="#">Dashboard</a>
+      <a href="agenda.html" aria-current="page">Agenda</a>
+      <a href="#">Clientes</a>
+      <span class="nav-label" data-solo="admin odontologo">Clínica</span>
+      <a href="#" data-solo="admin odontologo">Historial clínico</a>
+      <!-- Sin "Odontograma": es una ruta sin menú (#/odontograma/<turnoId>) -->
+    </nav>
+    <p class="sidebar-foot">SIMULACIÓN · datos ficticios</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">☰</button>
+      <div><h1>Agenda</h1><span class="crumbs">Semana del consultorio</span></div>
+      <span class="spacer"></span>
+      <div class="user"><span class="avatar" aria-hidden="true" id="u-av">RF</span><span class="who"><strong id="u-nom">Recepción Ficticia</strong><span class="rol" style="display:block" id="u-rol">Recepción</span></span></div>
+      <button class="btn btn-secondary" type="button">Cerrar sesión</button>
+    </header>
+
+    <main class="content">
+      <div class="agenda-layout">
+        <div class="left-col">
+          <section class="card" aria-labelledby="t-cal">
+            <div class="panel-head"><span id="t-cal">Calendario</span></div>
+            <p class="small muted">(Mini-calendario igual al del panel actual: diciembre 2026, semana 30/11–06/12 marcada.)</p>
+            <ul class="legend" aria-label="Leyenda de estados">
+              <li><span class="swatch st-reservado"></span>Sin confirmar (reservado)</li>
+              <li><span class="swatch st-confirmado"></span>Confirmado</li>
+              <li><span class="swatch st-atendido"></span>Atendido</li>
+              <li><span class="swatch st-ausente"></span>Ausente</li>
+              <li><span class="chip senado">$ Señado</span>Seña pagada (simulada)</li>
+              <li><span class="wa" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l1.4-4A8 8 0 1 1 8 19z"/></svg></span>Reservado por WhatsApp (sim.)</li>
+              <li><span class="swatch st-confirmado" style="opacity:.55"></span>Turno ya terminado (atenuado)</li>
+            </ul>
+          </section>
+
+          <!-- NUEVO: registro (admin y recepción) -->
+          <section class="card" aria-labelledby="t-reg" data-solo="admin recepcion">
+            <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center">
+              <span id="t-reg">Lo que hizo el sistema</span>
+              <button class="btn btn-ghost" type="button" style="min-height:36px;padding:0 8px">Actualizar</button>
+            </div>
+            <ul class="registro" aria-live="polite">
+              <li><time>01/12 10:42</time>Recepción creó un turno para Paciente Ficticio Cuatro (Ortodoncia, 02/12 09:00).</li>
+              <li><time>01/12 10:15</time>Se aprobó la seña simulada del turno de Paciente Ficticio Uno.</li>
+              <li><time>01/12 09:58</time>El bot reservó un turno para Paciente Ficticio Uno por WhatsApp (sim.).</li>
+              <li><time>01/12 09:30</time>Recepción canceló un turno. Se avisó al paciente por WhatsApp (sim.).</li>
+            </ul>
+            <p class="small muted" style="margin:8px 0 0">Vacío: “Todavía no hay acciones registradas.”</p>
+          </section>
+        </div>
+
+        <section class="card" aria-labelledby="t-ag">
+          <div class="panel-head">
+            <span id="t-ag">Agenda</span>
+            <div class="filters" role="group" aria-label="Filtros">
+              <select class="select" aria-label="Profesional"><option>Todos los profesionales</option></select>
+              <select class="select" aria-label="Sillón"><option>Todos los sillones</option></select>
+              <select class="select" aria-label="Estado"><option>Todos los estados</option></select>
+            </div>
+          </div>
+          <div class="week-nav">
+            <button class="btn btn-secondary" type="button">Hoy</button>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="icon-btn" type="button" aria-label="Semana anterior">‹</button>
+              <strong class="num">30/11 – 06/12/2026</strong>
+              <button class="icon-btn" type="button" aria-label="Semana siguiente">›</button>
+            </div>
+            <span class="small muted num">7 turnos</span>
+            <!-- NUEVO: solo admin y recepción -->
+            <button class="btn btn-primary" type="button" id="btn-nuevo" data-solo="admin recepcion">+ Nuevo turno</button>
+          </div>
+          <div class="grid-wrap" tabindex="0" aria-label="Grilla semanal, desplazable">
+            <div class="week-grid" id="grid"><div class="wg-head" aria-hidden="true"></div></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="ref" aria-labelledby="t-ref">
+        <h2 id="t-ref">Otros estados</h2>
+        <div class="ref-grid">
+          <div class="card"><h3>Odontóloga</h3><p class="small muted">Sin “Nuevo turno” ni “Lo que hizo el sistema”. En el detalle ve “Odontograma”.</p></div>
+          <div class="card"><h3>Nuevo turno con conflicto</h3><div class="alert alert-error" role="alert" style="margin-top:10px"><strong>RN-AG-01</strong> · El profesional ya tiene un turno en ese horario. Turno en conflicto: <span class="num">t-0007</span>.</div></div>
+          <div class="card"><h3>Hoy martes 01/12, 11:00</h3><p class="small muted">Los turnos que ya terminaron se ven atenuados. Un turno que termina 11:00 ya cuenta como terminado.</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="drawer-scrim" id="scrim" hidden></div>
+
+<!-- Drawer: detalle -->
+<aside class="drawer" id="d-detalle" role="dialog" aria-modal="true" aria-labelledby="t-det" data-open="false" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h2 id="t-det">Turno</h2>
+    <button class="icon-btn" type="button" data-cerrar aria-label="Cerrar detalle">✕</button>
+  </div>
+  <div><span class="chip st-confirmado" id="d-estado">Confirmado</span> <span class="chip senado" id="d-sena">$ Señado</span></div>
+  <dl class="dl">
+    <dt>Paciente</dt><dd id="d-pac">Paciente Ficticio Uno</dd>
+    <dt>Prestación</dt><dd id="d-pre">Control y limpieza</dd>
+    <dt>Horario</dt><dd class="num" id="d-hor">Mar 01/12 · 10:00–10:30</dd>
+    <dt>Profesional</dt><dd>Dra. Ficticia Perez</dd>
+    <dt>Sillón</dt><dd>Sillon 1</dd>
+    <dt id="d-ori-t">Origen</dt><dd id="d-ori">WhatsApp (simulado)</dd>
+  </dl>
+  <div class="actions" id="d-acciones"></div>
+</aside>
+
+<!-- Drawer: nuevo turno -->
+<aside class="drawer" id="d-nuevo" role="dialog" aria-modal="true" aria-labelledby="t-nuevo" data-open="false" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h2 id="t-nuevo">Nuevo turno</h2>
+    <button class="icon-btn" type="button" data-cerrar aria-label="Cerrar formulario">✕</button>
+  </div>
+  <form class="form-grid" novalidate id="f-nuevo">
+    <div class="field"><label for="n-pac">Paciente</label>
+      <select class="select" id="n-pac" aria-describedby="n-pac-err" aria-invalid="false"><option value="">Elegí un paciente</option><option>Paciente Ficticio Uno</option><option>Paciente Ficticio Cuatro</option></select>
+      <span class="err" id="n-pac-err" hidden>Elegí el paciente.</span></div>
+    <div class="field"><label for="n-pre">Prestación</label><select class="select" id="n-pre"><option>Control y limpieza (30 min)</option><option>Ortodoncia (45 min)</option><option>Tratamiento (60 min)</option></select></div>
+    <div class="form-row">
+      <div class="field"><label for="n-prof">Profesional</label><select class="select" id="n-prof"><option>Dra. Ficticia Perez</option><option>Dr. Ficticio Gomez</option></select></div>
+      <div class="field"><label for="n-sil">Sillón</label><select class="select" id="n-sil"><option>Sillon 1</option><option>Sillon 2</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label for="n-fec">Fecha</label><input class="input" type="date" id="n-fec" value="2026-12-02"></div>
+      <div class="field"><label for="n-hor">Hora</label><select class="select" id="n-hor"><option>09:00</option><option>09:15</option><option>09:30</option></select><span class="hint">Cada 15 minutos.</span></div>
+    </div>
+    <div role="alert" id="n-error"></div>
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Crear turno</button>
+      <button class="btn btn-secondary" type="button" data-cerrar>Volver</button>
+      <button class="btn btn-ghost" type="button" id="n-409">(mockup) ver 409</button>
+    </div>
+  </form>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite" data-visible="false" hidden>Turno creado</div>
+
+<script>
+(function () {
+  'use strict';
+  var rol = 'recepcion';
+  var NOMBRES = { recepcion: ['RF', 'Recepción Ficticia', 'Recepción'], admin: ['AF', 'Admin Ficticio', 'Administración'], odontologo: ['FP', 'Dra. Ficticia Perez', 'Odontóloga'] };
+  var DIAS = [['Lunes','30/11'],['Martes','01/12'],['Miércoles','02/12'],['Jueves','03/12'],['Viernes','04/12'],['Sábado','05/12'],['Domingo','06/12']];
+  var HOY = 1, AHORA = 11 * 60, INICIO = 8 * 60, FIN = 14 * 60, FILA = 22;
+  var ETQ = { reservado: 'Sin confirmar', confirmado: 'Confirmado', atendido: 'Atendido', ausente: 'Ausente' };
+  // dia, inicio, min, paciente, prestación, estado, señado, whatsapp
+  var T = [
+    [0, '09:00', 30, 'Paciente Ficticio Tres', 'Control y limpieza', 'atendido', false, false],
+    [1, '09:30', 30, 'Paciente Ficticio Nueve', 'Control y limpieza', 'atendido', false, true],
+    [1, '10:00', 30, 'Paciente Ficticio Uno', 'Control y limpieza', 'confirmado', true, true],
+    [1, '10:30', 30, 'Paciente Ficticio Cuatro', 'Ortodoncia', 'confirmado', false, false],
+    [1, '11:30', 60, 'Paciente Ficticio Siete', 'Tratamiento', 'reservado', false, true],
+    [2, '09:30', 60, 'Paciente Ficticio Ocho', 'Estetica dental', 'reservado', false, false],
+    [4, '08:30', 60, 'Paciente Ficticio Diez', 'Tratamiento', 'reservado', true, true]
+  ];
+  var WA = '<span class="wa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20l1.4-4A8 8 0 1 1 8 19z"/></svg></span>';
+  function min(h) { var p = h.split(':'); return +p[0] * 60 + +p[1]; }
+  function hhmm(m) { return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  var g = document.getElementById('grid');
+  DIAS.forEach(function (d, i) { var h = document.createElement('div'); h.className = 'wg-head' + (i === HOY ? ' today' : ''); h.innerHTML = d[0] + '<span class="d">' + d[1] + '</span>'; g.appendChild(h); });
+  var ti = document.createElement('div'); ti.className = 'wg-times';
+  for (var m = INICIO; m < FIN; m += 15) { var s = document.createElement('span'); s.textContent = m % 60 === 0 ? hhmm(m) : ''; ti.appendChild(s); }
+  g.appendChild(ti);
+  var cols = DIAS.map(function (_, i) { var c = document.createElement('div'); c.className = 'wg-col' + (i === HOY ? ' today' : '') + (i === 6 ? ' closed' : ''); c.style.height = ((FIN - INICIO) / 15 * FILA) + 'px'; g.appendChild(c); return c; });
+
+  var scrim = document.getElementById('scrim'), abierto = null, origen = null;
+  function abrir(d, desde) {
+    cerrar(true); abierto = d; origen = desde; d.hidden = false; scrim.hidden = false;
+    requestAnimationFrame(function () { d.setAttribute('data-open', 'true'); var f = d.querySelector('button, select'); if (f) f.focus(); });
+  }
+  function cerrar(sinFoco) {
+    if (!abierto) return; var d = abierto; abierto = null;
+    d.setAttribute('data-open', 'false'); scrim.hidden = true;
+    setTimeout(function () { d.hidden = true; }, 240);
+    if (!sinFoco && origen) origen.focus();
+  }
+  document.querySelectorAll('[data-cerrar]').forEach(function (b) { b.addEventListener('click', function () { cerrar(); }); });
+  scrim.addEventListener('click', function () { cerrar(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
+
+  function acciones(t) {
+    var a = document.getElementById('d-acciones'); a.innerHTML = '';
+    var activo = t[5] === 'reservado' || t[5] === 'confirmado';
+    function b(cls, txt) { var x = document.createElement('button'); x.type = 'button'; x.className = 'btn ' + cls; x.textContent = txt; a.appendChild(x); }
+    if (rol !== 'odontologo' && t[5] === 'reservado') b('btn-primary', 'Confirmar');
+    if (activo) { b('btn-primary', 'Marcar atendido'); b('btn-secondary', 'Ausente'); }
+    if (rol === 'odontologo') {
+      var l = document.createElement('a'); l.className = 'btn btn-secondary'; l.href = 'odontograma.html'; l.textContent = 'Odontograma';
+      l.setAttribute('aria-label', 'Abrir el odontograma de este turno'); a.appendChild(l);
+    }
+    if (activo && rol !== 'odontologo') b('btn-ghost', 'Cancelar turno…');
+  }
+
+  T.forEach(function (t) {
+    var e = document.createElement('button'); e.type = 'button';
+    var ini = min(t[1]), fin = ini + t[2];
+    var pasado = t[0] < HOY || (t[0] === HOY && fin <= AHORA);
+    e.className = 'turno st-' + t[5] + (pasado ? ' pasado' : '');
+    e.style.top = ((ini - INICIO) / 15 * FILA + 1) + 'px'; e.style.height = (t[2] / 15 * FILA - 2) + 'px';
+    e.setAttribute('aria-label', DIAS[t[0]][0] + ' ' + hhmm(ini) + ' a ' + hhmm(fin) + ', ' + t[3] + ', ' + t[4] + ', ' + ETQ[t[5]] + (t[6] ? ', señado' : '') + (t[7] ? ', reservado por WhatsApp' : '') + (pasado ? ', ya terminó' : ''));
+    e.innerHTML = '<strong>' + t[3].replace('Paciente Ficticio ', 'P. F. ') + '</strong><span class="t">' + hhmm(ini) + '–' + hhmm(fin) + '</span>' + (t[7] ? WA : '') + (t[6] ? ' · $' : '');
+    e.addEventListener('click', function () {
+      document.getElementById('d-pac').textContent = t[3];
+      document.getElementById('d-pre').textContent = t[4];
+      document.getElementById('d-hor').textContent = DIAS[t[0]][0].slice(0, 3) + ' ' + DIAS[t[0]][1] + ' · ' + hhmm(ini) + '–' + hhmm(fin);
+      var st = document.getElementById('d-estado'); st.className = 'chip st-' + t[5]; st.textContent = ETQ[t[5]];
+      document.getElementById('d-sena').hidden = !t[6];
+      document.getElementById('d-ori').textContent = t[7] ? 'WhatsApp (simulado)' : 'Recepción';
+      acciones(t); abrir(document.getElementById('d-detalle'), e);
+    });
+    cols[t[0]].appendChild(e);
+  });
+
+  var btnNuevo = document.getElementById('btn-nuevo');
+  btnNuevo.addEventListener('click', function () { document.getElementById('n-error').innerHTML = ''; abrir(document.getElementById('d-nuevo'), btnNuevo); });
+  document.getElementById('f-nuevo').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var pac = document.getElementById('n-pac'), err = document.getElementById('n-pac-err');
+    if (!pac.value) { pac.setAttribute('aria-invalid', 'true'); err.hidden = false; pac.focus(); return; }
+    pac.setAttribute('aria-invalid', 'false'); err.hidden = true; cerrar();
+    var toast = document.getElementById('toast'); toast.hidden = false; toast.setAttribute('data-visible', 'true');
+    setTimeout(function () { toast.setAttribute('data-visible', 'false'); toast.hidden = true; }, 2400);
+  });
+  document.getElementById('n-409').addEventListener('click', function () {
+    document.getElementById('n-error').innerHTML = '<div class="alert alert-error"><strong>RN-AG-01</strong> · El profesional ya tiene un turno en ese horario. Turno en conflicto: <span class="num">t-0007</span>.</div>';
+  });
+
+  function aplicarRol(r) {
+    rol = r;
+    document.querySelectorAll('[data-rol]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-rol') === r)); });
+    document.querySelectorAll('[data-solo]').forEach(function (el) { el.hidden = el.getAttribute('data-solo').split(' ').indexOf(r) === -1; });
+    var n = NOMBRES[r]; document.getElementById('u-av').textContent = n[0]; document.getElementById('u-nom').textContent = n[1]; document.getElementById('u-rol').textContent = n[2];
+    cerrar(true);
+  }
+  document.querySelectorAll('[data-rol]').forEach(function (b) { b.addEventListener('click', function () { aplicarRol(b.getAttribute('data-rol')); }); });
+  aplicarRol('recepcion');
+})();
+</script>
+</body>
+</html>
