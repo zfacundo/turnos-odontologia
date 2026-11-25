@@ -41,23 +41,34 @@ export interface PacienteRepository {
   listar(): Paciente[];
 }
 
-export interface SillonRepository {
+/** Escritura generica de configuracion (design D2). */
+export interface RepositorioMutable<T extends { id: string }> {
+  /** Alta o reemplazo por `id`. */
+  guardar(item: T): void;
+  /** Exige que el `id` exista. */
+  actualizar(item: T): Result<T, ErrorDeRegla>;
+  /** Exige que el `id` exista. */
+  eliminar(id: string): Result<void, ErrorDeRegla>;
+}
+
+export interface SillonRepository extends RepositorioMutable<Sillon> {
   listar(): Sillon[];
   buscarPorId(id: string): Sillon | undefined;
 }
 
-export interface PrestacionRepository {
+export interface PrestacionRepository extends RepositorioMutable<Prestacion> {
   listar(): Prestacion[];
   buscarPorId(id: string): Prestacion | undefined;
 }
 
-export interface ProfesionalRepository {
+export interface ProfesionalRepository extends RepositorioMutable<Profesional> {
   listar(): Profesional[];
   buscarPorId(id: string): Profesional | undefined;
 }
 
-export interface BloqueoRepository {
+export interface BloqueoRepository extends RepositorioMutable<Bloqueo> {
   listar(): Bloqueo[];
+  buscarPorId(id: string): Bloqueo | undefined;
   /** Bloqueos que se solapan con el rango [inicio, fin). */
   listarEn(rango: Intervalo): Bloqueo[];
 }

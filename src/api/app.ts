@@ -7,6 +7,7 @@ import { catalogoRouter } from './routes/catalogo';
 import { pacientesRouter } from './routes/pacientes';
 import { disponibilidadRouter } from './routes/disponibilidad';
 import { turnosRouter } from './routes/turnos';
+import { configuracionRouter } from './routes/configuracion';
 import { odontogramaRouter } from './routes/odontograma';
 import { mercadoPagoRouter } from '../simulators/mercadopago/router';
 import { obrasSocialesRouter } from '../simulators/obras-sociales/router';
@@ -25,6 +26,7 @@ export function createApp(deps: Deps): Express {
   app.use('/api', pacientesRouter(deps, deps.pacientes));
   app.use('/api', turnosRouter(deps));
   app.use('/api', disponibilidadRouter(deps));
+  app.use('/api', configuracionRouter(deps));
   app.use('/api', mercadoPagoRouter(deps));
   app.use('/api', obrasSocialesRouter(deps));
 
