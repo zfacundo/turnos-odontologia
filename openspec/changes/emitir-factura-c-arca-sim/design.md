@@ -153,4 +153,10 @@ Se capturan 390×844 y 1440×900 en `mockups/verify/` y se comparan con el mocku
 - Mockups: `openspec/changes/emitir-factura-c-arca-sim/mockups/`
 - Approval: approved (2026-11-25, by user)
 - Preview: rendered (2026-11-25, Playwright, tema claro; `mockups/previews/arca-comprobante-{390,1440}.png`)
-- Visual verify: pending
+- Visual verify: differences (2026-11-25). Playwright sobre `tsx src/server.ts` con `SIM_NOW=2026-12-01T09:00:00-03:00`, en 1440×900 y 390×844, tema claro. Capturas en `mockups/verify/`: `arca-antes-1440x900.png`, `arca-1440x900.png`, `arca-390x844.png` y `arca-impresion.png`.
+  - Pantallas revisadas: antes de emitir; emitido (comprobante con número, CAE, vencimiento 11/12/2026 y DNI `99****07`/`99****05`); ya facturado (409, "Este turno ya tiene factura … RN-SM-03", botón deshabilitado); turno reservado (409 SU-07); sin `turnoId` ("Falta el turno", botón deshabilitado); vista de impresión (solo el comprobante, con franja y marca de agua). En mobile no hay scroll horizontal.
+  - Consola: el 404 de `/favicon.ico` (común a todas las pantallas) y los 409 esperados. Las fuentes se cargan desde Google Fonts a través de `public/styles/tokens.css` (C-01), igual que en el resto de las pantallas; `arca.html` no tiene URLs propias.
+  - **Descartado (no es defecto)**: en 2 de 6 cargas hechas con `browser_navigate` de Playwright MCP, justo después de abrir el navegador, se emitió una factura sin tocar el botón. No se reprodujo con `page.goto` ni con un registro de clics instalado antes de cargar. El 2026-11-25, Integrante 5 verificó a mano en su navegador, con `npm run dev`: al cargar y al recargar no hubo ningún pedido a `/api/sim/arca/facturas`; tocar el botón dio `POST 201` con el comprobante, y el segundo intento dio `409` "ya facturado". La emisión espontánea fue un artefacto de la herramienta de automatización.
+  - Minor 1 (1440 y 390): el encabezado no tiene el logo provisional, igual que en C-06 (no hay un asset de logo publicado en `public/`).
+  - Minor 2 (1440 y 390): antes de emitir, el panel muestra solo el id del turno. Paciente y prestación aparecen después de emitir, porque el spec solo permite llamar a `/api/sim/arca/facturas`; el mockup mostraba también fecha y estado.
+  - Minor 3: el concepto dice "Control y limpieza" sin "· turno del 01/12/2026", porque la factura no incluye la fecha del turno.

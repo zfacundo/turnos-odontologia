@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Factura C (simulación) | Turnos Odontología</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <style>
+    /* Mockup aprobado: openspec/changes/emitir-factura-c-arca-sim/mockups/ (design system rev. 1). */
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.45; }
+    .sim {
+      margin: 0; padding: 12px 16px; background: var(--t-urg); color: var(--t-urg-fg);
+      font-weight: 700; text-align: center; letter-spacing: .02em; font-size: .875rem;
+    }
+    header.top {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    header.top strong { font-family: var(--font-display); font-size: 1.25rem; }
+    header.top nav { margin-left: auto; display: flex; gap: 16px; font-size: .875rem; }
+    header.top nav a { color: var(--muted); text-decoration: none; }
+    header.top nav a[aria-current] { color: var(--accent); font-weight: 700; }
+
+    main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 40px; }
+    .layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
+    @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 1px 2px rgba(16, 36, 43, .08); min-width: 0; }
+    h1 { font-family: var(--font-display); font-size: 1.5rem; margin: 0 0 8px; line-height: 1.15; }
+    .lead { color: var(--muted); margin: 0 0 16px; }
+    dl.turno { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 20px; font-size: .875rem; }
+    dl.turno dt { color: var(--muted); }
+    dl.turno dd { margin: 0; font-weight: 500; word-break: break-all; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      min-height: 44px; padding: 0 20px; border-radius: 10px; font: inherit; font-weight: 700;
+      cursor: pointer; border: 1px solid transparent; transition: transform 120ms cubic-bezier(.2, .8, .2, 1);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    .btn-secondary { background: var(--surface); color: var(--accent); border-color: var(--accent); }
+    .hint { font-size: .875rem; color: var(--muted); margin: 12px 0 0; }
+
+    .toast { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin-top: 16px; }
+    .toast.ok { border-left-color: var(--ok); }
+    .toast.error { border-left-color: var(--alert); }
+    .toast.warn { border-left-color: var(--warn); }
+    .toast p { margin: 0; }
+    .toast p + p { color: var(--muted); font-size: .875rem; }
+    .toast code { font-size: .75rem; white-space: nowrap; }
+
+    .comprobante { position: relative; overflow: hidden; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 4px 14px rgba(16, 36, 43, .12); }
+    .comprobante .sim { border-radius: 14px 14px 0 0; }
+    .marca {
+      position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+      font-family: var(--font-display); font-size: clamp(1.75rem, 6vw, 3.5rem); color: var(--t-urg-fg);
+      opacity: .08; transform: rotate(-24deg); white-space: nowrap;
+    }
+    .cab { display: grid; grid-template-columns: 1fr auto 1fr; border-bottom: 1px solid var(--line); }
+    .cab > div { padding: 16px 20px; min-width: 0; }
+    .cab .emisor strong { font-family: var(--font-display); font-size: 1.25rem; display: block; }
+    .cab .der { text-align: right; }
+    .letra { display: flex; flex-direction: column; align-items: center; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+    .letra b { display: grid; place-items: center; width: 56px; height: 56px; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--font-display); font-size: 2rem; }
+    .letra small { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+    .cab .der .tipo { font-family: var(--font-display); font-size: 1.25rem; display: block; }
+    .dato { font-size: .875rem; margin: 2px 0 0; }
+    .dato span { color: var(--muted); }
+    .num { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink) !important; }
+    .bloque { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .bloque h2 { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+    .receptor { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 8px 16px; }
+    table.items { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    table.items th { text-align: left; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line); padding: 8px 0; }
+    table.items td { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+    table.items .imp { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .total { display: flex; justify-content: flex-end; align-items: baseline; gap: 16px; padding-top: 12px; }
+    .total span { color: var(--muted); font-size: .875rem; }
+    .total strong { font-family: var(--font-display); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+    .pie { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px 20px; background: var(--accent-soft); }
+    .cae span { display: block; font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .cae strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+    .leyenda { width: 100%; margin: 0; font-size: .75rem; color: var(--muted); }
+    @media (max-width: 560px) {
+      .cab { grid-template-columns: 1fr auto; }
+      .cab .emisor { grid-column: 1 / -1; border-bottom: 1px solid var(--line); }
+      .letra { border-left: 0; }
+      .cab .der { text-align: left; }
+    }
+    [hidden] { display: none !important; }
+
+    @media print {
+      body { background: #fff; }
+      body > .sim, header.top, .panel { display: none !important; }
+      main { padding: 0; max-width: none; }
+      .layout { display: block; }
+      .comprobante { box-shadow: none; border-color: #999; }
+      .comprobante .sim, .pie { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+  </style>
+</head>
+<body>
+  <p class="sim" role="note">SIMULACIÓN — sin validez fiscal</p>
+  <header class="top">
+    <strong>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="/">Agenda</a><a href="/sim/arca.html" aria-current="page">Factura C (sim.)</a></nav>
+  </header>
+
+  <main>
+    <div class="layout">
+      <section class="card panel" aria-labelledby="t-panel">
+        <h1 id="t-panel">Emitir factura C</h1>
+        <p class="lead">Comprobante simulado para un turno atendido. No se conecta con ARCA.</p>
+        <dl class="turno">
+          <dt>Turno</dt><dd id="turno">—</dd>
+          <dt hidden id="dt-paciente">Paciente</dt><dd hidden id="paciente"></dd>
+          <dt hidden id="dt-prestacion">Prestación</dt><dd hidden id="prestacion"></dd>
+        </dl>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" id="emitir">Emitir factura C</button>
+          <button class="btn btn-secondary" type="button" id="imprimir" hidden>Imprimir</button>
+        </div>
+        <p class="hint" id="ayuda">La factura se emite solo al tocar el botón. Recargar la página no emite otra.</p>
+        <div class="toast" id="aviso" role="status" aria-live="polite" hidden>
+          <p><strong id="aviso-titulo"></strong></p>
+          <p id="aviso-texto"></p>
+        </div>
+      </section>
+
+      <article class="comprobante" id="comprobante" aria-labelledby="t-comp" hidden>
+        <p class="sim" role="note">SIMULACIÓN — sin validez fiscal</p>
+        <div class="marca" aria-hidden="true">SIMULACIÓN</div>
+        <div class="cab">
+          <div class="emisor">
+            <strong id="c-razon"></strong>
+            <p class="dato"><span>CUIT</span> <b id="c-cuit"></b></p>
+            <p class="dato"><span>Condición IVA</span> <b id="c-iva"></b></p>
+          </div>
+          <div class="letra"><b aria-label="Factura tipo C">C</b><small>Cód. 011</small></div>
+          <div class="der">
+            <span class="tipo" id="t-comp">Factura C</span>
+            <p class="dato"><span>Nº</span> <span class="num" id="c-numero"></span></p>
+            <p class="dato"><span>Emisión</span> <b id="c-emision"></b></p>
+          </div>
+        </div>
+        <div class="bloque">
+          <h2>Receptor</h2>
+          <div class="receptor">
+            <p class="dato" id="c-nombre-fila"><span>Nombre</span><br><b id="c-nombre"></b></p>
+            <p class="dato" id="c-dni-fila"><span>DNI</span><br><b id="c-dni"></b></p>
+            <p class="dato"><span>Condición</span><br><b id="c-condicion"></b></p>
+          </div>
+        </div>
+        <div class="bloque">
+          <table class="items">
+            <thead><tr><th scope="col">Concepto</th><th scope="col" class="imp">Importe</th></tr></thead>
+            <tbody><tr><td id="c-concepto"></td><td class="imp" id="c-importe"></td></tr></tbody>
+          </table>
+          <div class="total"><span>Total</span><strong id="c-total"></strong></div>
+        </div>
+        <div class="pie">
+          <div class="cae"><span>CAE (ficticio)</span><strong id="c-cae"></strong></div>
+          <div class="cae"><span>Vencimiento CAE</span><strong id="c-vto"></strong></div>
+          <p class="leyenda">Comprobante generado por un simulador local con datos ficticios. No fue autorizado por ARCA y no tiene validez fiscal.</p>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var turnoId = new URLSearchParams(window.location.search).get('turnoId');
+      var emitir = document.getElementById('emitir');
+      var imprimir = document.getElementById('imprimir');
+      var aviso = document.getElementById('aviso');
+
+      function texto(id, valor) { document.getElementById(id).textContent = valor; }
+      function mostrarFila(ids, si) { ids.forEach(function (id) { document.getElementById(id).hidden = !si; }); }
+
+      function avisar(tipo, titulo, detalle) {
+        aviso.className = 'toast ' + tipo;
+        aviso.setAttribute('role', tipo === 'ok' ? 'status' : 'alert');
+        texto('aviso-titulo', titulo);
+        texto('aviso-texto', detalle);
+        aviso.hidden = false;
+      }
+
+      /** AAAA-MM-DD -> DD/MM/AAAA, sin pasar por Date (evita corrimientos de zona horaria). */
+      function fecha(iso) {
+        var p = String(iso).split('-');
+        return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : String(iso);
+      }
+
+      function pesos(n) {
+        return '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      function mostrarComprobante(f) {
+        texto('c-razon', f.emisor.razonSocial);
+        texto('c-cuit', f.emisor.cuit);
+        texto('c-iva', f.emisor.condicionIva);
+        texto('c-numero', f.numero);
+        texto('c-emision', fecha(f.fechaEmision));
+        texto('c-condicion', f.receptor.condicion);
+        texto('c-nombre', f.receptor.nombre || '');
+        texto('c-dni', f.receptor.dni || '');
+        mostrarFila(['c-nombre-fila'], Boolean(f.receptor.nombre));
+        mostrarFila(['c-dni-fila'], Boolean(f.receptor.dni));
+        texto('c-concepto', f.concepto);
+        texto('c-importe', pesos(f.importe));
+        texto('c-total', pesos(f.importe));
+        texto('c-cae', f.cae);
+        texto('c-vto', fecha(f.vencimientoCae));
+        if (f.receptor.nombre) { texto('paciente', f.receptor.nombre); mostrarFila(['dt-paciente', 'paciente'], true); }
+        texto('prestacion', f.concepto);
+        mostrarFila(['dt-prestacion', 'prestacion'], true);
+        document.getElementById('comprobante').hidden = false;
+        imprimir.hidden = false;
+      }
+
+      if (!turnoId) {
+        emitir.disabled = true;
+        document.getElementById('ayuda').hidden = true;
+        avisar('error', 'Falta el turno', 'Abrí esta pantalla desde un turno atendido (?turnoId=…).');
+        return;
+      }
+      texto('turno', turnoId);
+
+      emitir.addEventListener('click', async function () {
+        emitir.disabled = true;
+        avisar('', 'Emitiendo…', 'Generando el comprobante simulado.');
+        try {
+          var res = await fetch('/api/sim/arca/facturas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Rol': 'recepcion', 'X-Usuario': 'recepcion-sim' },
+            body: JSON.stringify({ turnoId: turnoId }),
+          });
+          var cuerpo = await res.json();
+          if (res.ok) {
+            mostrarComprobante(cuerpo.factura);
+            document.getElementById('ayuda').hidden = true;
+            avisar('ok', 'Factura emitida', 'Número ' + cuerpo.factura.numero + '. Para otra copia, imprimí esta pantalla: no se puede volver a emitir.');
+            return;
+          }
+          var error = cuerpo.error || {};
+          var codigo = error.regla ? ' ' + error.regla : '';
+          if (res.status === 409 && error.conflicto && error.conflicto.facturaId) {
+            avisar('warn', 'Este turno ya tiene factura', (error.mensaje || '') + codigo);
+            return;
+          }
+          if (res.status === 409) {
+            avisar('error', 'No se puede facturar', (error.mensaje || '') + codigo);
+            return;
+          }
+          avisar('error', 'No se pudo emitir', error.mensaje || 'Error inesperado del simulador.');
+          emitir.disabled = false;
+        } catch (e) {
+          avisar('error', 'Sin conexión', 'No se pudo contactar al servidor local.');
+          emitir.disabled = false;
+        }
+      });
+
+      imprimir.addEventListener('click', function () { window.print(); });
+    })();
+  </script>
+</body>
+</html>
