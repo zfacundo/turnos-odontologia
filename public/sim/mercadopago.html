@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagar seña (simulación) | Turnos Odontología</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+    }
+    .aviso-sim {
+      margin: 0;
+      padding: 12px 16px;
+      background: var(--t-urg);
+      color: var(--t-urg-fg);
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: .02em;
+    }
+    main {
+      max-width: 440px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+    }
+    .sub { margin: 0 0 20px; color: var(--muted); }
+    dl { margin: 0 0 20px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
+    dt { color: var(--muted); }
+    dd { margin: 0; font-weight: 600; word-break: break-all; }
+    .acciones { display: flex; gap: 12px; }
+    button {
+      flex: 1;
+      min-height: 44px;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #aprobar { background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+    #rechazar { background: var(--surface); color: var(--alert); border: 1px solid var(--alert); }
+    #estado { margin: 20px 0 0; min-height: 1.5em; font-weight: 600; }
+    #estado.ok { color: var(--ok); }
+    #estado.error { color: var(--alert); }
+  </style>
+</head>
+<body>
+  <p class="aviso-sim" role="note">SIMULACIÓN — no es Mercado Pago real</p>
+  <main>
+    <section class="card" aria-labelledby="titulo">
+      <h1 id="titulo">Pagar seña</h1>
+      <p class="sub">Pantalla de pago simulada: no se cobra dinero ni se contacta a ningún servicio externo.</p>
+      <dl>
+        <dt>Turno</dt>
+        <dd id="turno">—</dd>
+      </dl>
+      <div class="acciones">
+        <button type="button" id="aprobar">Aprobar</button>
+        <button type="button" id="rechazar">Rechazar</button>
+      </div>
+      <p id="estado" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const turnoId = new URLSearchParams(window.location.search).get('turnoId');
+      const botones = [document.getElementById('aprobar'), document.getElementById('rechazar')];
+      const estado = document.getElementById('estado');
+
+      function mostrar(texto, tipo) {
+        estado.textContent = texto;
+        estado.className = tipo;
+      }
+
+      function habilitar(si) {
+        botones.forEach(function (b) { b.disabled = !si; });
+      }
+
+      if (!turnoId) {
+        habilitar(false);
+        mostrar('Falta el turno: abrí esta pantalla con ?turnoId=<id del turno>.', 'error');
+        return;
+      }
+      document.getElementById('turno').textContent = turnoId;
+
+      async function pagar(resultado) {
+        habilitar(false);
+        mostrar('Procesando pago simulado…', '');
+        try {
+          const res = await fetch('/api/sim/mercadopago/pagos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Rol': 'paciente', 'X-Usuario': 'paciente-sim' },
+            body: JSON.stringify({ turnoId: turnoId, resultado: resultado }),
+          });
+          const cuerpo = await res.json();
+          if (res.ok && cuerpo.pago.estado === 'aprobado') {
+            mostrar('Seña aprobada: tu turno quedó señado.', 'ok');
+            return;
+          }
+          if (res.ok) {
+            mostrar('Pago rechazado: tu turno no cambió.', 'error');
+            habilitar(true);
+            return;
+          }
+          mostrar((cuerpo.error && cuerpo.error.mensaje) || 'No se pudo procesar el pago simulado.', 'error');
+          habilitar(true);
+        } catch (e) {
+          mostrar('No se pudo contactar al servidor local.', 'error');
+          habilitar(true);
+        }
+      }
+
+      document.getElementById('aprobar').addEventListener('click', function () { pagar('aprobado'); });
+      document.getElementById('rechazar').addEventListener('click', function () { pagar('rechazado'); });
+    })();
+  </script>
+</body>
+</html>
