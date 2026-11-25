@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Bot · Reserva</title>
+  <link rel="stylesheet" href="../../../../design-system/tokens.css">
+  <link rel="stylesheet" href="bot.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+  <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+  <header class="top">
+    <img src="../../../../design-system/assets/logo.svg" alt="Logo provisional (TBD)">
+    <strong data-brand-name>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="#">Agenda</a><a href="#" aria-current="page">Bot WhatsApp (sim.)</a></nav>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-panel">
+      <h1 id="t-panel">Chat del paciente</h1>
+      <p class="lead">Elegí un teléfono ficticio para escribir como ese paciente. Lo que reserves aparece en la agenda real con origen WhatsApp.</p>
+      <label for="tel">Teléfono del paciente</label>
+      <select class="input" id="tel">
+        <option>+54 9 11 0000-0001 · Paciente Ficticio Uno</option>
+        <option selected>+54 9 11 0000-0099 · número nuevo</option>
+      </select>
+      <p class="hint">Solo números ficticios del seed. Cambiar de teléfono empieza otra conversación.</p>
+      <button class="btn" type="button">Enviar recordatorio 24 h</button>
+      <p class="hint">Demo: el bot escribe el recordatorio del próximo turno de este número.</p>
+      <div class="meta"><strong>Estado mostrado</strong>Reserva desde un número nuevo: menú → tipo → profesional → horarios → nombre y DNI → turno reservado.</div>
+    </section>
+
+    <section aria-label="Conversación simulada">
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0099</small></div>
+        <div class="msgs" aria-live="polite">
+          <div class="divider">lunes 30 de noviembre</div>
+          <div class="b me">Hola! Quería sacar un turno<time>09:00</time></div>
+          <div class="b bot">Hola, soy el asistente del consultorio. ¿En qué te puedo ayudar?<time>09:00</time></div>
+          <div class="b me">Pedir un turno<time>09:00</time></div>
+          <div class="b bot">¿Qué tipo de consulta necesitás?<time>09:00</time></div>
+          <div class="b me">Control y limpieza<time>09:01</time></div>
+          <div class="b bot">¿Con qué profesional?<time>09:01</time></div>
+          <div class="b me">Dra. Ficticia Perez<time>09:01</time></div>
+          <div class="b bot">Estos son los próximos horarios libres:<time>09:01</time></div>
+          <div class="b me">Lun 30/11 09:15<time>09:01</time></div>
+          <div class="b bot">Genial. ¿Me pasás tu nombre completo y DNI?
+Ej.: Paciente Ficticio Once, 99.000.011<time>09:01</time></div>
+          <div class="b me">Paciente Ficticio Once, 99.000.011<time>09:02</time></div>
+          <div class="b bot card-msg"><strong>Turno reservado</strong>Lun 30/11 09:15
+Control y limpieza · Dra. Ficticia Perez
+Te escribo 24 h antes para confirmar.<time>09:02</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+        <form class="bar" onsubmit="return false">
+          <label class="visually-hidden" for="msg">Mensaje</label>
+          <input class="input" id="msg" placeholder="Elegí una opción" disabled>
+          <button class="btn btn-primary" type="submit" disabled>Enviar</button>
+        </form>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: horarios ofrecidos</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b bot">Estos son los próximos horarios libres:<time>09:01</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Lun 30/11 09:00</button>
+          <button class="chip" type="button">Lun 30/11 09:15</button>
+          <button class="chip" type="button">Lun 30/11 09:30</button>
+          <button class="chip" type="button">Ver más días</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: horario tomado entre medio</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b me">Lun 30/11 09:00<time>09:03</time></div>
+          <div class="b bot alerta">Ese horario ya se ocupó. Te muestro otros:<time>09:03</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Lun 30/11 09:30</button>
+          <button class="chip" type="button">Lun 30/11 09:45</button>
+          <button class="chip" type="button">Lun 30/11 10:00</button>
+          <button class="chip" type="button">Ver más días</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
