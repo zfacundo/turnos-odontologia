@@ -4,7 +4,7 @@
 
 ## 0. Precondición
 
-- [ ] 0.1 Confirmar con el team lead que se arregla en `master` la línea base en rojo (`odontogramaRouter` y `auditoriaRouter` sin montar en `src/api/app.ts`), y traer ese arreglo a la rama. Se verifica con `npx vitest run`, que debe dar 0 fallos antes de empezar. Si todavía no está, dejar registrado y verificar C-11 con `npx vitest run tests/simulators/mercadopago`.
+- [x] 0.1 Confirmar con el team lead que se arregla en `master` la línea base en rojo (`odontogramaRouter` y `auditoriaRouter` sin montar en `src/api/app.ts`), y traer ese arreglo a la rama. Se verifica con `npx vitest run`, que debe dar 0 fallos antes de empezar. Si todavía no está, dejar registrado y verificar C-11 con `npx vitest run tests/simulators/mercadopago`. **Resuelto**: el PR #18 (`fix-rutas-c09-c10`) montó ambos routers en `master`; `npx vitest run` da 794/794 en verde (2026-11-25).
 
 ## 1. Dominio puro (`src/simulators/mercadopago/pagoSena.ts`)
 
