@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="48" viewBox="0 0 180 48" role="img" aria-labelledby="t d">
+  <title id="t">Logo provisional</title>
+  <desc id="d">Marcador de posición: el logo del producto todavía no está definido (TBD).</desc>
+  <rect x="1" y="1" width="178" height="46" rx="10" fill="none" stroke="#0E6B70" stroke-width="2" stroke-dasharray="6 4"/>
+  <path d="M16 15c3-3 7-3 9 0 2-3 6-3 9 0 2 3 1 8-1 12l-2 7c-1 2-3 2-3 0l-1-5c0-2-2-2-2 0l-1 5c0 2-2 2-3 0l-2-7c-2-4-3-9 1-12z" fill="#DCEFEE" stroke="#0E6B70" stroke-width="1.5"/>
+  <text x="44" y="22" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#0E6B70">LOGO PROVISIONAL</text>
+  <text x="44" y="36" font-family="Arial, sans-serif" font-size="10" fill="#4F6368">reemplazar (TBD)</text>
+</svg>

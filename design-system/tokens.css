@@ -1,0 +1,97 @@
+/*
+ * Design system — Turnos Odontología · Revision 1
+ * Colores y familias tipográficas: tomados tal cual de public/styles/tokens.css (prototipo del Discovery).
+ * Agregados en esta revisión: escala de tipografía, espaciado, radios, sombras, foco y movimiento.
+ * Sin fuentes remotas: si Bricolage Grotesque / DM Sans no están instaladas, se usan los fallbacks.
+ */
+:root {
+  /* Superficies y texto */
+  --bg: #F2F5F4; --surface: #FFFFFF; --ink: #10242B; --muted: #4F6368; --line: #DCE4E2;
+  --accent: #0E6B70; --accent-soft: #DCEFEE; --on-accent: #FFFFFF;
+
+  /* Chat simulado (bot WhatsApp) */
+  --chat-bg: #EFE9E1; --bubble-bot: #FFFFFF; --bubble-me: #D7F1DF; --chat-bar: #F7F3EE;
+
+  /* Agenda */
+  --free: #F7FAF9; --past: #E9EEED;
+
+  /* Tipos de prestación (fondo / texto) */
+  --t-control: #DCEFEE; --t-control-fg: #0B4A4E;
+  --t-orto: #E7E4F6; --t-orto-fg: #372E78;
+  --t-trat: #FFF0C7; --t-trat-fg: #5E4500;
+  --t-est: #E1ECFA; --t-est-fg: #183F70;
+  --t-urg: #FBDDD2; --t-urg-fg: #7A2710;
+
+  /* Estados semánticos */
+  --ok: #1A7A45; --warn: #9A6A00; --alert: #B23A1E;
+
+  /* Rótulo de simulación (RN-WA-04, RN-SM-04): mismo par que urgencia, como en C-11 */
+  --sim-bg: var(--t-urg); --sim-fg: var(--t-urg-fg);
+
+  /* Tipografía */
+  --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
+  --font-body: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-xs: .75rem;   /* 12px: horas del chat, metadatos */
+  --text-sm: .875rem;  /* 14px: etiquetas, chips */
+  --text-md: 1rem;     /* 16px: cuerpo */
+  --text-lg: 1.25rem;  /* 20px: títulos de tarjeta */
+  --text-xl: 1.5rem;   /* 24px: título de pantalla */
+  --text-2xl: 2rem;    /* 32px: título de portada */
+  --weight-regular: 400; --weight-medium: 500; --weight-bold: 700;
+  --leading: 1.45;
+
+  /* Espaciado (múltiplos de 4px) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --gutter: 16px; /* margen lateral mínimo en mobile */
+
+  /* Radios */
+  --radius-sm: 6px;    /* etiquetas, celdas */
+  --radius-md: 10px;   /* botones, inputs */
+  --radius-lg: 14px;   /* tarjetas */
+  --radius-bubble: 12px;
+  --radius-pill: 999px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(16, 36, 43, .08);
+  --shadow-md: 0 4px 14px rgba(16, 36, 43, .12);
+
+  /* Foco y objetivos táctiles */
+  --focus-ring: 3px solid var(--accent);
+  --focus-offset: 2px;
+  --tap-min: 44px;
+
+  /* Movimiento */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1517; --surface: #162024; --ink: #E6EEEE; --muted: #9DB0B3; --line: #2A3A3F;
+    --accent: #3FB6B9; --accent-soft: #163A3D; --on-accent: #06181A;
+    --chat-bg: #1B1F1D; --bubble-bot: #262D2B; --bubble-me: #1F4A35; --chat-bar: #141918;
+    --free: #182226; --past: #121A1D;
+    --t-control: #163A3D; --t-control-fg: #A6E3E1; --t-orto: #2A2650; --t-orto-fg: #CFC8FF;
+    --t-trat: #3A3016; --t-trat-fg: #F3D68A; --t-est: #1A2C48; --t-est-fg: #B5CEF5;
+    --t-urg: #45211A; --t-urg-fg: #FFB9A6; --ok: #5FD08A; --warn: #F0C04A; --alert: #FF8A6E;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4); --shadow-md: 0 4px 14px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1517; --surface: #162024; --ink: #E6EEEE; --muted: #9DB0B3; --line: #2A3A3F;
+  --accent: #3FB6B9; --accent-soft: #163A3D; --on-accent: #06181A;
+  --chat-bg: #1B1F1D; --bubble-bot: #262D2B; --bubble-me: #1F4A35; --chat-bar: #141918;
+  --free: #182226; --past: #121A1D;
+  --t-control: #163A3D; --t-control-fg: #A6E3E1; --t-orto: #2A2650; --t-orto-fg: #CFC8FF;
+  --t-trat: #3A3016; --t-trat-fg: #F3D68A; --t-est: #1A2C48; --t-est-fg: #B5CEF5;
+  --t-urg: #45211A; --t-urg-fg: #FFB9A6; --ok: #5FD08A; --warn: #F0C04A; --alert: #FF8A6E;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4); --shadow-md: 0 4px 14px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
+  *, *::before, *::after { animation-duration: 0ms !important; transition-duration: 0ms !important; }
+}
