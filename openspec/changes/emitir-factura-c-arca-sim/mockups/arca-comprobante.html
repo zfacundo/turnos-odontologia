@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Factura C (ARCA simulado)</title>
+  <link rel="stylesheet" href="../../../../design-system/tokens.css">
+  <link rel="stylesheet" href="arca.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+  <p class="sim" role="note">SIMULACIÓN — sin validez fiscal</p>
+  <header class="top">
+    <img src="../../../../design-system/assets/logo.svg" alt="Logo provisional (TBD)">
+    <strong data-brand-name>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="#">Agenda</a><a href="#" aria-current="page">Factura C (sim.)</a></nav>
+  </header>
+
+  <main>
+    <div class="layout">
+      <!-- Panel de control: turno + acciones -->
+      <section class="card panel" aria-labelledby="t-panel">
+        <h1 id="t-panel">Emitir factura C</h1>
+        <p class="lead">Comprobante simulado para un turno atendido. No se conecta con ARCA.</p>
+        <dl class="turno">
+          <dt>Turno</dt><dd>turno-T</dd>
+          <dt>Paciente</dt><dd>Paciente Ficticio Uno</dd>
+          <dt>Prestación</dt><dd>Control y limpieza</dd>
+          <dt>Fecha</dt><dd>mar 01/12/2026 · 10:00</dd>
+          <dt>Estado</dt><dd><span class="badge b-atendido">Atendido</span></dd>
+        </dl>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" disabled>Emitir factura C</button>
+          <button class="btn btn-secondary" type="button">Imprimir</button>
+        </div>
+        <div class="toast ok" role="status">
+          <p><strong>Factura emitida</strong></p>
+          <p>Número 00001-00000001. Para otra copia, imprimí esta pantalla: no se puede volver a emitir.</p>
+        </div>
+      </section>
+
+      <!-- Comprobante -->
+      <article class="comprobante" aria-labelledby="t-comp">
+        <p class="sim" role="note">SIMULACIÓN — sin validez fiscal</p>
+        <div class="marca" aria-hidden="true">SIMULACIÓN</div>
+
+        <div class="cab">
+          <div class="emisor">
+            <strong>Consultorio Ficticio</strong>
+            <p class="dato"><span>CUIT</span> 20-99999999-0</p>
+            <p class="dato"><span>Condición IVA</span> Monotributo</p>
+          </div>
+          <div class="letra">
+            <b aria-label="Factura tipo C">C</b>
+            <small>Cód. 011</small>
+          </div>
+          <div class="der">
+            <span class="tipo" id="t-comp">Factura C</span>
+            <p class="dato"><span>Nº</span> <span class="num">00001-00000001</span></p>
+            <p class="dato"><span>Emisión</span> 01/12/2026</p>
+          </div>
+        </div>
+
+        <div class="bloque">
+          <h3>Receptor</h3>
+          <div class="receptor">
+            <p class="dato"><span>Nombre</span><br>Paciente Ficticio Uno</p>
+            <p class="dato"><span>DNI</span><br>99****01</p>
+            <p class="dato"><span>Condición</span><br>Consumidor Final</p>
+          </div>
+        </div>
+
+        <div class="bloque">
+          <table class="items">
+            <thead><tr><th scope="col">Concepto</th><th scope="col" class="imp">Importe</th></tr></thead>
+            <tbody><tr><td>Control y limpieza · turno del 01/12/2026</td><td class="imp">$ 25.000,00</td></tr></tbody>
+          </table>
+          <div class="total"><span>Total</span><strong>$ 25.000,00</strong></div>
+        </div>
+
+        <div class="pie">
+          <div class="cae"><span>CAE (ficticio)</span><strong>26120101000001</strong></div>
+          <div class="cae"><span>Vencimiento CAE</span><strong>11/12/2026</strong></div>
+          <p class="leyenda">Comprobante generado por un simulador local con datos ficticios. No fue autorizado por ARCA y no tiene validez fiscal.</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Otros estados de la misma pantalla (referencia; la pantalla real muestra uno a la vez) -->
+    <section class="ref" aria-labelledby="t-ref">
+      <h2 id="t-ref">Otros estados</h2>
+      <div class="ref-grid">
+        <div class="card">
+          <h3>Antes de emitir</h3>
+          <dl class="turno">
+            <dt>Turno</dt><dd>turno-T</dd>
+            <dt>Estado</dt><dd><span class="badge b-atendido">Atendido</span></dd>
+          </dl>
+          <div class="actions"><button class="btn btn-primary" type="button">Emitir factura C</button></div>
+          <p class="hint">La factura se emite solo al tocar el botón. Recargar la página no emite otra.</p>
+        </div>
+
+        <div class="card">
+          <h3>Turno ya facturado (409)</h3>
+          <div class="actions"><button class="btn btn-primary" type="button" disabled>Emitir factura C</button></div>
+          <div class="toast warn" role="alert">
+            <p><strong>Este turno ya tiene factura</strong></p>
+            <p>No se puede emitir: turno ya facturado. <code>RN-SM-03</code></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Turno no atendido (409)</h3>
+          <dl class="turno">
+            <dt>Estado</dt><dd><span class="badge b-reservado">Reservado</span></dd>
+          </dl>
+          <div class="toast error" role="alert">
+            <p><strong>No se puede facturar</strong></p>
+            <p>Solo se factura un turno atendido (SU-07); el turno está reservado. <code>RN-SM-03</code></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Sin turno en la dirección</h3>
+          <div class="actions"><button class="btn btn-primary" type="button" disabled>Emitir factura C</button></div>
+          <div class="toast error" role="alert">
+            <p><strong>Falta el turno</strong></p>
+            <p>Abrí esta pantalla desde un turno atendido (<code>?turnoId=…</code>).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
