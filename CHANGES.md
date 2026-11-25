@@ -443,7 +443,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 ## FASE 5 — Simuladores de cobro (Integrante 5)
 
 ### [C-11] `pagar-sena-mercadopago-sim`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-11.md`
 - **Responsable**: Integrante 5
 - **Objetivo**: "pagar seña" con una pantalla de pago falsa que aprueba o rechaza.
 - **Resultado**: aprobar marca el turno `senado: true`; rechazar no cambia el turno; todo rotulado "SIMULACIÓN".
@@ -463,10 +463,10 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/10_preguntas_abiertas.md` IN-04
   - `knowledge-base/09_decisiones_y_supuestos.md` DD-02, SU-07
 - **Criterios de aceptación (tests)**:
-  - [ ] Pago aprobado sobre turno `reservado` → `senado: true` y registro del pago.
-  - [ ] Pago rechazado → el turno no cambia.
-  - [ ] Pago sobre turno `cancelado` → 409.
-  - [ ] El módulo no realiza requests de red; la pantalla muestra "SIMULACIÓN".
+  - [x] Pago aprobado sobre turno `reservado` → `senado: true` y registro del pago.
+  - [x] Pago rechazado → el turno no cambia.
+  - [x] Pago sobre turno `cancelado` → 409.
+  - [x] El módulo no realiza requests de red; la pantalla muestra "SIMULACIÓN".
 
 ### [C-12] `emitir-factura-c-arca-sim`
 - **Estado**: `[ ]` pendiente
