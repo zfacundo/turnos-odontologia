@@ -1,15 +1,10 @@
 import type { ProfesionalRepository } from '../../application/ports/repositorios';
 import type { Profesional } from '../../domain/configuracion/profesional';
+import { RepositorioEnMemoria } from './repositorio-en-memoria';
 
-export class ProfesionalRepositoryEnMemoria implements ProfesionalRepository {
-  constructor(private readonly items: readonly Profesional[] = []) {}
-
-  listar(): Profesional[] {
-    return this.items.map((i) => structuredClone(i));
-  }
-
-  buscarPorId(id: string): Profesional | undefined {
-    const i = this.items.find((x) => x.id === id);
-    return i === undefined ? undefined : structuredClone(i);
-  }
+export class ProfesionalRepositoryEnMemoria
+  extends RepositorioEnMemoria<Profesional>
+  implements ProfesionalRepository
+{
+  protected readonly codigoInexistente = 'PROFESIONAL_INEXISTENTE';
 }

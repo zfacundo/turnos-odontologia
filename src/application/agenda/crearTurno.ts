@@ -62,8 +62,18 @@ export function crearTurno(
   if (profesional === undefined) {
     return fallo({ tipo: 'entrada', mensaje: `No existe el profesional ${entrada.profesionalId}.` });
   }
-  if (deps.sillones.buscarPorId(entrada.sillonId) === undefined) {
+  const sillon = deps.sillones.buscarPorId(entrada.sillonId);
+  if (sillon === undefined) {
     return fallo({ tipo: 'entrada', mensaje: `No existe el sillón ${entrada.sillonId}.` });
+  }
+  if (!profesional.activo || !sillon.activo) {
+    return fallo({
+      tipo: 'regla',
+      error: {
+        regla: 'RN-CF-04',
+        mensaje: 'El profesional y el sillón deben estar activos para crear un turno.',
+      },
+    });
   }
   const rango = {
     inicio: entrada.inicio,
