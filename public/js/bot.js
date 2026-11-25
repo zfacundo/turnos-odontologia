@@ -114,6 +114,32 @@
     return pedir(function () { return fetch('/api/sim/whatsapp/mensaje', opcionesPost(cuerpo)); });
   }
 
+  var avisosVistos = new Set();
+
+  function consultarAvisos() {
+    var telefono = selTelefono.value;
+
+    fetch('/api/sim/whatsapp/avisos?telefono=' +
+      encodeURIComponent(telefono))
+      .then(function (res) {
+        if (!res.ok) throw new Error('No se pudieron consultar avisos');
+        return res.json();
+      })
+      .then(function (datos) {
+        if (selTelefono.value !== telefono) return;
+
+        datos.avisos.forEach(function (aviso) {
+          if (!avisosVistos.has(aviso.id)) {
+            avisosVistos.add(aviso.id);
+            burbuja('bot', aviso.texto);
+          }
+        });
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
   function reiniciar() {
     lista.innerHTML = '';
     opciones.innerHTML = '';
@@ -121,6 +147,8 @@
     pideTexto = true;
     actualizarEntrada();
     inputTexto.value = 'Hola! Quería sacar un turno';
+    avisosVistos.clear();
+    consultarAvisos();
   }
 
   form.addEventListener('submit', function (e) {
@@ -140,4 +168,5 @@
 
   selTelefono.addEventListener('change', reiniciar);
   reiniciar();
+  setInterval(consultarAvisos, 3000);
 })();

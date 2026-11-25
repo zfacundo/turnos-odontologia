@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Deps } from '../../api/deps';
 import { ErrorDeEntrada } from '../../api/middleware/errores';
 import { procesar } from './bot';
+import { consultarAvisosCancelacion } from './avisosCancelacion';
 import { nuevaSesion, type Entrada, type Respuesta, type Sesion } from './conversacion';
 
 export const AVISO_SIMULACION = 'Simulación — no es WhatsApp real';
@@ -60,6 +61,21 @@ export function whatsappRouter(deps: Deps, sesiones: SesionesWhatsApp = new Map(
   router.post('/sim/whatsapp/recordatorio', (req, res) => {
     const telefono = telefonoDe(cuerpoDe(req.body));
     res.json(json(atender(telefono, { tipo: 'recordatorio' })));
+  });
+
+  router.get('/sim/whatsapp/avisos', (req, res) => {
+    const telefono = req.query.telefono;
+
+    if (typeof telefono !== 'string' ||
+        !TELEFONO_FICTICIO.test(telefono)) {
+      throw new ErrorDeEntrada('Teléfono ficticio inválido.');
+    }
+
+    res.json({
+      simulado: true,
+      aviso: AVISO_SIMULACION,
+      avisos: consultarAvisosCancelacion(deps, telefono),
+    });
   });
 
   return router;
