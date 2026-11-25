@@ -12,6 +12,10 @@ import {
   type ErrorCambioEstado,
 } from '../../application/agenda/cambiarEstadoTurno';
 import { cancelarTurno } from '../../application/agenda/cancelarTurno';
+import {
+  reprogramarTurno,
+  type EntradaReprogramarTurno,
+} from '../../application/agenda/reprogramarTurno';
 import type { FiltroTurnos } from '../../application/ports/repositorios';
 import type { Deps } from '../deps';
 import { ErrorDeEntrada, ErrorDePermiso, FalloDeRegla } from '../middleware/errores';
@@ -126,6 +130,27 @@ function responderErrorEstado(error: ErrorCambioEstado, res: Response, next: Nex
   res.status(404).json({ error: { tipo: 'no-encontrado', mensaje: http.noEncontrado } });
 }
 
+/**
+ * Parsea el cuerpo de reprogramar SIN lanzar: el rol se valida antes que la entrada (design D6).
+ * Lo invalido llega al caso de uso como inicio ausente o id vacio y este lo rechaza como entrada.
+ */
+function parsearReprogramacion(turnoId: string, cuerpo: unknown): EntradaReprogramarTurno {
+  if (!esObjeto(cuerpo)) return { turnoId, inicio: undefined };
+  const crudo = cuerpo.inicio;
+  const fecha = typeof crudo === 'string' && ISO_CON_ZONA.test(crudo) ? new Date(crudo) : undefined;
+  const inicio = fecha !== undefined && !Number.isNaN(fecha.getTime()) ? fecha : undefined;
+  const idOpcional = (valor: unknown): string | undefined =>
+    valor === undefined ? undefined : typeof valor === 'string' ? valor : '';
+  const profesionalId = idOpcional(cuerpo.profesionalId);
+  const sillonId = idOpcional(cuerpo.sillonId);
+  return {
+    turnoId,
+    inicio,
+    ...(profesionalId !== undefined && { profesionalId }),
+    ...(sillonId !== undefined && { sillonId }),
+  };
+}
+
 export function turnosRouter(deps: Deps): Router {
   const router = Router();
 
@@ -166,6 +191,16 @@ export function turnosRouter(deps: Deps): Router {
     const crudo = esObjeto(cuerpo) ? cuerpo.motivo : undefined;
     const motivo = typeof crudo === 'string' ? crudo : undefined;
     const resultado = cancelarTurno(deps, usuario, { turnoId: req.params.id, motivo });
+    if (!resultado.ok) {
+      responderErrorEstado(resultado.error, res, next);
+      return;
+    }
+    res.status(200).json(resultado.valor.turno);
+  });
+
+  router.post('/turnos/:id/reprogramar', (req, res, next) => {
+    const usuario = resolverUsuario(deps, res.locals.usuario as Usuario | undefined);
+    const resultado = reprogramarTurno(deps, usuario, parsearReprogramacion(req.params.id, req.body));
     if (!resultado.ok) {
       responderErrorEstado(resultado.error, res, next);
       return;
