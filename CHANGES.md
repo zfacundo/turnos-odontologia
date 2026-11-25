@@ -159,11 +159,11 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/02_descripcion_general.md` §Stack tecnológico, §API REST
   - `knowledge-base/09_decisiones_y_supuestos.md` DD-03..DD-06, DD-09..DD-12
 - **Criterios de aceptación (tests)**:
-  - [ ] `seSolapan([9:00,9:30), [9:30,10:00))` → `false`; `seSolapan([9:00,10:00), [9:30,9:45))` → `true`.
-  - [ ] Un inicio a las 9:10 no está alineado a bloques de 15'; 9:15 sí.
-  - [ ] Una prestación con duración 20 es rechazada (RN-CF-01).
-  - [ ] `GET /api/health` → 200; `GET /api/catalogo` devuelve 2 sillones, 2 profesionales y 5 prestaciones del seed.
-  - [ ] El seed no contiene DNI/teléfonos fuera del rango ficticio.
+  - [x] `seSolapan([9:00,9:30), [9:30,10:00))` → `false`; `seSolapan([9:00,10:00), [9:30,9:45))` → `true`.
+  - [x] Un inicio a las 9:10 no está alineado a bloques de 15'; 9:15 sí.
+  - [x] Una prestación con duración 20 es rechazada (RN-CF-01).
+  - [x] `GET /api/health` → 200; `GET /api/catalogo` devuelve 2 sillones, 2 profesionales y 5 prestaciones del seed.
+  - [x] El seed no contiene DNI/teléfonos fuera del rango ficticio.
 
 ### [C-02] `crear-turno-sin-solapamientos`
 - **Estado**: `[x]` completado (2026-11-23) — archivado; handoff en `knowledge-base/entrega/C-02.md`
@@ -206,7 +206,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 > C-03 y C-04 tocan `src/api/routes/turnos.ts` (aditivo); al ser del mismo responsable y secuenciales no generan conflicto entre sí.
 
 ### [C-03] `cambiar-estado-y-cancelar-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-03.md`
 - **Responsable**: Integrante 1
 - **Objetivo**: transiciones de estado válidas (confirmar, atender, ausente, cancelar) con la ventana de 24 h del paciente.
 - **Resultado**: los endpoints de estado aplican la máquina de estados y la regla de 24 h; un turno cancelado libera profesional y sillón.
@@ -228,14 +228,14 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/06_funcionalidades.md` §US-011, §US-013
   - `knowledge-base/03_actores_y_roles.md` §RBAC
 - **Criterios de aceptación (tests)**:
-  - [ ] `reservado → confirmado` ok; `atendido → cancelado` → 409 `RN-AG-09`.
-  - [ ] Paciente cancela a 25 h → ok; a 23 h → rechazo `RN-AG-06`; recepción a 1 h → ok.
-  - [ ] Tras cancelar, crear otro turno en el mismo horario/profesional/sillón → aceptado.
-  - [ ] Cancelación guarda motivo, autor y evento de auditoría.
-  - [ ] Odontólogo no puede cancelar (403).
+  - [x] `reservado → confirmado` ok; `atendido → cancelado` → 409 `RN-AG-09`.
+  - [x] Paciente cancela a 25 h → ok; a 23 h → rechazo `RN-AG-06`; recepción a 1 h → ok.
+  - [x] Tras cancelar, crear otro turno en el mismo horario/profesional/sillón → aceptado.
+  - [x] Cancelación guarda motivo, autor y evento de auditoría.
+  - [x] Odontólogo no puede cancelar (403).
 
 ### [C-04] `reprogramar-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-04.md`
 - **Responsable**: Integrante 1
 - **Objetivo**: mover un turno a otro horario (y opcionalmente otro profesional/sillón) con la misma validación que crear.
 - **Resultado**: `POST /api/turnos/:id/reprogramar` revalida R1–R5 excluyendo el propio turno y deja libre el horario anterior.
@@ -254,11 +254,11 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/07_flujos_principales.md` §Flujo 3
   - `knowledge-base/06_funcionalidades.md` §US-012
 - **Criterios de aceptación (tests)**:
-  - [ ] Correr un turno 15' hacia adelante solapando consigo mismo → aceptado (se excluye el propio).
-  - [ ] Mover a un horario ocupado por otro turno del mismo sillón → 409 `RN-AG-02`.
-  - [ ] Mover fuera de la franja del profesional → 409 `RN-AG-04`.
-  - [ ] Tras reprogramar, el horario anterior acepta un turno nuevo.
-  - [ ] Auditoría registra antes/después; paciente a < 24 h → rechazo.
+  - [x] Correr un turno 15' hacia adelante solapando consigo mismo → aceptado (se excluye el propio).
+  - [x] Mover a un horario ocupado por otro turno del mismo sillón → 409 `RN-AG-02`.
+  - [x] Mover fuera de la franja del profesional → 409 `RN-AG-04`.
+  - [x] Tras reprogramar, el horario anterior acepta un turno nuevo.
+  - [x] Auditoría registra antes/después; paciente a < 24 h → rechazo.
 
 ---
 
@@ -312,11 +312,11 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/06_funcionalidades.md` §Épica 6
   - `docs/discovery/prototipo/agenda_odontologia.html` (referencia visual)
 - **Criterios de aceptación (tests)**:
-  - [ ] Los horarios ofrecidos son exactamente los primeros 3 de `consultarHuecos` (nunca lista estática).
-  - [ ] Completar el flujo crea un turno `reservado` con `origen: "whatsapp"`.
-  - [ ] "Confirmo" pasa el turno a `confirmado`; "Cancelar turno" a < 24 h responde "comunicate con recepción" y no cancela.
-  - [ ] Elegir un hueco que otro tomó entre medio → el bot informa y vuelve a ofrecer.
-  - [ ] La respuesta HTML contiene el rótulo "Simulación"; el módulo no hace requests de red salientes.
+  - [x] Los horarios ofrecidos son exactamente los primeros 3 de `consultarHuecos` (nunca lista estática).
+  - [x] Completar el flujo crea un turno `reservado` con `origen: "whatsapp"`.
+  - [x] "Confirmo" pasa el turno a `confirmado`; "Cancelar turno" a < 24 h responde "comunicate con recepción" y no cancela.
+  - [x] Elegir un hueco que otro tomó entre medio → el bot informa y vuelve a ofrecer.
+  - [x] La respuesta HTML contiene el rótulo "Simulación"; el módulo no hace requests de red salientes.
 
 ---
 
@@ -325,7 +325,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 > C-08 primero (lo necesita el bot, C-06). Ambos pueden arrancar apenas C-01 ✓ (no dependen de turnos, salvo los tests de RN-CF-04).
 
 ### [C-07] `configurar-agenda-del-consultorio`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-07.md`
 - **Responsable**: Integrante 3
 - **Objetivo**: que el administrador configure sillones, prestaciones, disponibilidad de profesionales y bloqueos por API.
 - **Resultado**: endpoints de configuración validan RN-CF-01..04 y lo cargado se refleja en la validación de turnos.
@@ -346,13 +346,13 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/07_flujos_principales.md` §Flujo 11
   - `knowledge-base/03_actores_y_roles.md` §RBAC
 - **Criterios de aceptación (tests)**:
-  - [ ] Prestación de 20' → 400/409 `RN-CF-01`; de 45' → creada.
-  - [ ] Franjas lunes 9-13 y 12-15 → rechazo `RN-CF-02`.
-  - [ ] Recepcionista que intenta crear un sillón → 403.
-  - [ ] Desactivar un sillón conserva sus turnos e impide crear nuevos (RN-CF-04).
+  - [x] Prestación de 20' → 400/409 `RN-CF-01`; de 45' → creada.
+  - [x] Franjas lunes 9-13 y 12-15 → rechazo `RN-CF-02`.
+  - [x] Recepcionista que intenta crear un sillón → 403.
+  - [x] Desactivar un sillón conserva sus turnos e impide crear nuevos (RN-CF-04).
 
 ### [C-08] `ficha-paciente-y-cobertura-obra-social-sim`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-08.md`
 - **Responsable**: Integrante 3
 - **Objetivo**: ficha mínima de paciente y consulta SIMULADA de cobertura por número de afiliado.
 - **Resultado**: `POST/GET /api/pacientes` funciona con DNI único y `GET /api/sim/obras-sociales/afiliados/:nro` devuelve cobertura y % de copago del padrón ficticio.
@@ -374,17 +374,17 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/07_flujos_principales.md` §Flujo 8
   - `knowledge-base/05_reglas_de_negocio.md` RN-SM-02, RN-DA-01
 - **Criterios de aceptación (tests)**:
-  - [ ] Registrar dos pacientes con el mismo DNI → 409.
-  - [ ] Afiliado existente del padrón → obra social, plan, cobertura y `copagoPct`.
-  - [ ] Afiliado inexistente → 404 "afiliado no encontrado".
-  - [ ] La pantalla muestra "SIMULACIÓN"; el simulador no hace requests de red.
+  - [x] Registrar dos pacientes con el mismo DNI → 409.
+  - [x] Afiliado existente del padrón → obra social, plan, cobertura y `copagoPct`.
+  - [x] Afiliado inexistente → 404 "afiliado no encontrado".
+  - [x] La pantalla muestra "SIMULACIÓN"; el simulador no hace requests de red.
 
 ---
 
 ## FASE 4 — Interfaz de agenda y odontograma (Integrante 4)
 
 ### [C-09] `vista-agenda-y-registro-del-sistema`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-09.md`
 - **Responsable**: Integrante 4
 - **Objetivo**: agenda diaria y semanal filtrable por profesional y por sillón, con el panel "Lo que hizo el sistema".
 - **Resultado**: `public/index.html` muestra los turnos de `GET /api/turnos` en grilla de 15', con filtros y un panel de registro alimentado por `GET /api/registro`.
@@ -405,13 +405,13 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/10_preguntas_abiertas.md` IN-05
   - `docs/discovery/prototipo/agenda_odontologia.html`
 - **Criterios de aceptación (tests)**:
-  - [ ] `GET /api/auditoria` con rol odontólogo → 403; con recepción → eventos en orden cronológico.
-  - [ ] Crear un turno genera una línea "Turno creado: …" en `GET /api/registro`.
-  - [ ] No existe ruta de escritura/borrado de auditoría.
-  - [ ] (Manual, demo) filtrar por "Sillón 2" muestra solo sus turnos; un 409 muestra el turno en conflicto.
+  - [x] `GET /api/auditoria` con rol odontólogo → 403; con recepción → eventos en orden cronológico.
+  - [x] Crear un turno genera una línea "Turno creado: …" en `GET /api/registro`.
+  - [x] No existe ruta de escritura/borrado de auditoría.
+  - [x] (Manual, demo) filtrar por "Sillón 2" muestra solo sus turnos; un 409 muestra el turno en conflicto.
 
 ### [C-10] `odontograma-donde-te-duele`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-10.md`
 - **Responsable**: Integrante 4
 - **Objetivo**: odontograma FDI donde el paciente toca la pieza que le duele y la agrega a su turno.
 - **Resultado**: `PUT /api/turnos/:id/piezas` guarda piezas FDI válidas con síntomas y `public/odontograma.html` las muestra en rojo (a revisar) / azul (hecho).
@@ -433,10 +433,10 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/07_flujos_principales.md` §Flujo 10
   - `docs/discovery/prototipo/odontograma-referencia.png`
 - **Criterios de aceptación (tests)**:
-  - [ ] Pieza 16 → nombre "Primer molar superior derecho"; pieza 19 o 51 → rechazo.
-  - [ ] Agregar pieza 36 con "dolor al masticar" a un turno → queda `a_revisar`.
-  - [ ] Odontólogo marca `hecho`; paciente no puede marcar `hecho` (403).
-  - [ ] Hay exactamente 32 piezas en 4 cuadrantes.
+  - [x] Pieza 16 → nombre "Primer molar superior derecho"; pieza 19 o 51 → rechazo.
+  - [x] Agregar pieza 36 con "dolor al masticar" a un turno → queda `a_revisar`.
+  - [x] Odontólogo marca `hecho`; paciente no puede marcar `hecho` (403).
+  - [x] Hay exactamente 32 piezas en 4 cuadrantes.
 
 ---
 
@@ -469,7 +469,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - [x] El módulo no realiza requests de red; la pantalla muestra "SIMULACIÓN".
 
 ### [C-12] `emitir-factura-c-arca-sim`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25) — archivado; handoff en `knowledge-base/entrega/C-12.md`
 - **Responsable**: Integrante 5
 - **Objetivo**: emitir una "Factura C" con CAE ficticio y mostrarla como comprobante.
 - **Resultado**: `POST /api/sim/arca/facturas` sobre un turno `atendido` devuelve número correlativo, CAE ficticio y vencimiento; la pantalla dice "SIMULACIÓN — sin validez fiscal".
@@ -489,10 +489,10 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - `knowledge-base/04_modelo_de_datos.md` §Simuladores
   - `knowledge-base/09_decisiones_y_supuestos.md` DD-02, SU-07
 - **Criterios de aceptación (tests)**:
-  - [ ] Emitir sobre turno `atendido` → factura con número, CAE y `simulado: true`.
-  - [ ] Emitir sobre turno `reservado` → 409.
-  - [ ] Dos emisiones consecutivas tienen números correlativos.
-  - [ ] Sin requests de red; la pantalla muestra "sin validez fiscal".
+  - [x] Emitir sobre turno `atendido` → factura con número, CAE y `simulado: true`.
+  - [x] Emitir sobre turno `reservado` → 409.
+  - [x] Dos emisiones consecutivas tienen números correlativos.
+  - [x] Sin requests de red; la pantalla muestra "sin validez fiscal".
 
 ---
 
