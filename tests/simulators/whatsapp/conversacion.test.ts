@@ -66,31 +66,37 @@ const TURNO: TurnoResumen = {
   prestacion: 'Control y limpieza',
   profesional: 'Dra. Ficticia Perez',
   estado: 'reservado',
+  senado: false,
 };
+
+/** Elige un horario y confirma el resumen (design D1). */
+function confirmarHorario(etiqueta: string): Salida {
+  return elegir(elegir(hastaHorarios(), etiqueta), 'Confirmar turno');
+}
 
 function hastaGestion(): Salida {
   let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
-  s = elegir(s, 'Ver o cambiar mi turno');
+  s = elegir(s, 'Ver mi turno');
   expect(efecto(s)).toEqual({ tipo: 'buscarProximoTurno', modo: 'ver' });
   return resolver(s.sesion, { tipo: 'buscarProximoTurno', turno: TURNO, nombrePaciente: 'Paciente Ficticio Uno' }, CATALOGO);
 }
 
 describe('conversacion - menu inicial', () => {
-  it('dado una sesion nueva cuando el paciente escribe cualquier texto entonces el bot saluda y ofrece Pedir un turno y Ver o cambiar mi turno', () => {
+  it('dado una sesion nueva cuando el paciente escribe cualquier texto entonces el bot saluda y ofrece Pedir un turno, Ver mi turno y Consultar mi obra social', () => {
     const r = respuesta(avanzar(nuevaSesion(), texto('Hola! Quería sacar un turno'), CATALOGO));
     expect(textos(r)).toMatch(/asistente del consultorio/);
-    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver o cambiar mi turno']);
+    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
     expect(r.pideTexto).toBe(false);
   });
 
   it('dado una conversacion mostrando horarios cuando el paciente escribe "menú" entonces vuelve al menu inicial', () => {
     const r = respuesta(avanzar(hastaHorarios().sesion, texto('menú'), CATALOGO));
-    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver o cambiar mi turno']);
+    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
   });
 
   it('dado una conversacion avanzada cuando el paciente escribe "hola" entonces vuelve al menu inicial', () => {
     const r = respuesta(avanzar(hastaHorarios().sesion, texto('Hola'), CATALOGO));
-    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver o cambiar mi turno']);
+    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
   });
 });
 
@@ -152,13 +158,13 @@ describe('conversacion - horarios ofrecidos (RN-WA-01)', () => {
 });
 
 describe('conversacion - identificacion y reserva', () => {
-  it('dado horarios ofrecidos cuando elige uno entonces declara identificar por telefono', () => {
-    const s = elegir(hastaHorarios(), 'Lun 30/11 09:15');
+  it('dado el resumen del horario cuando elige Confirmar turno entonces declara identificar por telefono', () => {
+    const s = confirmarHorario('Lun 30/11 09:15');
     expect(efecto(s)).toEqual({ tipo: 'identificarPorTelefono' });
   });
 
   it('dado un telefono conocido cuando se identifica entonces declara reservar el hueco elegido sin pedir datos', () => {
-    const s = elegir(hastaHorarios(), 'Lun 30/11 09:15');
+    const s = confirmarHorario('Lun 30/11 09:15');
     const r = resolver(s.sesion, { tipo: 'identificarPorTelefono', pacienteId: 'pac-01' }, CATALOGO);
     expect(efecto(r)).toEqual({
       tipo: 'reservar',
@@ -171,7 +177,7 @@ describe('conversacion - identificacion y reserva', () => {
   });
 
   it('dado un telefono desconocido cuando se identifica entonces pide nombre y DNI con texto habilitado', () => {
-    const s = elegir(hastaHorarios(), 'Lun 30/11 09:15');
+    const s = confirmarHorario('Lun 30/11 09:15');
     const r = respuesta(resolver(s.sesion, { tipo: 'identificarPorTelefono' }, CATALOGO));
     expect(textos(r)).toMatch(/nombre completo y DNI/);
     expect(r.pideTexto).toBe(true);
@@ -179,7 +185,7 @@ describe('conversacion - identificacion y reserva', () => {
   });
 
   function pidiendoDatos(): Sesion {
-    const s = elegir(hastaHorarios(), 'Lun 30/11 09:15');
+    const s = confirmarHorario('Lun 30/11 09:15');
     return resolver(s.sesion, { tipo: 'identificarPorTelefono' }, CATALOGO).sesion;
   }
 
@@ -214,7 +220,7 @@ describe('conversacion - identificacion y reserva', () => {
   });
 
   function reservando(): Sesion {
-    const s = elegir(hastaHorarios(), 'Lun 30/11 09:15');
+    const s = confirmarHorario('Lun 30/11 09:15');
     return resolver(s.sesion, { tipo: 'identificarPorTelefono', pacienteId: 'pac-01' }, CATALOGO).sesion;
   }
 
@@ -226,7 +232,8 @@ describe('conversacion - identificacion y reserva', () => {
     expect(tarjeta?.lineas.join('\n')).toMatch(/Lun 30\/11 09:15/);
     expect(tarjeta?.lineas.join('\n')).toMatch(/Control y limpieza · Dra\. Ficticia Perez/);
     expect(tarjeta?.lineas.join('\n')).toMatch(/24 h antes/);
-    expect(etiquetas(r)).toEqual(['Volver al menú']);
+    expect(textos(r)).toMatch(/¿Querés pagar la seña ahora\?/);
+    expect(etiquetas(r)).toEqual(['Pagar seña', 'Volver al menú']);
   });
 
   it('dado un horario tomado entre medio (RN-AG-02) cuando se resuelve la reserva entonces avisa y declara buscar de nuevo el mismo dia', () => {
@@ -250,16 +257,16 @@ describe('conversacion - identificacion y reserva', () => {
   });
 });
 
-describe('conversacion - ver o cambiar mi turno', () => {
-  it('dado un proximo turno cuando se resuelve entonces lo muestra con Confirmo, Necesito cambiarlo y Cancelar turno', () => {
+describe('conversacion - ver mi turno', () => {
+  it('dado un proximo turno cuando se resuelve entonces lo muestra con Confirmo, Pagar seña y Cancelar turno', () => {
     const r = respuesta(hastaGestion());
     expect(textos(r)).toMatch(/Mar 1\/12 10:00 · Control y limpieza · Dra\. Ficticia Perez/);
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Necesito cambiarlo', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
   });
 
   it('dado un telefono sin turnos cuando se resuelve entonces informa y ofrece Pedir un turno', () => {
     let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
-    s = elegir(s, 'Ver o cambiar mi turno');
+    s = elegir(s, 'Ver mi turno');
     const r = respuesta(resolver(s.sesion, { tipo: 'buscarProximoTurno' }, CATALOGO));
     expect(textos(r)).toMatch(/No encontré turnos próximos/);
     expect(etiquetas(r)).toEqual(['Pedir un turno']);
@@ -286,7 +293,7 @@ describe('conversacion - ver o cambiar mi turno', () => {
 
   it('dado la confirmacion de cancelacion cuando elige No entonces vuelve a las opciones del turno', () => {
     const r = respuesta(elegir(elegir(hastaGestion(), 'Cancelar turno'), 'No'));
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Necesito cambiarlo', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
   });
 
   it('dado la confirmacion de cancelacion cuando elige Si, cancelar entonces declara cancelar y al resolver confirma', () => {
@@ -303,10 +310,18 @@ describe('conversacion - ver o cambiar mi turno', () => {
     expect(etiquetas(r)).toEqual(['Volver al menú']);
   });
 
-  it('dado el turno mostrado cuando elige Necesito cambiarlo entonces deriva a recepcion sin efectos', () => {
-    const r = respuesta(elegir(hastaGestion(), 'Necesito cambiarlo'));
-    expect(textos(r)).toMatch(/comunicate con recepción/);
-    expect(etiquetas(r)).toEqual(['Volver al menú']);
+  it('dado el turno mostrado cuando llega la opcion cambiar ya eliminada entonces responde No entendi y repite las opciones', () => {
+    const r = respuesta(avanzar(hastaGestion().sesion, opcion('cambiar'), CATALOGO));
+    expect(textos(r)).toMatch(/No entendí/);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+  });
+
+  it('dado un turno señado cuando se muestra entonces indica Seña pagada y no ofrece pagar', () => {
+    let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
+    s = elegir(s, 'Ver mi turno');
+    const r = respuesta(resolver(s.sesion, { tipo: 'buscarProximoTurno', turno: { ...TURNO, senado: true } }, CATALOGO));
+    expect(textos(r)).toMatch(/Seña pagada/);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Cancelar turno']);
   });
 
   it('dado un pedido de recordatorio cuando se resuelve con turno entonces escribe el recordatorio con las 3 opciones', () => {
@@ -317,7 +332,7 @@ describe('conversacion - ver o cambiar mi turno', () => {
     );
     expect(textos(r)).toMatch(/Hola Paciente Ficticio Uno, te recordamos tu turno/);
     expect(textos(r)).toMatch(/¿Confirmás tu asistencia\?/);
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Necesito cambiarlo', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
   });
 
   it('dado un pedido de recordatorio sin turnos cuando se resuelve entonces informa que no hay turnos proximos', () => {
@@ -342,5 +357,135 @@ describe('conversacion - opcion no reconocida', () => {
     const r = avanzar(s.sesion, texto('quiero el martes'), CATALOGO);
     expect(textos(respuesta(r))).toMatch(/No entendí/);
     expect(elegir(r, 'Ortodoncia').sesion.paso).toBe('profesional');
+  });
+});
+
+describe('conversacion - revisar el horario antes de reservar', () => {
+  it('dado horarios ofrecidos cuando elige uno entonces muestra el resumen con Confirmar turno y Volver atras sin efecto', () => {
+    const s = elegir(hastaHorarios(), 'Lun 30/11 09:00');
+    const r = respuesta(s);
+    expect(textos(r)).toMatch(/Elegiste:\nLun 30\/11 09:00 · Control y limpieza · Dra\. Ficticia Perez\n¿Confirmás el turno\?/);
+    expect(etiquetas(r)).toEqual(['Confirmar turno', 'Volver atrás']);
+    expect(s.sesion.efectoPendiente).toBeUndefined();
+  });
+
+  it('dado el resumen del horario cuando elige Volver atras entonces repite los mismos horarios sin efecto', () => {
+    const r = respuesta(elegir(elegir(hastaHorarios(), 'Lun 30/11 09:15'), 'Volver atrás'));
+    expect(etiquetas(r)).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días']);
+    expect(textos(r)).toMatch(/próximos horarios libres/);
+  });
+
+  it('dado volver atras cuando elige otro horario y confirma entonces reserva el nuevo horario', () => {
+    let s = elegir(elegir(hastaHorarios(), 'Lun 30/11 09:15'), 'Volver atrás');
+    s = elegir(elegir(s, 'Lun 30/11 09:30'), 'Confirmar turno');
+    const r = resolver(s.sesion, { tipo: 'identificarPorTelefono', pacienteId: 'pac-01' }, CATALOGO);
+    expect(efecto(r)).toMatchObject({ tipo: 'reservar', inicio: en('09:30') });
+  });
+});
+
+describe('conversacion - pagar seña simulada', () => {
+  const RESERVADO: TurnoResumen = { ...TURNO, id: 't-9', inicio: en('09:15') };
+
+  function reservado(): Salida {
+    const s = confirmarHorario('Lun 30/11 09:15');
+    const r = resolver(s.sesion, { tipo: 'identificarPorTelefono', pacienteId: 'pac-01' }, CATALOGO);
+    return resolver(r.sesion, { tipo: 'reservar', turno: RESERVADO }, CATALOGO);
+  }
+
+  it('dado un turno recien reservado cuando elige Pagar seña entonces muestra el monto ficticio y las opciones de pago', () => {
+    const r = respuesta(elegir(reservado(), 'Pagar seña'));
+    expect(textos(r)).toMatch(/Mercado Pago \(SIMULACIÓN\)/);
+    expect(textos(r)).toMatch(/Lun 30\/11 09:15: \$5\.000 \(monto ficticio\)/);
+    expect(etiquetas(r)).toEqual(['Aprobar pago (simulación)', 'Rechazar pago (simulación)', 'Volver al menú']);
+  });
+
+  it('dado la pantalla de pago cuando elige Aprobar entonces declara pagarSena aprobado y al resolver muestra Seña pagada', () => {
+    const s = elegir(elegir(reservado(), 'Pagar seña'), 'Aprobar pago (simulación)');
+    expect(efecto(s)).toEqual({ tipo: 'pagarSena', turnoId: 't-9', resultado: 'aprobado' });
+    const r = respuesta(resolver(s.sesion, { tipo: 'pagarSena', resultado: 'aprobado' }, CATALOGO));
+    const tarjeta = r.mensajes.find((m) => m.tarjeta !== undefined)?.tarjeta;
+    expect(tarjeta?.titulo).toBe('Seña pagada');
+    expect(tarjeta?.lineas.join('\n')).toMatch(/Lun 30\/11 09:15/);
+    expect(tarjeta?.lineas.join('\n')).toMatch(/\$5\.000 · Mercado Pago \(simulación\)/);
+    expect(etiquetas(r)).toEqual(['Volver al menú']);
+  });
+
+  it('dado la pantalla de pago cuando elige Rechazar entonces declara pagarSena rechazado y al resolver ofrece reintentar', () => {
+    const s = elegir(elegir(reservado(), 'Pagar seña'), 'Rechazar pago (simulación)');
+    expect(efecto(s)).toEqual({ tipo: 'pagarSena', turnoId: 't-9', resultado: 'rechazado' });
+    const salida = resolver(s.sesion, { tipo: 'pagarSena', resultado: 'rechazado' }, CATALOGO);
+    const r = respuesta(salida);
+    expect(textos(r)).toMatch(/El pago fue rechazado \(simulación\)\. Tu turno sigue reservado, sin seña\./);
+    expect(etiquetas(r)).toEqual(['Pagar seña', 'Volver al menú']);
+    expect(etiquetas(respuesta(elegir(salida, 'Pagar seña')))).toContain('Aprobar pago (simulación)');
+  });
+
+  it('dado un turno ya señado (RN-SM-01) cuando se resuelve el pago entonces informa que la seña ya estaba pagada', () => {
+    const s = elegir(elegir(reservado(), 'Pagar seña'), 'Aprobar pago (simulación)');
+    const r = respuesta(resolver(s.sesion, { tipo: 'pagarSena', regla: 'RN-SM-01' }, CATALOGO));
+    expect(textos(r)).toMatch(/ya tiene la seña pagada/);
+    expect(etiquetas(r)).toEqual(['Volver al menú']);
+  });
+
+  it('dado el turno mostrado en Ver mi turno cuando elige Pagar seña entonces muestra la pantalla de pago de ese turno', () => {
+    const r = respuesta(elegir(hastaGestion(), 'Pagar seña'));
+    expect(textos(r)).toMatch(/Mar 1\/12 10:00: \$5\.000/);
+  });
+});
+
+describe('conversacion - consultar mi obra social', () => {
+  function pidiendoAfiliado(): Salida {
+    return elegir(avanzar(nuevaSesion(), texto('hola'), CATALOGO), 'Consultar mi obra social');
+  }
+
+  it('dado el menu cuando elige Consultar mi obra social entonces pide el numero de afiliado con texto habilitado', () => {
+    const r = respuesta(pidiendoAfiliado());
+    expect(textos(r)).toMatch(/número de afiliado/);
+    expect(r.pideTexto).toBe(true);
+    expect(etiquetas(r)).toEqual(['Volver al menú']);
+  });
+
+  it('dado el pedido de afiliado cuando escribe en minusculas con espacios entonces declara consultar con el numero normalizado', () => {
+    const s = avanzar(pidiendoAfiliado().sesion, texto(' af-0002 '), CATALOGO);
+    expect(efecto(s)).toEqual({ tipo: 'consultarObraSocial', nro: 'AF-0002' });
+  });
+
+  it('dado un afiliado encontrado cuando se resuelve entonces muestra obra social, plan, cobertura, copago y estado', () => {
+    const s = avanzar(pidiendoAfiliado().sesion, texto('AF-0002'), CATALOGO);
+    const r = respuesta(
+      resolver(
+        s.sesion,
+        {
+          tipo: 'consultarObraSocial',
+          afiliado: { obraSocial: 'OS-02', plan: 'Plan Copago', cobertura: 60, copagoPct: 40, estado: 'con_copago' },
+        },
+        CATALOGO,
+      ),
+    );
+    const tarjeta = r.mensajes.find((m) => m.tarjeta !== undefined)?.tarjeta;
+    expect(tarjeta?.titulo).toBe('Tu cobertura (simulación)');
+    expect(tarjeta?.lineas).toEqual(['Obra social: OS-02', 'Plan: Plan Copago', 'Cobertura: 60%', 'Copago: 40%', 'Estado: con copago']);
+    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Volver al menú']);
+  });
+
+  it('dado un afiliado inexistente cuando se resuelve entonces avisa y vuelve a pedir el numero', () => {
+    const s = avanzar(pidiendoAfiliado().sesion, texto('AF-9999'), CATALOGO);
+    const r = resolver(s.sesion, { tipo: 'consultarObraSocial', error: 'no-encontrado' }, CATALOGO);
+    expect(textos(respuesta(r))).toMatch(/No encontré el afiliado AF-9999 en el padrón simulado/);
+    expect(respuesta(r).pideTexto).toBe(true);
+    expect(efecto(avanzar(r.sesion, texto('AF-0001'), CATALOGO))).toEqual({ tipo: 'consultarObraSocial', nro: 'AF-0001' });
+  });
+
+  it('dado una falla simulada del padron cuando se resuelve entonces informa sin datos de cobertura', () => {
+    const s = avanzar(pidiendoAfiliado().sesion, texto('AF-0004'), CATALOGO);
+    const r = respuesta(resolver(s.sesion, { tipo: 'consultarObraSocial', error: 'falla' }, CATALOGO));
+    expect(textos(r)).toMatch(/padrón de obras sociales no respondió \(falla simulada\)/);
+    expect(r.mensajes.some((m) => m.tarjeta !== undefined)).toBe(false);
+    expect(etiquetas(r)).toEqual(['Volver al menú']);
+  });
+
+  it('dado el pedido de afiliado cuando escribe "menú" entonces vuelve al menu inicial', () => {
+    const r = respuesta(avanzar(pidiendoAfiliado().sesion, texto('menú'), CATALOGO));
+    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
   });
 });

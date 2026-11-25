@@ -43,7 +43,8 @@
     lista.appendChild(div);
   }
 
-  var ALERTAS = /ya se ocupó|Ya tenés otro turno|menos de 24 h|No pude/;
+  var ALERTAS = /ya se ocupó|Ya tenés otro turno|menos de 24 h|No pude|rechazado \(simulación\)|falla simulada|No encontré el afiliado/;
+  var PELIGRO = ['cancelar', 'rechazar-pago'];
 
   function mostrar(respuesta) {
     respuesta.mensajes.forEach(function (m) {
@@ -57,7 +58,7 @@
     respuesta.opciones.forEach(function (o) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = o.id === 'cancelar' ? 'chip danger' : 'chip';
+      b.className = PELIGRO.indexOf(o.id) >= 0 ? 'chip danger' : 'chip';
       b.textContent = o.etiqueta;
       b.addEventListener('click', function () {
         burbuja('me', o.etiqueta);

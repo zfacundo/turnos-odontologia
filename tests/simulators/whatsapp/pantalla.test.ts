@@ -50,3 +50,16 @@ describe('pantalla /bot.html (RN-WA-04)', () => {
     }
   });
 });
+
+describe('pantallas - seña pagada y pago simulado', () => {
+  const AGENDA = readFileSync(path.join(PUBLIC, 'js', 'agenda.js'), 'utf8');
+
+  it('dado el JS de la agenda cuando arma la tarjeta de un turno entonces muestra Seña pagada solo si senado es verdadero', () => {
+    expect(AGENDA).toMatch(/turno\.senado\s*\?\s*' · Seña pagada'\s*:\s*''/);
+  });
+
+  it('dado el JS del bot cuando pinta las opciones entonces Rechazar pago se ve como accion de alerta', () => {
+    expect(JS).toMatch(/rechazar-pago/);
+    expect(JS).toMatch(/rechazado \(simulación\)|falla simulada|No encontré el afiliado/);
+  });
+});

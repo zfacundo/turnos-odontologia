@@ -37,7 +37,7 @@ describe('POST /api/sim/whatsapp/mensaje - contrato', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ simulado: true, aviso: AVISO, pideTexto: false });
     expect(res.body.mensajes[0].texto).toMatch(/asistente del consultorio/);
-    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Pedir un turno', 'Ver o cambiar mi turno']);
+    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
   });
 
   it('dado un telefono real cuando envia un mensaje entonces responde 400 entrada', async () => {
@@ -69,7 +69,7 @@ describe('POST /api/sim/whatsapp/mensaje - contrato', () => {
     const a = await chatear(app, TEL_UNO, ['Pedir un turno']);
     const b = await mensaje(app, { telefono: TEL_NUEVO, texto: 'hola' });
     expect(a.body.opciones.map((o: Opcion) => o.etiqueta)).toContain('Ortodoncia');
-    expect(b.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Pedir un turno', 'Ver o cambiar mi turno']);
+    expect(b.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
     const sigueA = await mensaje(app, { telefono: TEL_UNO, opcionId: idDe(a.body.opciones, 'Ortodoncia') });
     expect(sigueA.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez']);
   });
@@ -78,7 +78,7 @@ describe('POST /api/sim/whatsapp/mensaje - contrato', () => {
 describe('POST /api/sim/whatsapp/mensaje - reserva de punta a punta', () => {
   it('dado el seed cuando pac-01 reserva por el bot entonces GET /api/turnos muestra el turno reservado con origen whatsapp', async () => {
     const app = nuevaApp();
-    const res = await chatear(app, TEL_UNO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00']);
+    const res = await chatear(app, TEL_UNO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00', 'Confirmar turno']);
     expect(res.body.mensajes.some((m: { tarjeta?: { titulo: string } }) => m.tarjeta?.titulo === 'Turno reservado')).toBe(true);
     const turnos = await request(app)
       .get('/api/turnos')
@@ -96,7 +96,7 @@ describe('POST /api/sim/whatsapp/mensaje - reserva de punta a punta', () => {
 
   it('dado un numero nuevo cuando el bot pide datos entonces pideTexto es verdadero y con los datos completa la reserva', async () => {
     const app = nuevaApp();
-    const pide = await chatear(app, TEL_NUEVO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00']);
+    const pide = await chatear(app, TEL_NUEVO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00', 'Confirmar turno']);
     expect(pide.body.pideTexto).toBe(true);
     const fin = await mensaje(app, { telefono: TEL_NUEVO, texto: 'Paciente Ficticio Once, 99.000.011' });
     expect(fin.body.mensajes.some((m: { tarjeta?: { titulo: string } }) => m.tarjeta?.titulo === 'Turno reservado')).toBe(true);
@@ -114,7 +114,7 @@ describe('POST /api/sim/whatsapp/recordatorio', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ simulado: true, aviso: AVISO });
     expect(res.body.mensajes[0].texto).toMatch(/te recordamos tu turno[\s\S]*Mar 1\/12 10:00[\s\S]*¿Confirmás tu asistencia\?/);
-    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Confirmo', 'Necesito cambiarlo', 'Cancelar turno']);
+    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
     const confirmo = await mensaje(app, { telefono: TEL_UNO, opcionId: idDe(res.body.opciones, 'Confirmo') });
     expect(confirmo.body.mensajes.some((m: { tarjeta?: { titulo: string } }) => m.tarjeta?.titulo === 'Turno confirmado')).toBe(true);
   });
@@ -129,5 +129,50 @@ describe('POST /api/sim/whatsapp/recordatorio', () => {
     const res = await recordatorio(nuevaApp(), { telefono: '11 4321-0000' });
     expect(res.status).toBe(400);
     expect(res.body.error.tipo).toBe('entrada');
+  });
+});
+
+describe('POST /api/sim/whatsapp/mensaje - seña y obra social', () => {
+  it('dado una reserva por el bot cuando aprueba la seña entonces GET /api/turnos muestra el turno con senado true', async () => {
+    const app = nuevaApp();
+    const res = await chatear(app, TEL_UNO, [
+      'Pedir un turno',
+      'Control y limpieza',
+      'Dra. Ficticia Perez',
+      'Lun 30/11 09:00',
+      'Confirmar turno',
+      'Pagar seña',
+      'Aprobar pago (simulación)',
+    ]);
+    expect(res.body.mensajes.some((m: { tarjeta?: { titulo: string } }) => m.tarjeta?.titulo === 'Seña pagada')).toBe(true);
+    const turnos = await request(app)
+      .get('/api/turnos')
+      .query({ desde: '2026-11-30T00:00:00-03:00', hasta: '2026-12-01T00:00:00-03:00' })
+      .set(RECEPCION);
+    expect(turnos.body.turnos[0]).toMatchObject({ pacienteId: 'pac-01', origen: 'whatsapp', senado: true });
+  });
+
+  it('dado el resumen del horario cuando elige Volver atras entonces GET /api/turnos no tiene turnos', async () => {
+    const app = nuevaApp();
+    const res = await chatear(app, TEL_UNO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00', 'Volver atrás']);
+    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toContain('Lun 30/11 09:00');
+    const turnos = await request(app)
+      .get('/api/turnos')
+      .query({ desde: '2026-11-30T00:00:00-03:00', hasta: '2026-12-01T00:00:00-03:00' })
+      .set(RECEPCION);
+    expect(turnos.body.turnos).toEqual([]);
+  });
+
+  it('dado el menu cuando consulta la obra social AF-0001 entonces responde con la cobertura rotulada como simulacion', async () => {
+    const app = nuevaApp();
+    await chatear(app, TEL_NUEVO, ['Consultar mi obra social']);
+    const res = await mensaje(app, { telefono: TEL_NUEVO, texto: 'AF-0001' });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ simulado: true, aviso: AVISO });
+    const tarjeta = res.body.mensajes.find((m: { tarjeta?: { titulo: string } }) => m.tarjeta !== undefined).tarjeta;
+    expect(tarjeta).toEqual({
+      titulo: 'Tu cobertura (simulación)',
+      lineas: ['Obra social: OS-01', 'Plan: Plan Base', 'Cobertura: 80%', 'Copago: 20%', 'Estado: activo'],
+    });
   });
 });

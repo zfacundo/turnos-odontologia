@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { Deps } from '../../api/deps';
 import { ErrorDeEntrada } from '../../api/middleware/errores';
-import { procesar } from './bot';
+import { procesar, simuladoresPorDefecto, type SimuladoresBot } from './bot';
 import { consultarAvisosCancelacion } from './avisosCancelacion';
 import { nuevaSesion, type Entrada, type Respuesta, type Sesion } from './conversacion';
 
@@ -43,11 +43,15 @@ function json(r: Respuesta) {
 }
 
 /** Router del bot de WhatsApp SIMULADO (RN-WA-01..04, RN-SM-04). No usa X-Rol: representa al paciente del telefono. */
-export function whatsappRouter(deps: Deps, sesiones: SesionesWhatsApp = new Map()): Router {
+export function whatsappRouter(
+  deps: Deps,
+  sesiones: SesionesWhatsApp = new Map(),
+  sims: SimuladoresBot = simuladoresPorDefecto(),
+): Router {
   const router = Router();
 
   const atender = (telefono: string, entrada: Entrada): Respuesta => {
-    const r = procesar(deps, telefono, sesiones.get(telefono) ?? nuevaSesion(), entrada);
+    const r = procesar(deps, telefono, sesiones.get(telefono) ?? nuevaSesion(), entrada, sims);
     sesiones.set(telefono, r.sesion);
     return r.respuesta;
   };

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Bot · Consultar obra social</title>
+  <link rel="stylesheet" href="../../../../design-system/tokens.css">
+  <link rel="stylesheet" href="bot.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+  <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+  <header class="top">
+    <img src="../../../../design-system/assets/logo.svg" alt="Logo provisional (TBD)">
+    <strong data-brand-name>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="#">Agenda</a><a href="#" aria-current="page">Bot WhatsApp (sim.)</a></nav>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-panel">
+      <h1 id="t-panel">Chat del paciente</h1>
+      <p class="lead">Elegí un teléfono ficticio para escribir como ese paciente.</p>
+      <label for="tel">Teléfono del paciente</label>
+      <select class="input" id="tel">
+        <option>+54 9 11 0000-0001 · Paciente Ficticio Uno</option>
+        <option selected>+54 9 11 0000-0099 · número nuevo</option>
+      </select>
+      <p class="hint">Números de afiliado del padrón ficticio: AF-0001 a AF-0004.</p>
+      <button class="btn" type="button">Enviar recordatorio 24 h</button>
+      <div class="meta"><strong>Estado mostrado</strong>Menú → "Consultar mi obra social" → AF-0001 → tarjeta de cobertura. Abajo: menú inicial, número inexistente y falla simulada del padrón.</div>
+    </section>
+
+    <section aria-label="Conversación simulada">
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0099</small></div>
+        <div class="msgs" aria-live="polite">
+          <div class="b me">Hola!<time>09:00</time></div>
+          <div class="b bot">Hola, soy el asistente del consultorio. ¿En qué te puedo ayudar?<time>09:00</time></div>
+          <div class="b me">Consultar mi obra social<time>09:01</time></div>
+          <div class="b bot">Escribí tu número de afiliado.
+Ej.: AF-0001<time>09:01</time></div>
+          <div class="b me">AF-0001<time>09:01</time></div>
+          <div class="b bot card-msg"><strong>Tu cobertura (simulación)</strong><dl><dt>Obra social</dt><dd>OS-01</dd><dt>Plan</dt><dd>Plan Base</dd><dt>Cobertura</dt><dd>80%</dd><dt>Copago</dt><dd>20%</dd><dt>Estado</dt><dd>activo</dd></dl>Padrón ficticio: no se consultó ninguna obra social real.<time>09:01</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Pedir un turno</button>
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+        <form class="bar" onsubmit="return false">
+          <label class="visually-hidden" for="msg">Mensaje</label>
+          <input class="input" id="msg" placeholder="Elegí una opción" disabled>
+          <button class="btn btn-primary" type="submit" disabled>Enviar</button>
+        </form>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: menú inicial</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0099</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b bot">Hola, soy el asistente del consultorio. ¿En qué te puedo ayudar?<time>09:00</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Pedir un turno</button>
+          <button class="chip" type="button">Ver mi turno</button>
+          <button class="chip" type="button">Consultar mi obra social</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: número inexistente</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0099</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b me">AF-9999<time>09:02</time></div>
+          <div class="b bot alerta">No encontré el afiliado AF-9999 en el padrón simulado. Revisá el número y escribilo de nuevo (Ej.: AF-0001).<time>09:02</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+        <form class="bar" onsubmit="return false">
+          <label class="visually-hidden" for="msg2">Mensaje</label>
+          <input class="input" id="msg2" placeholder="Escribí un mensaje">
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </form>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: falla simulada del padrón</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0099</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b me">AF-0004<time>09:03</time></div>
+          <div class="b bot alerta">El padrón de obras sociales no respondió (falla simulada). Probá de nuevo más tarde.<time>09:03</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
