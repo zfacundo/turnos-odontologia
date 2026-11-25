@@ -1,0 +1,109 @@
+{
+  "reducedMotion": true,
+  "pantallas": [
+    {
+      "pantalla": "login",
+      "focos": 3,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    },
+    {
+      "pantalla": "dashboard",
+      "focos": 8,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    },
+    {
+      "pantalla": "agenda",
+      "focos": 55,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    },
+    {
+      "pantalla": "clientes",
+      "focos": 19,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    },
+    {
+      "pantalla": "historial",
+      "focos": 17,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    },
+    {
+      "pantalla": "historial/pac-01",
+      "focos": 7,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    }
+  ],
+  "movimiento": [
+    {
+      "pantalla": "dashboard",
+      "problemas": []
+    },
+    {
+      "pantalla": "agenda",
+      "problemas": []
+    },
+    {
+      "pantalla": "clientes",
+      "problemas": []
+    },
+    {
+      "pantalla": "historial",
+      "problemas": []
+    },
+    {
+      "pantalla": "historial/pac-01",
+      "problemas": []
+    }
+  ],
+  "login": {
+    "conFlechaAbajo": "u-recepcion",
+    "conFlechaArriba": "u-admin",
+    "focoAntesDeEnter": {
+      "tag": "button",
+      "txt": "Ingresar como Admin Ficticio",
+      "outline": 3,
+      "boxShadow": false,
+      "visible": true
+    },
+    "hash": "#/dashboard"
+  },
+  "drawer": {
+    "origen": {
+      "tag": "button",
+      "txt": "Miércoles 10:00 a 10:30, Paciente Fictic",
+      "outline": 3,
+      "boxShadow": false,
+      "visible": true
+    },
+    "focoInicial": {
+      "tag": "button",
+      "txt": "Cerrar detalle",
+      "outline": 3,
+      "boxShadow": false,
+      "visible": true
+    },
+    "focoSiempreDentroTras25Tabs": true,
+    "focoDevuelto": {
+      "tag": "button",
+      "txt": "Miércoles 10:00 a 10:30, Paciente Fictic",
+      "outline": 3,
+      "boxShadow": false,
+      "visible": true
+    }
+  },
+  "movil": {
+    "scrollHorizontal": false,
+    "pantalla": {
+      "pantalla": "agenda-390",
+      "focos": 39,
+      "sinFocoVisible3px": [],
+      "ocultos": 0
+    },
+    "movimiento": []
+  }
+}
