@@ -1,8 +1,12 @@
 import type { Clock } from '../../application/ports/clock';
 import type { Deps } from '../../api/deps';
 import type { Bloqueo } from '../../domain/configuracion/bloqueo';
+import type { EntradaHistoria } from '../../domain/historia/entrada';
 import { validarPrestacion } from '../../domain/configuracion/prestacion';
 import { crearIntervaloAlineado } from '../../domain/shared/intervalo';
+import { GeneradorTokenAleatorio } from '../auth/generador-token';
+import { SesionRepositoryEnMemoria } from '../memory/sesion-repository';
+import { HistoriaRepositoryEnMemoria } from '../memory/historia-repository';
 import { AuditoriaEnMemoria } from '../memory/auditoria-en-memoria';
 import { BloqueoRepositoryEnMemoria } from '../memory/bloqueo-repository';
 import { PacienteRepositoryEnMemoria } from '../memory/paciente-repository';
@@ -11,6 +15,7 @@ import { ProfesionalRepositoryEnMemoria } from '../memory/profesional-repository
 import { SillonRepositoryEnMemoria } from '../memory/sillon-repository';
 import { TurnoRepositoryEnMemoria } from '../memory/turno-repository';
 import {
+  HISTORIA_SEED,
   MOTIVO_URGENCIAS,
   PACIENTES,
   PRESTACIONES,
@@ -50,6 +55,31 @@ function bloqueosDeUrgencias(clock: Clock): Bloqueo[] {
   return bloqueos;
 }
 
+/** Entradas ficticias de historial con fechas relativas al reloj (`ahora - n días`). */
+function historiaDelSeed(clock: Clock): EntradaHistoria[] {
+  const ahora = clock.ahora();
+  return HISTORIA_SEED.map((h, i) => {
+    const profesional = PROFESIONALES.find((p) => p.id === h.profesionalId);
+    const usuario = USUARIOS.find((u) => u.profesionalId === h.profesionalId);
+    if (profesional === undefined || usuario === undefined) {
+      throw new Error(`Seed invalido: profesional ${h.profesionalId} inexistente en el historial.`);
+    }
+    const fecha = new Date(ahora.getTime() - h.diasAtras * DIA_MS);
+    return {
+      id: `hc-${i + 1}`,
+      pacienteId: h.pacienteId,
+      fecha,
+      profesionalId: profesional.id,
+      profesionalNombre: profesional.nombre,
+      procedimiento: h.procedimiento,
+      notas: h.notas,
+      creadoPor: usuario.id,
+      creadoEn: fecha,
+      simulado: true,
+    };
+  });
+}
+
 /** Arma las dependencias con los datos ficticios del seed (design D7). */
 export function cargarSeed(clock: Clock): Deps {
   for (const p of PRESTACIONES) {
@@ -66,5 +96,8 @@ export function cargarSeed(clock: Clock): Deps {
     clock,
     auditoria: new AuditoriaEnMemoria(),
     usuarios: USUARIOS,
+    sesiones: new SesionRepositoryEnMemoria(),
+    generadorToken: new GeneradorTokenAleatorio(),
+    historia: new HistoriaRepositoryEnMemoria(historiaDelSeed(clock)),
   };
 }

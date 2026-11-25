@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import express, { type Express } from 'express';
 import request from 'supertest';
 import {
+  ErrorDeAutenticacion,
   ErrorDeEntrada,
   ErrorDePermiso,
   FalloDeRegla,
@@ -77,6 +78,16 @@ describe('manejadorDeErrores', () => {
     const res = await request(app).post('/x').set('Content-Type', 'application/json').send('{malo');
     expect(res.status).toBe(400);
     expect(res.body.error.tipo).toBe('entrada');
+  });
+
+  it('dado un error de autenticacion cuando se procesa entonces responde 401 con tipo autenticacion y mensaje generico', async () => {
+    const app = appCon(() => {
+      throw new ErrorDeAutenticacion('Sesión inválida o vencida.');
+    });
+    const res = await request(app).get('/x');
+    expect(res.status).toBe(401);
+    expect(res.body.error.tipo).toBe('autenticacion');
+    expect(res.body.error.mensaje).toBe('Sesión inválida o vencida.');
   });
 
   it('dado un error de permiso cuando se procesa entonces responde 403 con tipo permiso', async () => {

@@ -25,8 +25,9 @@ export function odontogramaRouter(deps: Deps): Router {
   const repo = new RepositorioPiezas();
 
   function comprobarAcceso(usuario: Usuario | undefined) {
-    if (!usuario || !usuario.rol) {
-      throw new ErrorDePermiso('Se requiere un rol autorizado.');
+    // spec: panel-reemplaza-agenda-vieja (D4): solo el odontólogo, antes de buscar el turno.
+    if (usuario?.rol !== 'odontologo') {
+      throw new ErrorDePermiso('Solo el odontólogo puede usar el odontograma.');
     }
   }
 

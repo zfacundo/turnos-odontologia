@@ -66,3 +66,22 @@ export const USUARIOS: readonly Usuario[] = [
   { id: 'u-odonto-1', nombre: 'Dra. Ficticia Perez', rol: 'odontologo', profesionalId: 'prof-1' },
   { id: 'u-odonto-2', nombre: 'Dr. Ficticio Gomez', rol: 'odontologo', profesionalId: 'prof-2' },
 ];
+
+export interface EntradaHistoriaSeed {
+  readonly pacienteId: string;
+  readonly profesionalId: string;
+  /** Días antes del instante inicial del reloj. */
+  readonly diasAtras: number;
+  readonly procedimiento: string;
+  readonly notas: string;
+}
+
+/** Historial ficticio: 2-3 entradas para pac-01..pac-03, evidentemente de prueba. */
+export const HISTORIA_SEED: readonly EntradaHistoriaSeed[] = [
+  { pacienteId: 'pac-01', profesionalId: 'prof-1', diasAtras: 90, procedimiento: 'Control y limpieza (ficticio)', notas: 'Sin hallazgos. Dato ficticio de prueba.' },
+  { pacienteId: 'pac-01', profesionalId: 'prof-2', diasAtras: 30, procedimiento: 'Restauración pieza 16 (ficticio)', notas: 'Caso ficticio de ejemplo, sin valor clínico.' },
+  { pacienteId: 'pac-02', profesionalId: 'prof-1', diasAtras: 60, procedimiento: 'Ortodoncia: control mensual (ficticio)', notas: 'Evolución normal. Dato ficticio.' },
+  { pacienteId: 'pac-02', profesionalId: 'prof-1', diasAtras: 20, procedimiento: 'Ajuste de aparatología (ficticio)', notas: 'Entrada ficticia de prueba.' },
+  { pacienteId: 'pac-03', profesionalId: 'prof-2', diasAtras: 45, procedimiento: 'Consulta de urgencia (ficticio)', notas: 'Dolor leve, sin tratamiento. Dato ficticio.' },
+  { pacienteId: 'pac-03', profesionalId: 'prof-2', diasAtras: 10, procedimiento: 'Control posterior (ficticio)', notas: 'Sin molestias. Dato ficticio de prueba.' },
+];

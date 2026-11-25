@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel de administración</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="admin.css">
+  <script src="brand.js" defer></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<!-- Login (sin sesión) -->
+<div class="login-page" id="vista-login" hidden>
+  <p class="sim" role="note">SIMULACIÓN — usuarios ficticios, sin contraseñas</p>
+  <div class="login-wrap">
+    <main class="login-card" aria-labelledby="t-login">
+      <span class="brand"><img src="logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></span>
+      <div>
+        <h1 id="t-login">Ingresar al panel</h1>
+        <p class="muted small" style="margin:6px 0 0">Elegí con qué usuario ficticio querés entrar. Tu rol define qué secciones ves.</p>
+      </div>
+      <div class="alert alert-info" role="status" id="login-aviso" hidden></div>
+      <form class="form-grid" id="form-login" novalidate>
+        <div class="user-list" id="lista-usuarios" aria-busy="true"><p class="small muted">Cargando usuarios ficticios…</p></div>
+        <div role="alert" aria-live="assertive" id="login-error"></div>
+        <button class="btn btn-primary" type="submit" id="btn-ingresar" style="justify-content:center" disabled>Ingresar</button>
+      </form>
+      <p class="muted small" style="margin:0">La sesión dura 8 horas o hasta que cierres la pestaña.</p>
+    </main>
+  </div>
+</div>
+
+<!-- Shell (con sesión) -->
+<div class="shell" id="vista-shell" hidden>
+  <aside class="sidebar" id="sidebar" data-open="false" aria-label="Navegación del panel">
+    <a class="brand" href="#/dashboard"><img src="logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></a>
+    <nav class="nav" id="nav" aria-label="Secciones"></nav>
+    <p class="sidebar-foot">SIMULACIÓN · datos ficticios</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" id="btn-menu" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú"></button>
+      <div><h1 id="titulo-seccion">Panel</h1><span class="crumbs" id="crumbs"></span></div>
+      <span class="spacer"></span>
+      <div class="user"><span class="avatar" id="usuario-avatar" aria-hidden="true"></span><span class="who"><strong id="usuario-nombre"></strong><span class="rol" id="usuario-rol" style="display:block"></span></span></div>
+      <button class="btn btn-secondary" type="button" id="btn-salir">Cerrar sesión</button>
+    </header>
+    <main class="content" id="contenido" tabindex="-1"></main>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" data-visible="false" hidden></div>
+<noscript><p class="alert alert-error" style="margin:16px">El panel necesita JavaScript para funcionar.</p></noscript>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Panel · Agenda</title>
+  <link rel="stylesheet" href="adm.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+  <script src="shell.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar" data-open="false" aria-label="Navegación del panel">
+    <a class="brand" href="#"><img src="../../../../design-system/assets/logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <span class="nav-label">Consultorio</span>
+      <a href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+      <a href="agenda.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</a>
+      <a href="clientes.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>Clientes</a>
+      <span class="nav-label">Clínica</span>
+      <a href="historial.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6M4 7v14h3"/></svg>Historial clínico</a>
+    </nav>
+    <p class="sidebar-foot">SIMULACIÓN · datos ficticios</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div><h1>Agenda</h1><span class="crumbs">Semana del consultorio</span></div>
+      <span class="spacer"></span>
+      <div class="user"><span class="avatar" aria-hidden="true">AF</span><span class="who"><strong>Admin Ficticio</strong><span class="rol" style="display:block">Administración</span></span></div>
+      <button class="btn btn-secondary" type="button">Cerrar sesión</button>
+    </header>
+
+    <main class="content">
+      <div class="agenda-layout">
+        <!-- Columna izquierda: mini-calendario + leyenda -->
+        <section class="card" aria-labelledby="t-cal">
+          <div class="panel-head"><span id="t-cal">Calendario</span></div>
+          <div class="mini-cal-head">
+            <button class="icon-btn" type="button" aria-label="Mes anterior">‹</button>
+            <span>Diciembre 2026</span>
+            <button class="icon-btn" type="button" aria-label="Mes siguiente">›</button>
+          </div>
+          <table class="mini-cal" aria-label="Diciembre 2026. Elegí un día para ver su semana">
+            <thead><tr><th abbr="lunes">L</th><th abbr="martes">M</th><th abbr="miércoles">M</th><th abbr="jueves">J</th><th abbr="viernes">V</th><th abbr="sábado">S</th><th abbr="domingo">D</th></tr></thead>
+            <tbody>
+              <tr class="week"><td class="out"><button aria-label="Lunes 30 de noviembre">30</button></td><td class="today"><button aria-current="date" aria-label="Martes 1 de diciembre, hoy">1</button></td><td><button>2</button></td><td><button>3</button></td><td><button>4</button></td><td><button>5</button></td><td><button>6</button></td></tr>
+              <tr><td><button>7</button></td><td><button>8</button></td><td><button>9</button></td><td><button>10</button></td><td><button>11</button></td><td><button>12</button></td><td><button>13</button></td></tr>
+              <tr><td><button>14</button></td><td><button>15</button></td><td><button>16</button></td><td><button>17</button></td><td><button>18</button></td><td><button>19</button></td><td><button>20</button></td></tr>
+              <tr><td><button>21</button></td><td><button>22</button></td><td><button>23</button></td><td><button>24</button></td><td><button>25</button></td><td><button>26</button></td><td><button>27</button></td></tr>
+              <tr><td><button>28</button></td><td><button>29</button></td><td><button>30</button></td><td><button>31</button></td><td class="out"><button>1</button></td><td class="out"><button>2</button></td><td class="out"><button>3</button></td></tr>
+            </tbody>
+          </table>
+          <ul class="legend" aria-label="Leyenda de estados">
+            <li><span class="swatch st-reservado"></span>Sin confirmar (reservado)</li>
+            <li><span class="swatch st-confirmado"></span>Confirmado</li>
+            <li><span class="swatch st-atendido"></span>Atendido</li>
+            <li><span class="swatch st-ausente"></span>Ausente</li>
+            <li><span class="swatch" style="background:repeating-linear-gradient(45deg,#EEF2F5 0 4px,#E2E9EE 4px 8px);border:1px solid var(--adm-line)"></span>Bloqueo (urgencias)</li>
+            <li><span class="chip senado">$ Señado</span>Seña pagada (simulada)</li>
+          </ul>
+        </section>
+
+        <!-- Grilla semanal -->
+        <section class="card" aria-labelledby="t-ag">
+          <div class="panel-head">
+            <span id="t-ag">Agenda</span>
+            <div class="filters" role="group" aria-label="Filtros">
+              <label class="visually-hidden" for="f-prof">Profesional</label>
+              <select id="f-prof" class="select"><option>Todos los profesionales</option><option>Dra. Ficticia Perez</option><option>Dr. Ficticio Gomez</option></select>
+              <label class="visually-hidden" for="f-sillon">Sillón</label>
+              <select id="f-sillon" class="select"><option>Todos los sillones</option><option>Sillon 1</option><option>Sillon 2</option></select>
+              <label class="visually-hidden" for="f-estado">Estado</label>
+              <select id="f-estado" class="select"><option>Todos los estados</option><option>Sin confirmar</option><option>Confirmado</option><option>Atendido</option><option>Ausente</option></select>
+            </div>
+          </div>
+          <div class="week-nav">
+            <button class="btn btn-secondary" type="button">Hoy</button>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="icon-btn" type="button" aria-label="Semana anterior">‹</button>
+              <strong>30/11 – 06/12/2026</strong>
+              <button class="icon-btn" type="button" aria-label="Semana siguiente">›</button>
+            </div>
+            <span class="small muted num">9 turnos</span>
+          </div>
+          <div class="grid-wrap" tabindex="0" aria-label="Grilla semanal, desplazable">
+            <div class="week-grid" id="grid">
+              <div class="wg-head" aria-hidden="true"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="ref" aria-labelledby="t-ref">
+        <h2 id="t-ref">Otros estados</h2>
+        <div class="ref-grid">
+          <div class="card empty"><h3 style="color:var(--adm-text)">Sin turnos en esta semana</h3><p class="small">Probá otra semana o quitá filtros.</p></div>
+          <div class="card"><h3>Odontólogo</h3><p class="small muted">El filtro “Profesional” arranca en su propio profesional; puede cambiarlo para ver toda la agenda en lectura.</p></div>
+          <div class="card"><h3>Error al cargar</h3><div class="alert alert-error" role="alert" style="margin-top:10px">No pudimos cargar la agenda. Reintentar.</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Drawer de detalle (abierto al activar un bloque; 240ms translateX, Escape cierra y devuelve el foco) -->
+<div class="drawer-scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="t-det" data-open="false" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h2 id="t-det">Turno</h2>
+    <button class="icon-btn" type="button" id="cerrar" aria-label="Cerrar detalle">✕</button>
+  </div>
+  <div><span class="chip st-confirmado" id="d-estado">Confirmado</span> <span class="chip senado">$ Señado</span></div>
+  <dl class="dl">
+    <dt>Paciente</dt><dd id="d-pac">Paciente Ficticio Uno</dd>
+    <dt>Prestación</dt><dd id="d-pre">Control y limpieza</dd>
+    <dt>Horario</dt><dd class="num" id="d-hor">Mar 01/12 · 10:00–10:30</dd>
+    <dt>Profesional</dt><dd id="d-prof">Dra. Ficticia Perez</dd>
+    <dt>Sillón</dt><dd id="d-sil">Sillon 1</dd>
+  </dl>
+  <div class="actions">
+    <button class="btn btn-primary" type="button">Marcar atendido</button>
+    <button class="btn btn-secondary" type="button">Ausente</button>
+    <button class="btn btn-ghost" type="button">Cancelar turno…</button>
+  </div>
+  <div class="alert alert-error" role="alert">Ejemplo de rechazo de la API: “RN-AG-0x — mensaje de la regla”. El turno no cambia.</div>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+  var DIAS = [['Lunes','30/11'],['Martes','01/12'],['Miércoles','02/12'],['Jueves','03/12'],['Viernes','04/12'],['Sábado','05/12'],['Domingo','06/12']];
+  var HOY = 1, INICIO = 8 * 60, FIN = 14 * 60, FILA = 22;
+  var ETIQUETA = { reservado: 'Sin confirmar', confirmado: 'Confirmado', atendido: 'Atendido', ausente: 'Ausente' };
+  // Datos ficticios (dia, inicio, minutos, paciente, prestación, estado, profesional, sillón, señado)
+  var T = [
+    [0, '09:00', 30, 'Paciente Ficticio Tres', 'Control y limpieza', 'atendido', 'Dra. Ficticia Perez', 'Sillon 1', false],
+    [0, '11:00', 45, 'Paciente Ficticio Seis', 'Ortodoncia', 'ausente', 'Dr. Ficticio Gomez', 'Sillon 2', false],
+    [1, '10:00', 30, 'Paciente Ficticio Uno', 'Control y limpieza', 'confirmado', 'Dra. Ficticia Perez', 'Sillon 1', true],
+    [1, '10:30', 45, 'Paciente Ficticio Cuatro', 'Ortodoncia', 'reservado', 'Dr. Ficticio Gomez', 'Sillon 2', false],
+    [1, '11:15', 60, 'Paciente Ficticio Siete', 'Tratamiento', 'confirmado', 'Dra. Ficticia Perez', 'Sillon 1', true],
+    [2, '09:30', 60, 'Paciente Ficticio Ocho', 'Estetica dental', 'reservado', 'Dr. Ficticio Gomez', 'Sillon 2', false],
+    [3, '12:00', 30, 'Paciente Ficticio Cinco', 'Control y limpieza', 'confirmado', 'Dra. Ficticia Perez', 'Sillon 1', false],
+    [4, '08:30', 60, 'Paciente Ficticio Diez', 'Tratamiento', 'reservado', 'Dr. Ficticio Gomez', 'Sillon 1', true],
+    [5, '10:00', 45, 'Paciente Ficticio Dos', 'Ortodoncia', 'confirmado', 'Dra. Ficticia Perez', 'Sillon 2', false]
+  ];
+  var BLOQUEOS = [[2, '13:00', 60, 'Reservado urgencias'], [4, '13:00', 60, 'Reservado urgencias']];
+  function min(h) { var p = h.split(':'); return +p[0] * 60 + +p[1]; }
+  function hhmm(m) { return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  var g = document.getElementById('grid');
+  DIAS.forEach(function (d, i) {
+    var h = document.createElement('div');
+    h.className = 'wg-head' + (i === HOY ? ' today' : '');
+    h.innerHTML = d[0] + '<span class="d">' + d[1] + '</span>';
+    g.appendChild(h);
+  });
+  var tiempos = document.createElement('div'); tiempos.className = 'wg-times';
+  for (var m = INICIO; m < FIN; m += 15) { var s = document.createElement('span'); s.textContent = m % 60 === 0 ? hhmm(m) : ''; tiempos.appendChild(s); }
+  g.appendChild(tiempos);
+  var cols = DIAS.map(function (_, i) {
+    var c = document.createElement('div');
+    c.className = 'wg-col' + (i === HOY ? ' today' : '') + (i === 6 ? ' closed' : '');
+    c.style.height = ((FIN - INICIO) / 15 * FILA) + 'px';
+    g.appendChild(c); return c;
+  });
+  BLOQUEOS.forEach(function (b) {
+    var e = document.createElement('div'); e.className = 'bloqueo';
+    var ini = min(b[1]); e.style.top = ((ini - INICIO) / 15 * FILA + 1) + 'px'; e.style.height = (b[2] / 15 * FILA - 2) + 'px';
+    e.textContent = b[3]; cols[b[0]].appendChild(e);
+  });
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim'), origen = null;
+  T.forEach(function (t) {
+    var e = document.createElement('button'); e.type = 'button';
+    var ini = min(t[1]), fin = ini + t[2];
+    e.className = 'turno st-' + t[5];
+    e.style.top = ((ini - INICIO) / 15 * FILA + 1) + 'px'; e.style.height = (t[2] / 15 * FILA - 2) + 'px';
+    e.setAttribute('aria-label', DIAS[t[0]][0] + ' ' + hhmm(ini) + ' a ' + hhmm(fin) + ', ' + t[3] + ', ' + t[4] + ', ' + ETIQUETA[t[5]] + (t[8] ? ', señado' : ''));
+    e.innerHTML = '<strong>' + t[3].replace('Paciente Ficticio ', 'P. F. ') + '</strong><span class="t">' + hhmm(ini) + '–' + hhmm(fin) + '</span>' + (t[2] >= 45 ? '<br>' + t[4] : '') + (t[8] ? ' · $' : '');
+    e.addEventListener('click', function () {
+      origen = e;
+      document.getElementById('d-pac').textContent = t[3];
+      document.getElementById('d-pre').textContent = t[4];
+      document.getElementById('d-hor').textContent = DIAS[t[0]][0].slice(0, 3) + ' ' + DIAS[t[0]][1] + ' · ' + hhmm(ini) + '–' + hhmm(fin);
+      document.getElementById('d-prof').textContent = t[6];
+      document.getElementById('d-sil').textContent = t[7];
+      var st = document.getElementById('d-estado'); st.className = 'chip st-' + t[5]; st.textContent = ETIQUETA[t[5]];
+      drawer.hidden = false; scrim.hidden = false;
+      requestAnimationFrame(function () { drawer.setAttribute('data-open', 'true'); document.getElementById('cerrar').focus(); });
+    });
+    cols[t[0]].appendChild(e);
+  });
+  function cerrar() {
+    drawer.setAttribute('data-open', 'false'); scrim.hidden = true;
+    setTimeout(function () { drawer.hidden = true; }, 240);
+    if (origen) origen.focus();
+  }
+  document.getElementById('cerrar').addEventListener('click', cerrar);
+  scrim.addEventListener('click', cerrar);
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !drawer.hidden) cerrar(); });
+})();
+</script>
+</body>
+</html>

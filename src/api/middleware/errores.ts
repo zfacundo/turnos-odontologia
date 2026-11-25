@@ -15,6 +15,13 @@ export class ErrorDePermiso extends Error {
   }
 }
 
+export class ErrorDeAutenticacion extends Error {
+  constructor(mensaje: string) {
+    super(mensaje);
+    this.name = 'ErrorDeAutenticacion';
+  }
+}
+
 export class FalloDeRegla extends Error {
   constructor(readonly detalle: ErrorDeRegla) {
     super(detalle.mensaje);
@@ -57,6 +64,10 @@ export const manejadorDeErrores: ErrorRequestHandler = (err: unknown, _req, res,
   }
   if (esFalloDeParseo(err)) {
     res.status(400).json({ error: { tipo: 'entrada', mensaje: 'JSON malformado' } });
+    return;
+  }
+  if (err instanceof ErrorDeAutenticacion) {
+    res.status(401).json({ error: { tipo: 'autenticacion', mensaje: err.message } });
     return;
   }
   if (err instanceof ErrorDePermiso) {

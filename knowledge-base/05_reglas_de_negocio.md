@@ -58,6 +58,12 @@ Reglas derivadas:
 - **RN-AU-01** — Cada alta, modificación, cancelación, reprogramación y sobreturno de turno genera un evento de auditoría inmutable con usuario, rol, fecha/hora y detalle antes/después.
 - **RN-AU-02** — La auditoría solo se lee (admin, recepción); no se edita ni borra.
 
+## Dominio: Historial clínico simple (RN-HC) — change `panel-admin-agenda`
+
+- **RN-HC-01** — Una entrada de historial puede vincular un turno solo si el turno existe y pertenece al mismo paciente; si no, la API responde `409` con `RN-HC-01`.
+- **RN-HC-02** — La fecha de una entrada no puede ser posterior al instante del reloj (`fecha <= ahora` es válido); si lo es, la API responde `409` con `RN-HC-02`.
+- El historial es de solo inserción (sin editar ni borrar; una corrección es una entrada nueva), ficticio (`simulado: true`) y **no** es una historia clínica electrónica legal (Ley 26.529 sigue abierta). Lectura: admin y odontólogo; alta: solo odontólogo con su propio `profesionalId`; recepción sin acceso (S-7). La auditoría (`historia-crear`, `historia-consultar`) nunca guarda procedimiento ni notas.
+
 ## Dominio: Datos (RN-DA) — Excepciones globales
 
 - **RN-DA-01** — **Nunca almacenar datos reales de pacientes** en el repositorio, ejemplos, tests, seeds, fixtures ni capturas. Solo datos ficticios.

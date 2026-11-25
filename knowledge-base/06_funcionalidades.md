@@ -132,10 +132,11 @@ Deriva la conversación y genera aviso (toast) para el profesional.
 
 ## Épica 8: Odontograma (SIM)
 
-### US-070 — "¿Dónde te duele?"
-**Como** paciente **quiero** tocar la pieza que me duele en un odontograma FDI **para** que la doctora llegue sabiendo qué revisar.
+### US-070 — Registrar dónde le duele al paciente
+**Como** odontólogo **quiero** registrar en el odontograma FDI del turno la pieza que le duele al paciente **para** llegar sabiendo qué revisar y marcarla como hecha después.
+- [ ] Se abre desde el detalle del turno en la agenda del panel (`#/odontograma/<turnoId>`); solo el odontólogo la ve y la API responde 403 a los demás roles.
 - [ ] 4 cuadrantes FDI, 5 caras por pieza.
-- [ ] Al tocar: número + nombre ("16 · Primer molar superior derecho") + síntomas.
+- [ ] Al elegir una pieza: número + nombre ("16 · Primer molar superior derecho") + síntomas.
 - [ ] Botón "Agregar pieza N al turno".
 - [ ] Rojo = a revisar; azul = hecho.
 **Reglas**: RN-OD-01..04

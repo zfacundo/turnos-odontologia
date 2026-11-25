@@ -52,10 +52,12 @@ describe('pantalla /bot.html (RN-WA-04)', () => {
 });
 
 describe('pantallas - seña pagada y pago simulado', () => {
-  const AGENDA = readFileSync(path.join(PUBLIC, 'js', 'agenda.js'), 'utf8');
+  // spec: panel-reemplaza-agenda-vieja (la agenda vieja se retira; la marca vive en la agenda del panel)
+  const AGENDA = readFileSync(path.join(PUBLIC, 'admin', 'js', 'agenda.js'), 'utf8');
 
-  it('dado el JS de la agenda cuando arma la tarjeta de un turno entonces muestra Seña pagada solo si senado es verdadero', () => {
-    expect(AGENDA).toMatch(/turno\.senado\s*\?\s*' · Seña pagada'\s*:\s*''/);
+  it('dado el JS de la agenda del panel cuando arma el bloque de un turno entonces muestra la marca de seña solo si senado es verdadero', () => {
+    expect(AGENDA).toMatch(/t\.senado\s*\?\s*' · \$'\s*:\s*false/);
+    expect(AGENDA).toMatch(/t\.senado\s*\?\s*h\('span',\s*\{\s*class:\s*'chip senado'\s*\},\s*'\$ Señado'\)\s*:\s*false/);
   });
 
   it('dado el JS del bot cuando pinta las opciones entonces Rechazar pago se ve como accion de alerta', () => {

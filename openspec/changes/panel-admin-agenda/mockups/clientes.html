@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Panel · Clientes</title>
+  <link rel="stylesheet" href="adm.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+  <script src="shell.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar" data-open="false" aria-label="Navegación del panel">
+    <a class="brand" href="#"><img src="../../../../design-system/assets/logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <span class="nav-label">Consultorio</span>
+      <a href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+      <a href="agenda.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</a>
+      <a href="clientes.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>Clientes</a>
+    </nav>
+    <p class="sidebar-foot">SIMULACIÓN · datos ficticios</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div><h1>Clientes</h1><span class="crumbs">Pacientes del consultorio</span></div>
+      <span class="spacer"></span>
+      <div class="user"><span class="avatar" aria-hidden="true">RF</span><span class="who"><strong>Recepcionista Ficticia</strong><span class="rol" style="display:block">Recepción</span></span></div>
+      <button class="btn btn-secondary" type="button">Cerrar sesión</button>
+    </header>
+
+    <main class="content">
+      <div class="split">
+        <section class="card" aria-labelledby="t-lista">
+          <div class="card-head"><h2 id="t-lista">Pacientes <span class="muted small num">(10)</span></h2><button class="btn btn-primary" type="button">+ Nuevo paciente</button></div>
+          <div class="toolbar" style="margin-bottom:12px">
+            <div class="field">
+              <label for="q">Buscar por nombre</label>
+              <input id="q" class="input" type="search" placeholder="Ej.: Tres" autocomplete="off">
+            </div>
+          </div>
+          <p class="visually-hidden" role="status" aria-live="polite" id="res">10 pacientes</p>
+          <div style="overflow-x:auto">
+            <table class="table">
+              <thead><tr><th scope="col">Paciente</th><th scope="col">DNI</th><th scope="col" class="hide-sm">Teléfono</th><th scope="col" class="hide-sm">Obra social</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+              <tbody id="tb"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="vacio" hidden>No encontramos pacientes con ese criterio.</p>
+        </section>
+
+        <section class="card" aria-labelledby="t-ficha">
+          <div class="card-head"><h2 id="t-ficha">Paciente Ficticio Uno</h2><button class="btn btn-secondary" type="button">Editar</button></div>
+          <dl class="dl">
+            <dt>DNI</dt><dd class="num">99****01</dd>
+            <dt>Teléfono</dt><dd class="num">+54 9 11 0000-**01</dd>
+            <dt>Email</dt><dd>—</dd>
+            <dt>Obra social</dt><dd>Obra social ficticia (sim.) · afiliado ficticio</dd>
+          </dl>
+          <h3 style="margin-top:20px">Próximo turno</h3>
+          <p class="small" style="margin:6px 0 0"><span class="num">Mar 01/12 · 10:00</span> · Control y limpieza · <span class="chip st-confirmado">Confirmado</span></p>
+          <div class="actions" style="margin-top:20px">
+            <a class="btn btn-secondary" href="agenda.html">Ver en la agenda</a>
+          </div>
+          <p class="small muted" style="margin:16px 0 0">El historial clínico no está disponible para recepción.</p>
+        </section>
+      </div>
+
+      <section class="ref" aria-labelledby="t-ref">
+        <h2 id="t-ref">Otros estados</h2>
+        <div class="ref-grid">
+          <div class="card"><h3>Odontólogo (solo lectura)</h3><p class="small muted">Sin “+ Nuevo paciente” ni “Editar”. En la ficha aparece <a href="historial.html">Ver historial clínico</a>.</p></div>
+          <div class="card"><h3>Admin</h3><p class="small muted">Alta y edición como recepción, más “Ver historial clínico” (solo lectura).</p></div>
+          <div class="card"><h3>Alta con DNI repetido (409)</h3><div class="alert alert-error" role="alert" style="margin-top:10px">Ya existe un paciente con ese DNI.</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var N = ['Uno','Dos','Tres','Cuatro','Cinco','Seis','Siete','Ocho','Nueve','Diez'];
+  var tb = document.getElementById('tb');
+  var filas = N.map(function (n, i) {
+    var k = String(i + 1).padStart(2, '0');
+    var tr = document.createElement('tr');
+    if (i === 0) tr.className = 'sel';
+    [['Paciente Ficticio ' + n, ''], ['99****' + k, 'num'], ['+54 9 11 0000-**' + k, 'num hide-sm'], [i === 0 ? 'Obra social ficticia (sim.)' : '—', 'hide-sm']].forEach(function (c) {
+      var td = document.createElement('td'); td.textContent = c[0]; td.className = c[1]; tr.appendChild(td);
+    });
+    var td = document.createElement('td'); var b = document.createElement('button');
+    b.className = 'btn btn-ghost'; b.type = 'button'; b.textContent = 'Ver ficha';
+    b.setAttribute('aria-label', 'Ver ficha de Paciente Ficticio ' + n);
+    td.appendChild(b); tr.appendChild(td); tb.appendChild(tr);
+    return { tr: tr, txt: ('paciente ficticio ' + n + ' 9900000' + (i + 1)).toLowerCase() };
+  });
+  document.getElementById('q').addEventListener('input', function (e) {
+    var q = e.target.value.trim().toLowerCase(), n = 0;
+    filas.forEach(function (f) { var ok = f.txt.indexOf(q) !== -1; f.tr.hidden = !ok; if (ok) n++; });
+    document.getElementById('vacio').hidden = n !== 0;
+    document.getElementById('res').textContent = n + ' pacientes';
+  });
+})();
+</script>
+</body>
+</html>

@@ -72,6 +72,8 @@ Pendientes manuales de la fase discovery (estado del orquestador): verificación
 | Media | ¿Cuándo se emite la factura C simulada (turno atendido?) y cuándo se puede pagar seña (reservado/confirmado?) — SU-07 | Simuladores MP/ARCA | Equipo |
 | Media | ¿Pasado el turno sin marcar, pasa a "ausente" automáticamente o manualmente? | Estados | Equipo |
 | Media | ¿El paciente también puede reprogramar por el bot dentro de las 24 h previas? (supuesto: misma ventana que cancelar) | RN-AG-08 / bot | Equipo |
+| Media | Historial clínico: ¿qué exige la Ley 26.529 (HCE real: firma, inalterabilidad, conservación)? El historial del panel es ficticio y simple. | `panel-admin-agenda` | Equipo / cátedra |
+| Baja | Con el login simulado del panel, ¿se desactivan los headers `X-Rol` (S-6) y se agrega auth real? | `panel-admin-agenda` | Team lead |
 | Baja | ¿Se requiere autenticación real o alcanza el selector de rol simulado (DD-09)? | Seguridad | Team lead / cátedra |
 | Baja | ¿Criterio de prioridad de la lista de espera (antigüedad vs compatibilidad)? | Lista de espera | Equipo |
 | Baja | Versiones mínimas de Node/TypeScript/Express/Vitest | Setup del repo | Team lead |
