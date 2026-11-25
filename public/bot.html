@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bot de WhatsApp (simulación) | Turnos Odontología</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <style>
+    /* Componentes del design system (design-system/components.html, revisión 1) aplicados a esta pantalla. */
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1rem; line-height: 1.45; }
+    .sim { margin: 0; padding: 12px 16px; background: var(--t-urg); color: var(--t-urg-fg); font-weight: 700; text-align: center; letter-spacing: .02em; font-size: .875rem; }
+    .top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+    .top strong { font-family: var(--font-display); font-size: 1.25rem; }
+    .top nav { margin-left: auto; display: flex; gap: 16px; font-size: .875rem; }
+    .top a { color: var(--accent); font-weight: 500; }
+    .top a[aria-current] { color: var(--ink); text-decoration: none; }
+    main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 40px; display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 900px) { main { grid-template-columns: 340px minmax(0, 440px); justify-content: center; align-items: start; } }
+    h1 { font-family: var(--font-display); font-size: 1.5rem; margin: 0 0 8px; line-height: 1.15; }
+    .lead { color: var(--muted); margin: 0 0 20px; font-size: .875rem; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; box-shadow: 0 1px 2px rgba(16, 36, 43, .08); }
+    label { display: block; font-size: .875rem; font-weight: 500; margin-bottom: 4px; }
+    .input { width: 100%; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; }
+    .hint { font-size: .875rem; color: var(--muted); margin: 4px 0 16px; }
+    .btn { width: 100%; min-height: 44px; padding: 0 16px; border-radius: 10px; font: inherit; font-weight: 700; cursor: pointer; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); }
+    .btn-primary { background: var(--accent); color: var(--on-accent); }
+    .btn:focus-visible, .chip:focus-visible, .input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .btn:disabled, .chip:disabled, .input:disabled { opacity: .5; cursor: not-allowed; }
+    .phone { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--chat-bg); display: flex; flex-direction: column; box-shadow: 0 4px 14px rgba(16, 36, 43, .12); }
+    .phone .sim { font-size: .75rem; padding: 8px 12px; }
+    .phone-head { background: var(--accent); color: var(--on-accent); padding: 12px 16px; font-weight: 700; }
+    .phone-head small { display: block; font-weight: 400; opacity: .85; }
+    .msgs { display: flex; flex-direction: column; gap: 8px; padding: 16px; min-height: 320px; max-height: 60vh; overflow-y: auto; }
+    .b { max-width: 85%; padding: 8px 12px; border-radius: 12px; box-shadow: 0 1px 2px rgba(16, 36, 43, .08); white-space: pre-line; overflow-wrap: anywhere; }
+    .b time { display: block; text-align: right; font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .b.bot { align-self: flex-start; background: var(--bubble-bot); border-top-left-radius: 3px; }
+    .b.me { align-self: flex-end; background: var(--bubble-me); border-top-right-radius: 3px; }
+    .b.card-msg { border-left: 4px solid var(--accent); }
+    .b.card-msg strong { color: var(--accent); display: block; }
+    .b.alerta { border-left: 4px solid var(--alert); }
+    .divider { align-self: center; font-size: .75rem; color: var(--muted); background: var(--bubble-bot); padding: 4px 12px; border-radius: 10px; text-align: center; }
+    .opts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 16px; }
+    .opts:empty { display: none; }
+    .chip { min-height: 40px; padding: 8px 12px; border-radius: 999px; border: 1.5px solid var(--accent); background: var(--bubble-bot); color: var(--accent); font: inherit; font-weight: 500; font-size: .875rem; cursor: pointer; }
+    .chip.danger { border-color: var(--alert); color: var(--alert); }
+    .bar { display: flex; gap: 8px; padding: 12px; background: var(--chat-bar); border-top: 1px solid var(--line); }
+    .bar .input { min-height: 40px; border-radius: 999px; }
+    .bar .btn { width: auto; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+  <header class="top">
+    <strong>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="/">Agenda</a><a href="/bot.html" aria-current="page">Bot WhatsApp (sim.)</a></nav>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-panel">
+      <h1 id="t-panel">Chat del paciente</h1>
+      <p class="lead">Elegí un teléfono ficticio para escribir como ese paciente. Lo que reserves aparece en la agenda real con origen WhatsApp.</p>
+      <label for="telefono">Teléfono del paciente</label>
+      <select class="input" id="telefono">
+        <option value="+54 9 11 0000-0001">+54 9 11 0000-0001 · Paciente Ficticio Uno</option>
+        <option value="+54 9 11 0000-0002">+54 9 11 0000-0002 · Paciente Ficticio Dos</option>
+        <option value="+54 9 11 0000-0003">+54 9 11 0000-0003 · Paciente Ficticio Tres</option>
+        <option value="+54 9 11 0000-0099">+54 9 11 0000-0099 · número nuevo</option>
+      </select>
+      <p class="hint">Solo números ficticios del seed. Cambiar de teléfono empieza otra conversación.</p>
+      <button class="btn" type="button" id="recordatorio">Enviar recordatorio 24 h</button>
+      <p class="hint">Demo: el bot escribe el recordatorio del próximo turno de este número.</p>
+    </section>
+
+    <section aria-label="Conversación simulada">
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small id="cabecera">Consultorio (TBD)</small></div>
+        <div class="msgs" id="mensajes" aria-live="polite"></div>
+        <div class="opts" id="opciones" aria-label="Opciones"></div>
+        <form class="bar" id="form">
+          <label class="visually-hidden" for="texto">Mensaje</label>
+          <input class="input" id="texto" autocomplete="off" placeholder="Escribí un mensaje">
+          <button class="btn btn-primary" type="submit" id="enviar">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script src="/js/bot.js"></script>
+</body>
+</html>

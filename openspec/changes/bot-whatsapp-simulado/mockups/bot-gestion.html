@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Bot · Recordatorio y gestión</title>
+  <link rel="stylesheet" href="../../../../design-system/tokens.css">
+  <link rel="stylesheet" href="bot.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+  <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+  <header class="top">
+    <img src="../../../../design-system/assets/logo.svg" alt="Logo provisional (TBD)">
+    <strong data-brand-name>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="#">Agenda</a><a href="#" aria-current="page">Bot WhatsApp (sim.)</a></nav>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-panel">
+      <h1 id="t-panel">Chat del paciente</h1>
+      <p class="lead">Elegí un teléfono ficticio para escribir como ese paciente. Lo que reserves aparece en la agenda real con origen WhatsApp.</p>
+      <label for="tel">Teléfono del paciente</label>
+      <select class="input" id="tel">
+        <option selected>+54 9 11 0000-0001 · Paciente Ficticio Uno</option>
+        <option>+54 9 11 0000-0099 · número nuevo</option>
+      </select>
+      <p class="hint">Solo números ficticios del seed. Cambiar de teléfono empieza otra conversación.</p>
+      <button class="btn" type="button">Enviar recordatorio 24 h</button>
+      <p class="hint">Demo: el bot escribe el recordatorio del próximo turno de este número.</p>
+      <div class="meta"><strong>Estado mostrado</strong>Recordatorio 24 h → Confirmo. Abajo: cancelación con menos de 24 h y "Necesito cambiarlo".</div>
+    </section>
+
+    <section aria-label="Conversación simulada">
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" aria-live="polite">
+          <div class="divider">24 h antes del turno · el bot escribe solo (demo)</div>
+          <div class="b bot">Hola Paciente Ficticio Uno, te recordamos tu turno:
+Mar 1/12 10:00 · Control y limpieza · Dra. Ficticia Perez
+¿Confirmás tu asistencia?<time>10:00</time></div>
+          <div class="b me">Confirmo<time>10:02</time></div>
+          <div class="b bot card-msg"><strong>Turno confirmado</strong>Mar 1/12 10:00
+¡Gracias! Te esperamos.<time>10:02</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+        <form class="bar" onsubmit="return false">
+          <label class="visually-hidden" for="msg">Mensaje</label>
+          <input class="input" id="msg" placeholder="Elegí una opción" disabled>
+          <button class="btn btn-primary" type="submit" disabled>Enviar</button>
+        </form>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: opciones del turno</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b bot">Tu próximo turno es:
+Mar 1/12 10:00 · Control y limpieza · Dra. Ficticia Perez<time>09:05</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Confirmo</button>
+          <button class="chip" type="button">Necesito cambiarlo</button>
+          <button class="chip danger" type="button">Cancelar turno</button>
+        </div>
+      </div>
+
+      <p class="estado-label" style="margin-top:var(--space-6)">Variante: cancelar con menos de 24 h</p>
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" style="min-height:0">
+          <div class="b me">Cancelar turno<time>09:06</time></div>
+          <div class="b bot">¿Querés cancelar el turno del Lun 30/11 15:00?<time>09:06</time></div>
+          <div class="b me">Sí, cancelar<time>09:06</time></div>
+          <div class="b bot alerta">Faltan menos de 24 h para tu turno: para cancelarlo comunicate con recepción.<time>09:06</time></div>
+          <div class="b me">Necesito cambiarlo<time>09:07</time></div>
+          <div class="b bot">Para cambiar el turno comunicate con recepción. Tu turno sigue reservado.<time>09:07</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Volver al menú</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
