@@ -1,4 +1,4 @@
-﻿
+
 
 # Tasks — C-09: Vista de agenda y registro del sistema
 
@@ -93,10 +93,10 @@
 
 
 
-- [ ] 6.1 Revisar que se cumplan las especificaciones.
+- [x] 6.1 Revisar que se cumplan las especificaciones.
 
 - [x] 6.2 Registrar los cambios mediante commits.
 
 - [x] 6.3 Preparar el Pull Request para revisión de Facundo.
 
-- [ ] 6.4 Archivar el Change siguiendo el procedimiento del equipo.
+- [x] 6.4 Archivar el Change siguiendo el procedimiento del equipo.
