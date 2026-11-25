@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Panel · Odontograma del turno</title>
+  <link rel="stylesheet" href="adm.css">
+  <style>
+    /* Aditivo propuesto para public/admin/admin.css (solo tokens --adm-* existentes). */
+    .arcada { display: grid; gap: 8px; }
+    .arcada h3 { margin: 8px 0 0; font-size: var(--adm-text-sm); color: var(--adm-text-muted); }
+    .cuadrantes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cuadrante { border: 1px solid var(--adm-line); border-radius: var(--adm-radius-md); padding: 8px; }
+    .cuadrante .q { font-size: var(--adm-text-xs); color: var(--adm-text-muted); margin-bottom: 6px; }
+    .piezas { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+    .pieza { min-height: var(--adm-tap); border-radius: var(--adm-radius-sm); border: 1px solid var(--adm-control-border);
+      background: var(--adm-surface); color: var(--adm-text); font: 700 var(--adm-text-xs)/1 var(--adm-font); cursor: pointer;
+      font-variant-numeric: tabular-nums; transition: transform var(--adm-dur-press) var(--adm-ease-out); }
+    .pieza:active { transform: scale(0.97); }
+    .pieza[aria-pressed="true"] { outline: 3px solid var(--adm-focus-color); outline-offset: 1px; }
+    .pieza.a_revisar { background: var(--adm-error-bg); color: var(--adm-error-fg); border: 2px solid var(--adm-error-fg); }
+    .pieza.hecho { background: var(--adm-st-atendido-bg); color: var(--adm-st-atendido-fg); border-color: var(--adm-st-atendido-bg); }
+    .caras { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cara { min-width: var(--adm-tap); }
+    .cara[aria-pressed="true"] { background: var(--adm-accent); color: var(--adm-on-accent); border-color: var(--adm-accent); }
+    .sintomas { display: grid; gap: 8px; }
+    .sintomas label { display: flex; gap: 8px; align-items: center; min-height: 36px; font-size: var(--adm-text-sm); }
+    .turno-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .mock-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 16px; background: var(--adm-blue-100); font-size: var(--adm-text-sm); }
+    @media (max-width: 600px) { .cuadrantes { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { .pieza, .pieza:active { transition: none; transform: none; } }
+  </style>
+  <script src="../../../../design-system/brand.js" defer></script>
+  <script src="shell.js" defer></script>
+</head>
+<body>
+<div class="mock-bar" role="group" aria-label="Solo mockup: ver como">
+  <strong>Solo mockup · ver como:</strong>
+  <button class="btn btn-secondary" type="button" data-ver="odontologo" aria-pressed="true">Odontóloga</button>
+  <button class="btn btn-secondary" type="button" data-ver="recepcion" aria-pressed="false">Recepción / Admin (ruta escrita a mano)</button>
+  <button class="btn btn-secondary" type="button" data-ver="inexistente" aria-pressed="false">Turno inexistente</button>
+</div>
+<div class="shell">
+  <aside class="sidebar" id="sidebar" data-open="false" aria-label="Navegación del panel">
+    <a class="brand" href="#"><img src="../../../../design-system/assets/logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <span class="nav-label">Consultorio</span>
+      <a href="#">Dashboard</a>
+      <a href="agenda.html">Agenda</a>
+      <a href="#">Clientes</a>
+      <span class="nav-label">Clínica</span>
+      <a href="#">Historial clínico</a>
+    </nav>
+    <p class="sidebar-foot">SIMULACIÓN · datos ficticios</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">☰</button>
+      <div><h1 id="titulo">Odontograma</h1><span class="crumbs">Agenda › Turno de Paciente Ficticio Uno</span></div>
+      <span class="spacer"></span>
+      <div class="user"><span class="avatar" aria-hidden="true">FP</span><span class="who"><strong>Dra. Ficticia Perez</strong><span class="rol" style="display:block">Odontóloga</span></span></div>
+      <button class="btn btn-secondary" type="button">Cerrar sesión</button>
+    </header>
+
+    <main class="content">
+      <!-- Vista odontólogo -->
+      <div id="v-odontologo">
+        <div class="turno-head">
+          <div><strong>Paciente Ficticio Uno</strong> · Control y limpieza · <span class="num">Mar 01/12 · 10:00–10:30</span> · Sillon 1</div>
+          <a class="btn btn-secondary" href="agenda.html">‹ Volver a la agenda</a>
+        </div>
+        <div class="split">
+          <section class="card" aria-labelledby="t-boca">
+            <div class="panel-head"><span id="t-boca">Piezas permanentes (FDI)</span></div>
+            <div class="arcada">
+              <h3>Arcada superior</h3>
+              <div class="cuadrantes"><div class="cuadrante"><div class="q">Superior derecho (18–11)</div><div class="piezas" id="q1"></div></div><div class="cuadrante"><div class="q">Superior izquierdo (21–28)</div><div class="piezas" id="q2"></div></div></div>
+              <h3>Arcada inferior</h3>
+              <div class="cuadrantes"><div class="cuadrante"><div class="q">Inferior derecho (48–41)</div><div class="piezas" id="q4"></div></div><div class="cuadrante"><div class="q">Inferior izquierdo (31–38)</div><div class="piezas" id="q3"></div></div></div>
+            </div>
+            <ul class="legend" aria-label="Leyenda del odontograma" style="margin-top:12px">
+              <li><span class="swatch" style="background:var(--adm-surface);border:1px solid var(--adm-control-border)"></span>Sin marcar</li>
+              <li><span class="swatch" style="background:var(--adm-error-bg);border:2px solid var(--adm-error-fg)"></span>! A revisar (rojo)</li>
+              <li><span class="swatch st-atendido"></span>✓ Hecho (azul)</li>
+            </ul>
+            <h3 style="margin:16px 0 4px;font-size:var(--adm-text-md)">Piezas del turno</h3>
+            <ul class="list" id="lista"></ul>
+          </section>
+
+          <aside class="card" aria-labelledby="t-det">
+            <div class="panel-head"><span id="t-det">Detalle de la pieza</span></div>
+            <p id="nombre" class="muted">Seleccioná una pieza.</p>
+            <div id="detalle" hidden class="form-grid">
+              <div class="field"><span style="font-weight:700;font-size:var(--adm-text-sm)">Caras</span>
+                <div class="caras" role="group" aria-label="Caras dentales">
+                  <button class="btn btn-secondary cara" type="button" aria-pressed="false" aria-label="Vestibular">V</button>
+                  <button class="btn btn-secondary cara" type="button" aria-pressed="false" aria-label="Mesial">M</button>
+                  <button class="btn btn-secondary cara" type="button" aria-pressed="true" aria-label="Oclusal">O</button>
+                  <button class="btn btn-secondary cara" type="button" aria-pressed="false" aria-label="Distal">D</button>
+                  <button class="btn btn-secondary cara" type="button" aria-pressed="false" aria-label="Lingual">L</button>
+                </div>
+                <span class="hint">V vestibular · M mesial · O oclusal · D distal · L lingual</span>
+              </div>
+              <fieldset class="field" style="border:0;padding:0;margin:0"><legend style="font-weight:700;font-size:var(--adm-text-sm)">Síntomas referidos</legend>
+                <div class="sintomas">
+                  <label><input type="checkbox" checked> Dolor al masticar</label>
+                  <label><input type="checkbox"> Caries o arreglo roto</label>
+                  <label><input type="checkbox"> Dolor persistente (posible conducto)</label>
+                  <label><input type="checkbox"> Pieza faltante (implante)</label>
+                </div>
+              </fieldset>
+              <div role="alert" id="d-err"></div>
+              <div class="actions">
+                <button class="btn btn-primary" type="button" id="guardar">Agregar pieza 16 al turno</button>
+                <button class="btn btn-secondary" type="button" id="hecho" hidden>Marcar como realizado</button>
+              </div>
+              <p class="small muted" style="margin:0">Sin síntomas marcados: “Seleccioná al menos un síntoma.” Una pieza ya hecha: 409 RN-OD-04.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Vista recepción/admin: aviso existente del panel, sin pedir piezas -->
+      <div id="v-recepcion" hidden>
+        <div class="card"><div class="alert alert-info" role="status">Tu rol no tiene acceso a esta sección.</div></div>
+      </div>
+
+      <div id="v-inexistente" hidden>
+        <div class="card"><div class="alert alert-error" role="alert">No encontramos ese turno.</div><a class="btn btn-secondary" href="agenda.html" style="margin-top:12px">‹ Volver a la agenda</a></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var Q = { 1: [18,17,16,15,14,13,12,11], 2: [21,22,23,24,25,26,27,28], 3: [31,32,33,34,35,36,37,38], 4: [48,47,46,45,44,43,42,41] };
+  var TIPOS = ['Incisivo central','Incisivo lateral','Canino','Primer premolar','Segundo premolar','Primer molar','Segundo molar','Tercer molar'];
+  var UBI = { 1: 'superior derecho', 2: 'superior izquierdo', 3: 'inferior izquierdo', 4: 'inferior derecho' };
+  var ESTADO = { 16: 'a_revisar', 36: 'hecho' };
+  function nombre(n) { return TIPOS[n % 10 - 1] + ' ' + UBI[Math.floor(n / 10)]; }
+  function texto(e) { return e === 'a_revisar' ? 'a revisar' : e === 'hecho' ? 'hecho' : 'sin marcar'; }
+  var sel = null;
+  function dibujar() {
+    Object.keys(Q).forEach(function (q) {
+      var c = document.getElementById('q' + q); c.innerHTML = '';
+      Q[q].forEach(function (n) {
+        var b = document.createElement('button'); b.type = 'button';
+        var e = ESTADO[n];
+        b.className = 'pieza' + (e ? ' ' + e : '');
+        b.textContent = (e === 'a_revisar' ? '!' : e === 'hecho' ? '✓' : '') + n;
+        b.setAttribute('aria-pressed', String(sel === n));
+        b.setAttribute('aria-label', n + ', ' + nombre(n) + ', ' + texto(e));
+        b.addEventListener('click', function () { sel = n; dibujar(); detalle(); });
+        c.appendChild(b);
+      });
+    });
+    var l = document.getElementById('lista'); l.innerHTML = '';
+    Object.keys(ESTADO).forEach(function (n) {
+      var li = document.createElement('li');
+      li.innerHTML = '<span class="hora">' + n + '</span><span>' + nombre(+n) + (ESTADO[n] === 'a_revisar' ? ' · Dolor al masticar · O' : '') + '</span><span class="chip ' + (ESTADO[n] === 'hecho' ? 'st-atendido' : '') + '" style="' + (ESTADO[n] === 'a_revisar' ? 'background:var(--adm-error-bg);color:var(--adm-error-fg)' : '') + '">' + (ESTADO[n] === 'hecho' ? '✓ Hecho' : '! A revisar') + '</span>';
+      l.appendChild(li);
+    });
+  }
+  function detalle() {
+    document.getElementById('nombre').textContent = sel + ' · ' + nombre(sel);
+    document.getElementById('nombre').className = '';
+    document.getElementById('detalle').hidden = false;
+    document.getElementById('guardar').textContent = 'Agregar pieza ' + sel + ' al turno';
+    document.getElementById('hecho').hidden = ESTADO[sel] !== 'a_revisar';
+  }
+  document.getElementById('guardar').addEventListener('click', function () { ESTADO[sel] = ESTADO[sel] === 'hecho' ? 'hecho' : 'a_revisar'; dibujar(); detalle(); });
+  document.getElementById('hecho').addEventListener('click', function () { ESTADO[sel] = 'hecho'; dibujar(); detalle(); });
+  document.querySelectorAll('.cara').forEach(function (b) { b.addEventListener('click', function () { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); }); });
+  document.querySelectorAll('[data-ver]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-ver');
+      document.querySelectorAll('[data-ver]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      ['odontologo', 'recepcion', 'inexistente'].forEach(function (k) { document.getElementById('v-' + k).hidden = k !== v; });
+      document.getElementById('titulo').textContent = v === 'recepcion' ? 'Acceso restringido' : 'Odontograma';
+    });
+  });
+  dibujar();
+})();
+</script>
+</body>
+</html>
