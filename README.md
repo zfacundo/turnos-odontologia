@@ -18,14 +18,7 @@ npm run build && npm start
 
 Probar: `curl localhost:3000/api/health` y `curl localhost:3000/api/catalogo`.
 
-## Variables de entorno
 
-| Variable | Efecto |
-|---|---|
-| `PORT` | Puerto HTTP (default `3000`) |
-| `SEED` | `false` arranca con repositorios vacios (default: carga el seed ficticio) |
-| `SIM_NOW` | Fecha ISO que fija el reloj (ej. `2026-10-14T12:30:00-03:00`); invalida = el arranque falla |
-| `TZ` | Los tests la fijan en `America/Argentina/Buenos_Aires`; el dominio no depende de ella |
 
 ## Estructura
 
