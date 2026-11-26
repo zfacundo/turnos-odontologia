@@ -67,6 +67,20 @@ export function whatsappRouter(
     res.json(json(atender(telefono, { tipo: 'recordatorio' })));
   });
 
+  router.get('/sim/whatsapp/contactos', (_req, res) => {
+    const contactos = deps.pacientes.listar().map((p) => ({
+      id: p.id,
+      nombre: p.nombre,
+      telefono: p.telefono,
+    }));
+
+    res.json({
+      simulado: true,
+      total: contactos.length,
+      contactos,
+    });
+  });
+
   router.get('/sim/whatsapp/avisos', (req, res) => {
     const telefono = req.query.telefono;
 

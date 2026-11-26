@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../../src/api/app';
 import { cargarSeed } from '../../../src/infrastructure/seed/cargar-seed';
@@ -52,9 +52,10 @@ describe('C-09 - Avisos de cancelacion por WhatsApp simulado', () => {
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.simulado).toBe(true);
-    expect(respuesta.body.avisos).toHaveLength(1);
-    expect(respuesta.body.avisos[0].texto).toContain('cancelado');
-    expect(respuesta.body.avisos[0].texto)
+    expect(respuesta.body.avisos).toHaveLength(2);
+    expect(respuesta.body.avisos[0].texto).toContain('agendado correctamente');
+    expect(respuesta.body.avisos[1].texto).toContain('cancelado');
+    expect(respuesta.body.avisos[1].texto)
       .not.toContain('El paciente no puede asistir');
   });
 
@@ -97,6 +98,63 @@ describe('C-09 - Avisos de cancelacion por WhatsApp simulado', () => {
       .query({ telefono: OTRO_TELEFONO });
 
     expect(respuesta.status).toBe(200);
+    expect(respuesta.body.avisos).toHaveLength(0);
+  });
+});
+
+
+describe('Confirmacion desde Agenda', () => {
+  it('envia aviso al crear un turno desde recepcion', async () => {
+    const app = nuevaApp();
+
+    const creado = await request(app)
+      .post('/api/turnos')
+      .set(RECEPCION)
+      .send(turno);
+
+    expect(creado.status).toBe(201);
+
+    const respuesta = await request(app)
+      .get('/api/sim/whatsapp/avisos')
+      .query({ telefono: TELEFONO });
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body.avisos).toHaveLength(1);
+    expect(respuesta.body.avisos[0].texto)
+      .toContain('agendado correctamente');
+  });
+
+  it('no envia aviso cuando el alta falla', async () => {
+    const app = nuevaApp();
+
+    const fallido = await request(app)
+      .post('/api/turnos')
+      .set(RECEPCION)
+      .send({ ...turno, pacienteId: 'pac-no-existe' });
+
+    expect(fallido.status).not.toBe(201);
+
+    const respuesta = await request(app)
+      .get('/api/sim/whatsapp/avisos')
+      .query({ telefono: TELEFONO });
+
+    expect(respuesta.body.avisos).toHaveLength(0);
+  });
+
+  it('no duplica avisos para turnos de origen whatsapp', async () => {
+    const app = nuevaApp();
+
+    const creado = await request(app)
+      .post('/api/turnos')
+      .set(RECEPCION)
+      .send({ ...turno, origen: 'whatsapp' });
+
+    expect(creado.status).toBe(201);
+
+    const respuesta = await request(app)
+      .get('/api/sim/whatsapp/avisos')
+      .query({ telefono: TELEFONO });
+
     expect(respuesta.body.avisos).toHaveLength(0);
   });
 });

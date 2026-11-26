@@ -174,7 +174,71 @@
     pedir(function () { return fetch('/api/sim/whatsapp/recordatorio', opcionesPost(cuerpo)); });
   });
 
+  // Contactos sincronizados con el repositorio de pacientes.
+  let firmaAnterior = null;
+
+  async function sincronizarContactos() {
+    const respuesta = await fetch('/api/sim/whatsapp/contactos', {
+      cache: 'no-store'
+    });
+
+    if (!respuesta.ok) {
+      throw new Error('No se pudieron consultar los pacientes');
+    }
+
+    const datos = await respuesta.json();
+    const contactos = datos.contactos;
+    const firma = JSON.stringify(contactos);
+
+    if (firma === firmaAnterior) return;
+
+    const telefonoAnterior = selTelefono.value;
+    const primeraCarga = firmaAnterior === null;
+
+    firmaAnterior = firma;
+    selTelefono.replaceChildren();
+
+    for (const paciente of contactos) {
+      selTelefono.add(new Option(
+        paciente.telefono + ' ? ' + paciente.nombre,
+        paciente.telefono
+      ));
+    }
+
+    const existe = contactos.some(
+      p => p.telefono === telefonoAnterior
+    );
+
+    if (existe) {
+      selTelefono.value = telefonoAnterior;
+    }
+
+    selTelefono.disabled = contactos.length === 0;
+
+    if (contactos.length === 0) {
+      cabecera.textContent = 'No hay pacientes registrados';
+      lista.replaceChildren();
+      opciones.replaceChildren();
+      inputTexto.disabled = true;
+      btnEnviar.disabled = true;
+      btnRecordatorio.disabled = true;
+      return;
+    }
+
+    if (primeraCarga || !existe) {
+      reiniciar();
+    }
+
+    btnRecordatorio.disabled = false;
+  }
+
   selTelefono.addEventListener('change', reiniciar);
-  reiniciar();
+
+  sincronizarContactos().catch(console.error);
+
+  setInterval(function () {
+    sincronizarContactos().catch(console.error);
+  }, 3000);
+
   setInterval(consultarAvisos, 3000);
 })();

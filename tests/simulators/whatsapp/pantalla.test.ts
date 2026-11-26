@@ -27,10 +27,18 @@ describe('pantalla /bot.html (RN-WA-04)', () => {
     expect(res.status).toBe(200);
   });
 
-  it('dado el HTML cuando se revisan los telefonos entonces solo ofrece numeros ficticios', () => {
-    const telefonos = [...HTML.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]);
-    expect(telefonos.length).toBeGreaterThanOrEqual(2);
-    for (const t of telefonos) expect(t).toMatch(/^\+54 9 11 0000-00\d{2}$/);
+  it('dado el HTML, el selector no contiene telefonos fijos', () => {
+    const selector = HTML.match(
+      /<select\b[^>]*id="telefono"[^>]*>([\s\S]*?)<\/select>/
+    );
+
+    expect(selector).not.toBeNull();
+
+    const telefonosFijos = [
+      ...(selector?.[1] ?? '').matchAll(/<option\b[^>]*value="([^"]+)"/g)
+    ];
+
+    expect(telefonosFijos).toHaveLength(0);
   });
 
   it('dado el chat cuando se revisa su accesibilidad entonces la lista de mensajes es aria-live polite', () => {
