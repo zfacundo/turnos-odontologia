@@ -162,6 +162,52 @@ export function turnosRouter(deps: Deps): Router {
       next(aErrorHttp(resultado.error));
       return;
     }
+
+    // CONFIRMACION_AGENDA_WHATSAPP
+    // Solo para turnos creados desde Agenda por recepci?n o administraci?n.
+    const turno = resultado.valor;
+
+    if (
+      turno.origen === 'recepcion' &&
+      (usuario?.rol === 'recepcion' || usuario?.rol === 'admin')
+    ) {
+      try {
+        const paciente = deps.pacientes.buscarPorId(turno.pacienteId);
+
+        if (paciente?.telefono) {
+          const fecha = new Intl.DateTimeFormat('es-AR', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+            dateStyle: 'short',
+            timeStyle: 'short',
+          }).format(turno.inicio);
+
+          const profesional =
+            deps.profesionales.buscarPorId(turno.profesionalId)?.nombre
+            ?? turno.profesionalId;
+
+          const prestacion =
+            deps.prestaciones.buscarPorId(turno.prestacionId)?.nombre
+            ?? turno.prestacionId;
+
+          const mensaje =
+            'Hola, ' + paciente.nombre +
+            '. Tu turno del ' + fecha +
+            ' con ' + profesional +
+            ' para ' + prestacion +
+            ' fue agendado correctamente. ?Te esperamos!';
+
+          registrarAvisoCancelacion(
+            deps,
+            paciente.telefono,
+            mensaje
+          );
+        }
+      } catch (error) {
+        // El turno permanece creado aunque falle el aviso simulado.
+        console.error('Error al registrar confirmaci?n:', error);
+      }
+    }
+
     res.status(201).json(resultado.valor);
   });
 
