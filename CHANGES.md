@@ -47,7 +47,9 @@ C-01 base-proyecto-y-modelo-dominio                    [Team lead]
 
 Extensiones posteriores al roadmap (FASE 7, todas archivadas):
   C-06 ──► C-06b bot-whatsapp-sena-y-obra-social       [Integrante 2]
+            └── C-06c bot-whatsapp-navegacion ──► C-06d bot-whatsapp-sin-enlace-agenda   [Integrante 2]
   C-09 + C-10 ──► panel-admin-agenda ──► panel-reemplaza-agenda-vieja   [Integrante 1]
+                    └── panel-boton-emitir-factura (+ C-12) ──► arca-ver-factura-y-confirmar-emision   [Team lead]
 ```
 
 ### Paralelismo por fase
@@ -560,6 +562,24 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Change OPSX**: `openspec/changes/archive/2026-11-25-bot-whatsapp-sena-y-obra-social/`
 - **Depende de**: C-06, C-08, C-11
 
+### [C-06c] `bot-whatsapp-navegacion`
+- **Estado**: `[x]` completado (2026-11-25) — mergeado (PR #26) y archivado (PR #29); handoff en `knowledge-base/entrega/C-06c.md`
+- **Responsable**: Integrante 2
+- **Resultado**:
+  - Cada paso del bot distinto del menú ofrece "Volver atrás" (cuando corresponde) y "Volver al menú".
+  - En obra social, el bot confirma el número de afiliado ("¿El número de afiliado es AF-0001?") antes de consultar el padrón.
+  - "Volver atrás" no aparece después de una acción ya hecha ni cuando el paso anterior es el menú.
+- **Change OPSX**: `openspec/changes/archive/2026-11-25-bot-whatsapp-navegacion/`; spec `bot-whatsapp` sincronizada.
+- **Depende de**: C-06b
+
+### [C-06d] `bot-whatsapp-sin-enlace-agenda`
+- **Estado**: `[x]` completado (2026-11-25) — mergeado (PR #27) y archivado (PR #29); handoff en `knowledge-base/entrega/C-06d.md`
+- **Responsable**: Integrante 2
+- **Resultado**: `/bot.html` ya no muestra el enlace "Agenda"; solo queda "Bot WhatsApp (sim.)".
+- **Fuera de zona** (autorizado): ajusta el escenario "Navegación desde el bot" de la spec `vista-agenda` y `tests/api/sin-enlaces-viejos.test.ts`, que ahora solo chequea el enlace de `sim/arca.html`.
+- **Change OPSX**: `openspec/changes/archive/2026-11-25-bot-whatsapp-sin-enlace-agenda/`
+- **Depende de**: C-06c, `panel-reemplaza-agenda-vieja`
+
 ### [panel-admin-agenda]
 - **Estado**: `[x]` completado (2026-11-25) — mergeado (PR #23), archivado (PR #24) y 43/43 tareas; handoff en `knowledge-base/entrega/panel-admin-agenda.md`
 - **Responsable**: Integrante 1 (`Yacosantoro`); el team lead mergeó y cerró la verificación 9.1/9.2.
@@ -578,7 +598,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
   - Se retiran `public/index.html`, `public/js/agenda.js`, `public/odontograma.html` y `public/js/odontograma.js`. `/` y `/index.html` redirigen con 302 a `/admin/`.
   - La agenda del panel suma "+ Nuevo turno" y "Lo que hizo el sistema".
   - El odontograma pasa a `#/odontograma/<turnoId>`, solo para el odontólogo.
-  - Los enlaces "Agenda" de `bot.html` y `sim/arca.html` apuntan a `/admin/#/agenda`.
+  - Los enlaces "Agenda" de `bot.html` y `sim/arca.html` apuntan a `/admin/#/agenda`. Después, C-06d quitó el de `bot.html`.
 - **Specs**: `odontograma` y `vista-agenda` actualizadas.
 - **Depende de**: `panel-admin-agenda`, C-09, C-10
 
@@ -590,6 +610,32 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Specs**: `panel-admin` modificada (delta en el change).
 - **Governance**: MEDIUM (UI; toca archivos compartidos del panel de forma aditiva, con revisión del equipo).
 - **Depende de**: `panel-admin-agenda`
+### [panel-boton-emitir-factura]
+- **Estado**: `[x]` completado (2026-11-25) — mergeado y archivado (PR #30); handoff en `knowledge-base/entrega/panel-boton-emitir-factura.md`
+- **Responsable**: Team lead
+- **Resultado**:
+  - En el detalle del turno de la agenda del panel, recepción y admin ven "Emitir factura". El odontólogo no lo ve.
+  - Con el turno `atendido`, el botón lleva en la misma pestaña a `/sim/arca.html?turnoId=<id>`.
+  - En cualquier otro estado aparece deshabilitado (`aria-disabled`) con "Disponible cuando el turno esté atendido".
+- **Scope**: `puedeEmitirFactura` (`public/admin/js/permisos-ui.js`), `accionFactura` (`public/admin/js/agenda-calculos.js`), `dibujarDetalle` en `public/admin/js/agenda.js` y una regla aditiva en `admin.css`.
+- **Spec**: `panel-admin` (+2 requisitos).
+- **Governance**: LOW — UI de navegación, sin cambios de API.
+- **Depende de**: `panel-admin-agenda`, C-12
+
+### [arca-ver-factura-y-confirmar-emision]
+- **Estado**: `[x]` completado (2026-11-25) — mergeado y archivado (PR #30); handoff en `knowledge-base/entrega/arca-ver-factura-y-confirmar-emision.md`
+- **Responsable**: Team lead (zona de Integrante 5, C-12, con aviso en el handoff)
+- **Resultado**:
+  - En `/sim/arca.html`, "Ver factura" va al lado de "Emitir factura C". Muestra la factura emitida o una vista previa "VISTA PREVIA — no emitida", que no guarda, no consume número y no audita.
+  - Una ventana `<dialog>` pide confirmar antes de emitir.
+  - Al cargar la página se consulta la factura: si ya existe o el turno no está atendido, "Emitir" queda deshabilitado con el motivo.
+  - Si la emisión responde 409 "ya facturado", la página muestra la factura existente.
+- **Scope**:
+  - `src/simulators/arca/`: `armarCuerpoFacturaC` y `armarBorradorFacturaC` en `facturaC.ts`, `comprobanteDelTurno.ts`, `verFacturaC.ts` y el endpoint nuevo `GET /api/sim/arca/facturas/:turnoId` (recepción y admin; 403/404).
+  - `public/sim/arca.html`.
+- **Spec**: `factura-c-simulada` (+15 requisitos, 1 modificado).
+- **Governance**: MEDIUM — API de simulador y UI en zona de otro integrante.
+- **Depende de**: C-12, `panel-boton-emitir-factura`
 
 ---
 
@@ -612,8 +658,12 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 | C-13 | `sobreturno-explicito` (stretch) | sin asignar | `src/domain/agenda/sobreturno.ts` | C-02 | MEDIUM |
 | C-14 | `lista-de-espera-ofrece-huecos` (stretch) | sin asignar | `src/domain/lista-espera/`, `src/application/lista-espera/` | C-03 | MEDIUM |
 | C-06b | `bot-whatsapp-sena-y-obra-social` ✓ | Integrante 2 | `src/simulators/whatsapp/` | C-06, C-08, C-11 | LOW |
+| C-06c | `bot-whatsapp-navegacion` ✓ | Integrante 2 | `src/simulators/whatsapp/`, `public/js/bot.js` | C-06b | LOW |
+| C-06d | `bot-whatsapp-sin-enlace-agenda` ✓ | Integrante 2 | `public/bot.html` | C-06c | LOW |
 | — | `panel-admin-agenda` ✓ | Integrante 1 | `public/admin/`, `src/application/{auth,historia,panel}/` | C-02..C-12 | CRITICAL / HIGH |
 | — | `panel-reemplaza-agenda-vieja` ✓ | Integrante 1 | `public/admin/js/`, retiro de `public/index.html` y `public/odontograma.html` | `panel-admin-agenda` | CRITICAL / HIGH |
+| — | `panel-boton-emitir-factura` ✓ | Team lead | `public/admin/js/` (agenda, permisos) | `panel-admin-agenda`, C-12 | LOW |
+| — | `arca-ver-factura-y-confirmar-emision` ✓ | Team lead | `src/simulators/arca/`, `public/sim/arca.html` | C-12 | MEDIUM |
 
 **Excluido a propósito** (etapas posteriores, `informe-discovery.md` §6.3): WhatsApp Business API real, Mercado Pago real, padrones reales de obras sociales, ARCA real, historia clínica completa/presupuestos, multisucursal, reportes de ocupación y ausentismo, Google Calendar/API pública. **Opcionales no incluidos**: indicadores/KPIs (US-021) y reglas de autogestión configurables (US-090); urgencia y "hablar con la doctora" del bot (US-053, US-054).
 
