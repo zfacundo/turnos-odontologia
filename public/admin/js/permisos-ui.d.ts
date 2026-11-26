@@ -1,7 +1,7 @@
 export interface SeccionPanel {
-  readonly id: 'dashboard' | 'agenda' | 'clientes' | 'historial';
+  readonly id: 'dashboard' | 'agenda' | 'clientes' | 'configuracion' | 'historial';
   readonly titulo: string;
-  readonly grupo: 'Consultorio' | 'Clínica';
+  readonly grupo: 'Consultorio' | 'Configuración' | 'Clínica';
   /** Hash de la sección, p. ej. '#/agenda'. */
   readonly ruta: string;
 }
@@ -9,6 +9,8 @@ export interface SeccionPanel {
 export function seccionesPara(rol: string | undefined): SeccionPanel[];
 export function parsearRuta(hash: string): { seccion: string; id: string | undefined };
 export function puedeVer(rol: string | undefined, ruta: string): boolean;
+export function puedeConfigurarConsultorio(rol: string | undefined): boolean;
+export function puedeGestionarBloqueos(rol: string | undefined): boolean;
 export function puedeEditarClientes(rol: string | undefined): boolean;
 export function puedeLeerHistorial(rol: string | undefined): boolean;
 export function puedeCrearHistorial(rol: string | undefined): boolean;

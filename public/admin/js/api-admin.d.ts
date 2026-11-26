@@ -19,13 +19,21 @@ export interface OpcionesLlamada {
   conToken?: boolean;
 }
 
+export interface UsuarioIdentidad {
+  id: string;
+  rol: string;
+}
+
 export interface ApiAdmin {
   token(): string | undefined;
   guardarToken(valor: string): void;
   borrarToken(): void;
+  /** Carga X-Rol / X-Usuario del usuario ficticio; el Bearer sigue siendo la autoridad. */
+  definirIdentidad(usuario?: UsuarioIdentidad | null): void;
   get(ruta: string, opciones?: OpcionesLlamada): Promise<unknown>;
   post(ruta: string, cuerpo?: unknown, opciones?: OpcionesLlamada): Promise<unknown>;
   put(ruta: string, cuerpo?: unknown, opciones?: OpcionesLlamada): Promise<unknown>;
+  delete(ruta: string, opciones?: OpcionesLlamada): Promise<unknown>;
 }
 
 export function crearApiAdmin(deps: {

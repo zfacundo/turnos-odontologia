@@ -57,6 +57,10 @@ const ICONOS = {
     ['path', { d: 'M7 3h8l4 4v14H7z' }],
     ['path', { d: 'M15 3v4h4M10 12h6M10 16h6M4 7v14h3' }],
   ],
+  configuracion: [
+    ['circle', { cx: 12, cy: 12, r: 3 }],
+    ['path', { d: 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1' }],
+  ],
   menu: [['path', { d: 'M4 7h16M4 12h16M4 17h16' }]],
   // Globo de chat para marcar los turnos reservados por el bot de WhatsApp (simulado).
   whatsapp: [['path', { d: 'M4 20l1.4-4A8 8 0 1 1 8 19z' }]],

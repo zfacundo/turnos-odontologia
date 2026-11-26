@@ -8,6 +8,7 @@ const SECCIONES_DEL_PANEL = [
   { id: 'dashboard', titulo: 'Dashboard', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
   { id: 'agenda', titulo: 'Agenda', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
   { id: 'clientes', titulo: 'Clientes', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
+  { id: 'configuracion', titulo: 'Configuración', grupo: 'Configuración', roles: ['admin', 'recepcion', 'odontologo'] },
   { id: 'historial', titulo: 'Historial clínico', grupo: 'Clínica', roles: ['admin', 'odontologo'] },
 ];
 
@@ -49,6 +50,16 @@ export function puedeVer(rol, ruta) {
   const { seccion } = parsearRuta(ruta);
   if (seccionesPara(rol).some((s) => s.id === seccion)) return true;
   return esRolDePanel(rol) && RUTAS_SIN_MENU.some((r) => r.id === seccion && r.roles.includes(rol));
+}
+
+/** Sillones, prestaciones y disponibilidad: solo administración (RN-CF-03). */
+export function puedeConfigurarConsultorio(rol) {
+  return rol === 'admin';
+}
+
+/** Bloqueos: administración y recepción; odontólogo solo los propios (RN-CF-03). */
+export function puedeGestionarBloqueos(rol) {
+  return rol === 'admin' || rol === 'recepcion' || rol === 'odontologo';
 }
 
 /** Alta y edición de pacientes: admin y recepción (odontólogo solo lectura). */

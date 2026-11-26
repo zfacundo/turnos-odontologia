@@ -70,6 +70,13 @@
     dl { margin: 16px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
     dt { color: var(--muted); }
     dd { margin: 0; font-weight: 600; word-break: break-all; }
+    nav { display: flex; gap: 16px; justify-content: center; margin-top: 16px; font-size: .9rem; }
+    .ejemplos { display: grid; gap: 8px; margin: 16px 0 0; }
+    .ejemplos p { margin: 0 0 4px; font-size: .85rem; color: var(--muted); }
+    .ejemplo-btn {
+      width: auto; min-height: 36px; margin: 0; padding: 6px 12px; font-weight: 600;
+      background: var(--surface); color: var(--ink); border-color: var(--line);
+    }
   </style>
 </head>
 <body>
@@ -83,6 +90,13 @@
         <input id="nro" name="nro" type="text" placeholder="AF-0001" autocomplete="off">
         <button type="submit">Consultar</button>
       </form>
+      <div class="ejemplos">
+        <p>Afiliados ficticios del padrón (un clic):</p>
+        <button class="ejemplo-btn" type="button" data-nro="AF-0001">AF-0001 · activo</button>
+        <button class="ejemplo-btn" type="button" data-nro="AF-0002">AF-0002 · con copago</button>
+        <button class="ejemplo-btn" type="button" data-nro="AF-0003">AF-0003 · sin cobertura</button>
+        <button class="ejemplo-btn" type="button" data-nro="AF-0004">AF-0004 · rechazo RN-SM-02</button>
+      </div>
       <p id="resultado" role="status" aria-live="polite"></p>
       <dl id="detalle" hidden>
         <dt>Obra social</dt>
@@ -97,6 +111,7 @@
         <dd id="estado-afiliado">—</dd>
       </dl>
     </section>
+    <nav aria-label="Navegación"><a href="/admin/#/clientes">Volver a Clientes</a><a href="/admin/#/configuracion">Configuración</a></nav>
   </main>
 
   <script>
@@ -120,10 +135,8 @@
         document.getElementById('estado-afiliado').textContent = '—';
       }
 
-      formulario.addEventListener('submit', async function (evento) {
-        evento.preventDefault();
+      async function consultar(valor) {
         limpiar();
-        const valor = nro.value.trim();
         if (valor === '') {
           mostrar('Ingresá un número de afiliado ficticio, por ejemplo AF-0001.', 'error');
           return;
@@ -134,7 +147,8 @@
           });
           const cuerpo = await res.json();
           if (!res.ok) {
-            mostrar((cuerpo.error && cuerpo.error.mensaje) || 'No se pudo consultar el padrón simulado.', 'error');
+            const error = cuerpo.error || {};
+            mostrar((error.regla ? error.regla + ' — ' : '') + (error.mensaje || 'No se pudo consultar el padrón simulado.'), 'error');
             return;
           }
           document.getElementById('obra-social').textContent = cuerpo.obraSocial;
@@ -143,10 +157,22 @@
           document.getElementById('copago').textContent = cuerpo.copagoPct + '%';
           document.getElementById('estado-afiliado').textContent = cuerpo.estado;
           detalle.hidden = false;
-          mostrar('Consulta simulada: ' + cuerpo.aviso, 'ok');
+          mostrar('RN-SM-04 — ' + cuerpo.aviso, 'ok');
         } catch (e) {
           mostrar('No se pudo contactar al servidor local.', 'error');
         }
+      }
+
+      formulario.addEventListener('submit', function (evento) {
+        evento.preventDefault();
+        consultar(nro.value.trim());
+      });
+
+      document.querySelectorAll('.ejemplo-btn').forEach(function (boton) {
+        boton.addEventListener('click', function () {
+          nro.value = boton.dataset.nro;
+          consultar(nro.value);
+        });
       });
     })();
   </script>

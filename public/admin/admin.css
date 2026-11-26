@@ -344,3 +344,19 @@ textarea.input { padding: 10px 12px; min-height: 96px; resize: vertical; }
 @media (max-width: 600px) { .cuadrantes { grid-template-columns: 1fr; } }
 @media (max-width: 767px) { .agenda-layout > .left-col { order: 2; } }
 @media (prefers-reduced-motion: reduce) { .pieza, .pieza:active { transition: none; transform: none; } }
+
+/* ---------- Configuración (C-07) ---------- */
+.config-vista > .card { max-width: 1100px; }
+.config-lista { margin-top: 12px; max-height: 320px; overflow: auto; border: 1px solid var(--adm-line); border-radius: var(--adm-radius-md); }
+.config-lista .table th { position: sticky; top: 0; background: var(--adm-surface); }
+.config-lista .empty { padding: 16px; }
+.franjas { display: grid; gap: 8px; margin: 12px 0 0; }
+.franjas-head, .franja-row { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(110px, .6fr) minmax(110px, .6fr) minmax(100px, .6fr); gap: 10px; align-items: center; }
+.franjas-head { font-size: var(--adm-text-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--adm-text-muted); font-weight: 700; }
+.franja-row { padding: 8px; border: 1px solid var(--adm-line); border-radius: var(--adm-radius-md); background: #FFFFFF; }
+.franja-row .row-btn { min-height: var(--adm-tap); }
+@media (max-width: 767px) {
+  .franjas-head { display: none; }
+  .franja-row { grid-template-columns: 1fr 1fr; }
+  .franja-row .row-btn { grid-column: 1 / -1; }
+}

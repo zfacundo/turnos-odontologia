@@ -160,11 +160,15 @@ describe('seguridad del cliente (S-3, S-6)', () => {
     }
   });
 
-  it('dado el JS del panel cuando se buscan headers simulados o localStorage entonces no se usan', () => {
+  it('dado el JS del panel cuando se buscan headers simulados o localStorage entonces solo api-admin arma los headers y nadie usa localStorage', () => {
     for (const { nombre, texto } of fuentesJs) {
       const sinComentarios = texto.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-      expect(sinComentarios, nombre).not.toMatch(/X-Rol|X-Usuario|localStorage/i);
+      expect(sinComentarios, nombre).not.toMatch(/localStorage/i);
+      if (nombre !== 'api-admin.js') expect(sinComentarios, nombre).not.toMatch(/X-Rol|X-Usuario/i);
     }
+    const api = fuentesJs.find((f) => f.nombre === 'api-admin.js')?.texto ?? '';
+    expect(api).toMatch(/X-Rol/);
+    expect(api).toMatch(/X-Usuario/);
   });
 
   it('dado el cliente de API cuando se lee entonces guarda el token en la clave adm.token del almacen de sesion', () => {

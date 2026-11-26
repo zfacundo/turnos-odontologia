@@ -58,11 +58,17 @@ export async function montarClientes(contenedor, ctx) {
       'div',
       { class: 'card-head' },
       h('h2', { id: 't-lista' }, 'Pacientes ', total),
-      puedeEditar
-        ? h('button', { class: 'btn btn-primary', type: 'button', onClick: () => abrirFormulario('nuevo') }, '+ Nuevo paciente')
-        : false,
+      h(
+        'div',
+        { class: 'actions' },
+        h('a', { class: 'btn btn-secondary', href: '/sim/obras-sociales.html' }, 'Cobertura (sim.)'),
+        puedeEditar
+          ? h('button', { class: 'btn btn-primary', type: 'button', onClick: () => abrirFormulario('nuevo') }, '+ Nuevo paciente')
+          : false,
+      ),
     ),
     h('div', { class: 'toolbar', style: { marginBottom: '12px' } }, h('div', { class: 'field' }, h('label', { for: 'q' }, 'Buscar por nombre'), buscador)),
+    h('p', { class: 'small muted', style: { margin: '0 0 12px' } }, 'DNI y teléfono enmascarados (RN-DA-02). Probá repetir un DNI para ver DNI_DUPLICADO.'),
     resultados,
     h(
       'div',

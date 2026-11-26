@@ -1,5 +1,7 @@
 // Cliente HTTP del panel (design D3). El token vive solo en sessionStorage ('adm.token') y viaja como
-// `Authorization: Bearer`. NUNCA envía X-Usuario / X-Rol. Ante un 401 con token borra la sesión.
+// `Authorization: Bearer`, que sigue siendo la autoridad. Además se envían X-Rol / X-Usuario del
+// usuario ficticio logueado para que la pantalla de Configuración quede alineada con DD-09.
+// Ante un 401 con token borra la sesión.
 
 const CLAVE_TOKEN = 'adm.token';
 
@@ -26,6 +28,15 @@ function mensajePorDefecto(status) {
  * @param {{ fetchFn: Function, almacen: { getItem(k: string): string | null, setItem(k: string, v: string): void, removeItem(k: string): void }, alVencer: () => void }} deps
  */
 export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
+  let identidad;
+
+  function definirIdentidad(usuario) {
+    identidad =
+      usuario === undefined || usuario === null
+        ? undefined
+        : { 'X-Rol': usuario.rol, 'X-Usuario': usuario.id };
+  }
+
   function token() {
     try {
       return almacen.getItem(CLAVE_TOKEN) ?? undefined;
@@ -54,6 +65,7 @@ export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
     const conToken = opciones.conToken !== false;
     const tokenActual = conToken ? token() : undefined;
     const headers = { Accept: 'application/json' };
+    if (identidad !== undefined) Object.assign(headers, identidad);
     if (tokenActual !== undefined) headers.Authorization = `Bearer ${tokenActual}`;
     const init = { method: metodo, headers };
     if (cuerpo !== undefined) {
@@ -104,8 +116,10 @@ export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
     token,
     guardarToken,
     borrarToken,
+    definirIdentidad,
     get: (ruta, opciones) => llamar('GET', ruta, undefined, opciones),
     post: (ruta, cuerpo, opciones) => llamar('POST', ruta, cuerpo, opciones),
     put: (ruta, cuerpo, opciones) => llamar('PUT', ruta, cuerpo, opciones),
+    delete: (ruta, opciones) => llamar('DELETE', ruta, undefined, opciones),
   };
 }
