@@ -152,6 +152,8 @@ describe('movimiento (spec: Movimiento accesible)', () => {
   });
 });
 
+const sinComentarios = (t: string) => t.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+
 describe('seguridad del cliente (S-3, S-6)', () => {
   it('dado el JS del panel cuando se buscan sinks de HTML entonces ninguno inserta HTML ni evalua codigo', () => {
     for (const { nombre, texto } of fuentesJs) {
@@ -160,11 +162,52 @@ describe('seguridad del cliente (S-3, S-6)', () => {
     }
   });
 
-  it('dado el JS del panel cuando se buscan headers simulados o localStorage entonces no se usan', () => {
+  it('dado el JS del panel cuando se buscan headers simulados entonces no se usan', () => {
     for (const { nombre, texto } of fuentesJs) {
-      const sinComentarios = texto.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-      expect(sinComentarios, nombre).not.toMatch(/X-Rol|X-Usuario|localStorage/i);
+      expect(sinComentarios(texto), nombre).not.toMatch(/X-Rol|X-Usuario/i);
     }
+  });
+
+  it('dado el JS del panel cuando se busca localStorage entonces solo tema.js lo menciona (D4)', () => {
+    for (const { nombre, texto } of fuentesJs) {
+      if (nombre === 'tema.js') continue;
+      expect(sinComentarios(texto), nombre).not.toMatch(/localStorage/i);
+    }
+    expect(fuentesJs.some((f) => f.nombre === 'tema.js')).toBe(true);
+  });
+
+  it('dado tema.js cuando se lee entonces solo usa la clave CLAVE_TEMA (adm.tema) y no toca el token ni sessionStorage', () => {
+    const tema = sinComentarios(fuentesJs.find((f) => f.nombre === 'tema.js')?.texto ?? '');
+    const claves = [...tema.matchAll(/(?:getItem|setItem|removeItem)\(\s*([^,)]+)/g)].map((m) => (m[1] as string).trim());
+    expect(claves.length).toBeGreaterThan(0);
+    for (const c of claves) expect(c).toBe('CLAVE_TEMA');
+    expect(tema).not.toMatch(/adm\.token|sessionStorage/);
+    const calculos = fuentesJs.find((f) => f.nombre === 'tema-calculos.js')?.texto ?? '';
+    expect(calculos).toContain("CLAVE_TEMA = 'adm.tema'");
+  });
+
+  it('dado tema-arranque.js cuando se lee entonces solo lee la clave adm.tema (misma regla que tema.js)', () => {
+    const arranque = sinComentarios(readFileSync(path.join(ADMIN, 'tema-arranque.js'), 'utf8'));
+    expect(arranque).toMatch(/localStorage\.getItem\('adm\.tema'\)/);
+    expect(arranque.match(/localStorage/g)?.length).toBe(1);
+    expect(arranque).not.toMatch(/setItem|removeItem|adm\.token|sessionStorage/);
+  });
+
+  it('dado el token de sesion cuando se lee el codigo del panel entonces ni api-admin, sesion ni main mencionan localStorage', () => {
+    for (const nombre of ['api-admin.js', 'sesion.js', 'main.js']) {
+      expect(sinComentarios(fuentesJs.find((f) => f.nombre === nombre)?.texto ?? ''), nombre).not.toMatch(/localStorage/);
+    }
+  });
+
+  it('dado cerrar sesion cuando se lee sesion.js y main.js entonces ninguno borra ni nombra adm.tema (la eleccion sobrevive)', () => {
+    for (const nombre of ['sesion.js', 'main.js']) {
+      expect(sinComentarios(fuentesJs.find((f) => f.nombre === nombre)?.texto ?? ''), nombre).not.toMatch(/adm\.tema|removeItem\(\s*CLAVE_TEMA|\.clear\(\)/);
+    }
+  });
+
+  it('dado el JS del panel cuando se buscan los archivos de tokens compartidos entonces ninguno los referencia', () => {
+    for (const { nombre, texto } of fuentesJs) expect(texto, nombre).not.toMatch(/styles\/tokens\.css|design-system\/tokens/);
+    expect(sinComentarios(css)).not.toMatch(/styles\/tokens\.css|design-system\/tokens/);
   });
 
   it('dado el cliente de API cuando se lee entonces guarda el token en la clave adm.token del almacen de sesion', () => {
