@@ -2,7 +2,7 @@
 
 - Mode: system-and-mockups
 - Revision: 2
-- Approval: pending (revisión 2: marca Vitta Dental; la revisión 1 fue aprobada el 2026-11-25)
+- Approval: approved (2026-11-26, by user; revisión 2: marca Vitta Dental)
 - Decisión de la política: Integrante 2, 2026-11-25, al empezar C-06 (primer cambio visual sin política registrada).
 
 ## Propósito
@@ -41,7 +41,7 @@ Una base visual compartida para las pantallas y los mockups del proyecto. Con la
 
 ## Historial de revisiones
 
-- **2** (2026-11-26, pendiente de aprobación): nombre visible `Vitta Dental` en `brand.js` y logo de Vitta Dental en `assets/logo.svg`. Afecta al panel (`/admin/`, que sirve ambos archivos desde acá) y a los mockups que cargan `brand.js` o `logo.svg`. Capturas: `previews/panel-login-rev2.jpg`, `panel-dashboard-rev2.jpg`, `panel-dashboard-oscuro-rev2.jpg` y `panel-sidebar-rev2.png`.
+- **2** (2026-11-26, aprobada): nombre visible `Vitta Dental` en `brand.js` y logo de Vitta Dental en `assets/logo.svg`. Afecta al panel (`/admin/`, que sirve ambos archivos desde acá) y a los mockups que cargan `brand.js` o `logo.svg`. Capturas: `previews/panel-login-rev2.jpg`, `panel-dashboard-rev2.jpg`, `panel-dashboard-oscuro-rev2.jpg` y `panel-sidebar-rev2.png`.
 - **1** (2026-11-25, aprobada): base inicial.
 
 ## Vista previa
