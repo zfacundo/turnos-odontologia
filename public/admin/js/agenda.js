@@ -112,7 +112,7 @@ export async function montarAgenda(contenedor, ctx) {
         h('span', {
           class: 'swatch',
           style: {
-            background: 'repeating-linear-gradient(45deg,#EEF2F5 0 4px,#E2E9EE 4px 8px)',
+            background: 'repeating-linear-gradient(45deg,var(--adm-bloqueo-a, #EEF2F5) 0 4px,var(--adm-bloqueo-b, #E2E9EE) 4px 8px)',
             border: '1px solid var(--adm-line)',
           },
         }),

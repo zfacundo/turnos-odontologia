@@ -582,6 +582,15 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Specs**: `odontograma` y `vista-agenda` actualizadas.
 - **Depende de**: `panel-admin-agenda`, C-09, C-10
 
+### [panel-tema-oscuro]
+- **Estado**: `[x]` implementado (2026-11-26), pendiente de revisión, PR y archive; handoff en `knowledge-base/entrega/panel-tema-oscuro.md`
+- **Responsable**: Integrante 1 (`Yacosantoro`)
+- **Resultado**: tema oscuro grafito del panel `/admin/` con botón de tema (login y barra superior), elección guardada en `localStorage` (`adm.tema`), por defecto el del sistema, arranque sin destello (`tema-arranque.js`) y cambio instantáneo. Arregla además el foco de la barra superior en claro (1.70:1 → 3.81:1).
+- **Scope**: `public/admin/` (bloque aditivo al final de `admin.css`, `tema-arranque.js`, `js/tema.js`, `js/tema-calculos.js`, ediciones aditivas en `index.html`, `main.js`, `agenda.js`, `dashboard.js`); `tests/panel/`.
+- **Specs**: `panel-admin` modificada (delta en el change).
+- **Governance**: MEDIUM (UI; toca archivos compartidos del panel de forma aditiva, con revisión del equipo).
+- **Depende de**: `panel-admin-agenda`
+
 ---
 
 ## Resumen

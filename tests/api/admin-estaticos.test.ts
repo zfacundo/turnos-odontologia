@@ -36,6 +36,15 @@ describe('estaticos del panel', () => {
     expect(res.headers['content-type']).toMatch(/css/);
   });
 
+  // spec: panel-admin (panel-tema-oscuro)
+  it('dado la API cuando se piden tema-arranque.js y los modulos del tema entonces se sirven como JavaScript', async () => {
+    for (const ruta of ['/admin/tema-arranque.js', '/admin/js/tema.js', '/admin/js/tema-calculos.js']) {
+      const res = await request(app()).get(ruta);
+      expect(res.status, ruta).toBe(200);
+      expect(res.headers['content-type'], ruta).toMatch(/javascript/);
+    }
+  });
+
   // spec: panel-reemplaza-agenda-vieja
   it('dado la API cuando se pide / entonces redirige 302 al panel', async () => {
     const res = await request(app()).get('/');

@@ -344,3 +344,101 @@ textarea.input { padding: 10px 12px; min-height: 96px; resize: vertical; }
 @media (max-width: 600px) { .cuadrantes { grid-template-columns: 1fr; } }
 @media (max-width: 767px) { .agenda-layout > .left-col { order: 2; } }
 @media (prefers-reduced-motion: reduce) { .pieza, .pieza:active { transition: none; transform: none; } }
+
+/* ---------- panel-tema-oscuro (aditivo) ----------
+   Bloque del tema oscuro (change panel-tema-oscuro, design D1, D2, D9). Solo redefine tokens semanticos;
+   los de marca (--adm-navy, --adm-blue-*) no cambian. Sin transition ni animation: el cambio de tema es instantaneo (D7).
+   Los ratios de contraste de cada par estan en el design.md del change y los verifica tests/panel/tema-estatico.test.ts. */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+  /* Grafito neutro (sin tinte azul): sidebar < pagina < superficie < superficie-2. La paleta azul queda como acento. */
+  --adm-bg: #161616;
+  --adm-surface: #1F1F1F;
+  --adm-surface-2: #2A2A2A;
+  --adm-sidebar-bg: #0F0F0F;
+  --adm-input-bg: #171717;
+  --adm-line: #333333;
+  --adm-text: #E8E8E8;
+  --adm-text-muted: #A8A8A8;
+  --adm-link: #5CC0EA;
+  --adm-control-border: #7A7A7A;
+  --adm-focus-color: #97CAD9;
+
+  --adm-st-reservado-bg: #2A2A2A; --adm-st-reservado-fg: #E8E8E8; --adm-st-reservado-bd: #97CAD9;
+  --adm-st-atendido-bd: #5FA8D3;
+  --adm-st-ausente-bg: #4A1A0E; --adm-st-ausente-fg: #FFC2AE; --adm-st-ausente-bd: #E07A5A;
+  --adm-senado-bg: #0B3D26; --adm-senado-fg: #A6E3C3; --adm-senado-bd: #3F9A6C;
+  --adm-error-bg: #4A1A0E; --adm-error-fg: #FFC2AE; --adm-error-bd: #FF8A66;
+
+  --adm-bar-reservado: #97CAD9; --adm-bar-confirmado: #0088BE; --adm-bar-atendido: #5FA8D3; --adm-bar-ausente: #FFC2AE;
+  --adm-grid-bg: #1F1F1F; --adm-grid-line: #272727; --adm-grid-today: #0F2633; --adm-grid-closed: #191919;
+  --adm-sel-bg: #13303F;
+  --adm-bloqueo-a: #262626; --adm-bloqueo-b: #303030;
+  --adm-toast-bg: #E8E8E8; --adm-toast-fg: #001040;
+  --adm-scrim: rgba(0, 0, 0, .6);
+  --adm-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+/* Arreglo de foco de la barra superior (AMBOS temas): la topbar es clara, no navy (1.70:1 -> 3.81:1). */
+.topbar :focus-visible { outline-color: var(--adm-focus-color); }
+
+/* Boton de tema (login y topbar). */
+.tema-btn { flex: none; }
+.tema-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.tema-btn .sol { display: none; }
+[data-tema="oscuro"] .tema-btn .sol { display: block; }
+[data-tema="oscuro"] .tema-btn .luna { display: none; }
+.login-tools { display: flex; justify-content: flex-end; padding: 12px 16px 0; }
+.login-tools .icon-btn { border-color: var(--adm-blue-300); }
+.login-page :focus-visible { outline-color: var(--adm-focus-on-navy); }
+.login-card :focus-visible { outline-color: var(--adm-focus-color); }
+
+/* Componentes que usan tokens de marca como color semantico o literales claros (inventario D9). */
+[data-tema="oscuro"] .sim { background: var(--adm-surface-2); color: var(--adm-text); border-bottom-color: var(--adm-line); }
+[data-tema="oscuro"] .alert-info { background: var(--adm-surface-2); color: var(--adm-text); }
+[data-tema="oscuro"] .btn-secondary { background: var(--adm-surface); color: var(--adm-text); }
+[data-tema="oscuro"] .icon-btn { background: var(--adm-surface); color: var(--adm-text); }
+@media (hover: hover) and (pointer: fine) {
+  [data-tema="oscuro"] .btn-secondary:hover { background: var(--adm-surface-2); }
+}
+[data-tema="oscuro"] .input,
+[data-tema="oscuro"] .select,
+[data-tema="oscuro"] .filters .select { background: var(--adm-input-bg); color: var(--adm-text); }
+[data-tema="oscuro"] .input[aria-invalid="true"],
+[data-tema="oscuro"] .select[aria-invalid="true"] { border-color: var(--adm-error-bd); }
+
+/* .login-page no se sobrescribe: el fondo exterior del login sigue navy, la tarjeta es grafito. */
+[data-tema="oscuro"] .login-card { border: 1px solid var(--adm-line); }
+[data-tema="oscuro"] .login-card .brand { color: var(--adm-text); }
+[data-tema="oscuro"] .user-opt { background: var(--adm-input-bg); }
+[data-tema="oscuro"] .user-opt input { accent-color: var(--adm-blue-500); }
+[data-tema="oscuro"] .user-opt:has(input:checked) { background: var(--adm-surface-2); border-color: var(--adm-blue-500); }
+
+[data-tema="oscuro"] .sidebar { background: var(--adm-sidebar-bg); }
+[data-tema="oscuro"] .kpi-hero { background: var(--adm-blue-700); border-color: var(--adm-blue-700); }
+[data-tema="oscuro"] .bar-track { background: var(--adm-surface-2); }
+
+[data-tema="oscuro"] .mini-cal .week td { background: var(--adm-surface-2); }
+[data-tema="oscuro"] .grid-wrap { background: var(--adm-grid-bg); }
+[data-tema="oscuro"] .wg-head { background: var(--adm-surface); border-bottom-color: var(--adm-blue-500); }
+[data-tema="oscuro"] .wg-head.today { background: var(--adm-blue-700); }
+[data-tema="oscuro"] .wg-col {
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--adm-row) - 1px), var(--adm-grid-line) calc(var(--adm-row) - 1px), var(--adm-grid-line) var(--adm-row)); }
+[data-tema="oscuro"] .wg-col.today { background-color: var(--adm-grid-today); }
+[data-tema="oscuro"] .wg-col.closed { background-color: var(--adm-grid-closed); }
+[data-tema="oscuro"] .bloqueo { background: repeating-linear-gradient(45deg, var(--adm-bloqueo-a) 0 6px, var(--adm-bloqueo-b) 6px 12px); }
+
+[data-tema="oscuro"] .st-atendido { border-color: var(--adm-st-atendido-bd); }
+[data-tema="oscuro"] .st-ausente { border-color: var(--adm-st-ausente-bd); }
+[data-tema="oscuro"] .senado { border-color: var(--adm-senado-bd); }
+[data-tema="oscuro"] .pieza.hecho { border-color: var(--adm-st-atendido-bd); }
+[data-tema="oscuro"] .pieza.a_revisar { border-color: var(--adm-error-bd); }
+[data-tema="oscuro"] .chip.a-revisar { border-color: var(--adm-error-bd); }
+
+[data-tema="oscuro"] .table th { border-bottom-color: var(--adm-blue-500); }
+[data-tema="oscuro"] .table tr.sel td { background: var(--adm-sel-bg); }
+
+[data-tema="oscuro"] .drawer-scrim { background: var(--adm-scrim); }
+[data-tema="oscuro"] .drawer { box-shadow: -8px 0 24px rgba(0, 0, 0, .5); border-left: 1px solid var(--adm-line); }
+[data-tema="oscuro"] .toast { background: var(--adm-toast-bg); color: var(--adm-toast-fg); }
+[data-tema="oscuro"] .skip-link { background: var(--adm-toast-bg); color: var(--adm-toast-fg); }
