@@ -14,6 +14,7 @@ import { PrestacionRepositoryEnMemoria } from '../memory/prestacion-repository';
 import { ProfesionalRepositoryEnMemoria } from '../memory/profesional-repository';
 import { SillonRepositoryEnMemoria } from '../memory/sillon-repository';
 import { TurnoRepositoryEnMemoria } from '../memory/turno-repository';
+import { PadronObraSocialEnMemoria } from '../../simulators/obras-sociales/padronRepository';
 import {
   HISTORIA_SEED,
   MOTIVO_URGENCIAS,
@@ -99,5 +100,6 @@ export function cargarSeed(clock: Clock): Deps {
     sesiones: new SesionRepositoryEnMemoria(),
     generadorToken: new GeneradorTokenAleatorio(),
     historia: new HistoriaRepositoryEnMemoria(historiaDelSeed(clock)),
+    padron: new PadronObraSocialEnMemoria(),
   };
 }

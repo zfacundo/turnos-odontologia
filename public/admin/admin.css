@@ -255,6 +255,17 @@ textarea.input { padding: 10px 12px; min-height: 96px; resize: vertical; }
 .user-opt:has(input:focus-visible) { outline: 3px solid var(--adm-focus-color); outline-offset: 2px; }
 .user-opt .rol { display: block; font-size: var(--adm-text-xs); color: var(--adm-text-muted); }
 
+/* ---------- Configuración del consultorio ---------- */
+.config-lista { display: grid; gap: 8px; margin-top: 8px; }
+.config-item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 12px;
+  border: 1px solid var(--adm-line); border-radius: var(--adm-radius-md); background: var(--adm-bg);
+  font-size: var(--adm-text-sm); }
+.config-item .btn { margin-left: auto; min-height: 34px; padding: 0 10px; font-size: var(--adm-text-xs); }
+.franjas { display: grid; gap: 6px; margin: 14px 0 0; }
+.franja-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius-sm); background: var(--adm-bg); font-size: var(--adm-text-sm); }
+.franja-row .btn { margin-left: auto; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
   .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }

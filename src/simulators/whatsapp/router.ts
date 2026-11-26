@@ -46,7 +46,7 @@ function json(r: Respuesta) {
 export function whatsappRouter(
   deps: Deps,
   sesiones: SesionesWhatsApp = new Map(),
-  sims: SimuladoresBot = simuladoresPorDefecto(),
+  sims: SimuladoresBot = simuladoresPorDefecto(deps.padron),
 ): Router {
   const router = Router();
 

@@ -58,10 +58,11 @@ describe('padron de obra social simulado', () => {
     expect(JSON.stringify(afiliado)).not.toContain('Paciente Ficticio');
   });
 
-  it('dado el padrón inicial cuando se crea un repositorio entonces lista cuatro afiliados sin nombres', () => {
+  it('dado el padrón inicial cuando se crea un repositorio entonces lista veinticuatro afiliados sin nombres', () => {
     const repo = new PadronObraSocialEnMemoria();
-    expect(afiliadosDelPadron()).toHaveLength(4);
-    expect(repo.listar()).toHaveLength(4);
+    expect(afiliadosDelPadron()).toHaveLength(24);
+    expect(repo.listar()).toHaveLength(24);
+    expect(repo.buscarPorNumero('AF-0024')).toMatchObject({ obraSocial: 'OS-07', plan: 'Clásico', estado: 'con_copago' });
     expect(repo.buscarPorNumero('AF-0002')).toMatchObject({ estado: 'con_copago' });
     expect(repo.buscarPorNumero('AF-9999')).toBeUndefined();
   });

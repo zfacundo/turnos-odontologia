@@ -37,8 +37,10 @@ export interface SimuladoresBot {
   readonly padron: PadronObraSocialRepository;
 }
 
-export function simuladoresPorDefecto(): SimuladoresBot {
-  return { pagos: new PagoSenaRepositoryEnMemoria(), padron: new PadronObraSocialEnMemoria() };
+export function simuladoresPorDefecto(
+  padron: PadronObraSocialRepository = new PadronObraSocialEnMemoria(),
+): SimuladoresBot {
+  return { pagos: new PagoSenaRepositoryEnMemoria(), padron };
 }
 
 /** Busqueda de huecos hacia adelante (design D3). */

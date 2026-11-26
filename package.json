@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && node scripts/copiar-public.js",
     "start": "node dist/src/server.js",
     "test": "vitest run --configLoader runner",
     "typecheck": "tsc --noEmit"

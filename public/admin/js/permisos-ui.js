@@ -8,6 +8,7 @@ const SECCIONES_DEL_PANEL = [
   { id: 'dashboard', titulo: 'Dashboard', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
   { id: 'agenda', titulo: 'Agenda', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
   { id: 'clientes', titulo: 'Clientes', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
+  { id: 'configuracion', titulo: 'Configuración', grupo: 'Consultorio', roles: ['admin', 'recepcion', 'odontologo'] },
   { id: 'historial', titulo: 'Historial clínico', grupo: 'Clínica', roles: ['admin', 'odontologo'] },
 ];
 
@@ -84,4 +85,14 @@ export function puedeEmitirFactura(rol) {
 /** Tarjeta "Lo que hizo el sistema": admin y recepción. */
 export function puedeVerRegistro(rol) {
   return rol === 'admin' || rol === 'recepcion';
+}
+
+/** Configuración estructural (sillones, prestaciones, disponibilidad y obras sociales): solo admin. */
+export function puedeConfigurarConsultorio(rol) {
+  return rol === 'admin';
+}
+
+/** Bloqueos de agenda: admin y recepción; odontólogo solo su propia agenda. */
+export function puedeGestionarBloqueos(rol) {
+  return rol === 'admin' || rol === 'recepcion' || rol === 'odontologo';
 }

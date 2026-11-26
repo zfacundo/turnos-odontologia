@@ -2,6 +2,13 @@ export const AVISO_SIMULACION = 'SIMULACIÓN — consulta de cobertura simulada,
 
 export type EstadoAfiliado = 'activo' | 'con_copago' | 'sin_cobertura' | 'error_simulado';
 
+export interface ObraSocialSimulada {
+  readonly codigo: string;
+  readonly nombre: string;
+  readonly planes: readonly string[];
+  readonly simulado: true;
+}
+
 export interface AfiliadoSimulado {
   readonly nroAfiliado: string;
   readonly obraSocial: string;

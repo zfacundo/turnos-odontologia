@@ -12,6 +12,7 @@ import type { Turno } from '../domain/agenda/turno';
 import type { HistoriaRepository } from '../application/historia/puertos';
 import type { GeneradorToken, SesionRepository } from '../application/auth/puertos';
 import type { Usuario } from '../domain/shared/rol';
+import type { PadronObraSocialRepository } from '../simulators/obras-sociales/padronRepository';
 
 export interface Deps {
   readonly sillones: SillonRepository;
@@ -29,4 +30,6 @@ export interface Deps {
   readonly generadorToken: GeneradorToken;
   /** Historial clínico ficticio (solo inserción). */
   readonly historia: HistoriaRepository;
+  /** Padrón simulado compartido por la API de obras sociales y el bot de WhatsApp. */
+  readonly padron?: PadronObraSocialRepository;
 }
