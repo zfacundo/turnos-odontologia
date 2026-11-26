@@ -1,11 +1,11 @@
-# Marca — Turnos Odontología
+# Marca — Vitta Dental
 
 | Elemento | Valor | Fuente |
 |---|---|---|
-| Nombre del producto | **Turnos Odontología** | `knowledge-base/01_vision_y_objetivos.md` |
+| Nombre del producto | **Vitta Dental** (antes "Turnos Odontología") | Integrante 2, 2026-11-26 |
 | Nombre del consultorio que se muestra en el bot | (TBD). El prototipo usa "Consultorio Sonríe" como ejemplo | `docs/discovery/prototipo/agenda_odontologia.html` |
 | Profesional en los mensajes del bot | El nombre ficticio del seed (por ejemplo, "Dra. Ficticia Perez"). El prototipo usa "Dra. [Apellido]" | `src/infrastructure/seed/datos-seed.ts` |
-| Logo | (TBD): `assets/logo.svg` es un marcador **provisional** y así lo indica | — |
+| Logo | Diente con hoja en azules (`assets/logo.svg`, ícono); logo completo con el nombre en `assets/vitta-dental-logo.png` | Integrante 2, 2026-11-26 |
 | Imágenes | Sin fotos. Los íconos son SVG lineales simples, como en el prototipo (WhatsApp, calendario, campana) | prototipo |
 
 ## Tono

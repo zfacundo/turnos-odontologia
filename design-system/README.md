@@ -1,8 +1,8 @@
-# Design system — Turnos Odontología
+# Design system — Vitta Dental
 
 - Mode: system-and-mockups
-- Revision: 1
-- Approval: approved (2026-11-25, by user)
+- Revision: 2
+- Approval: pending (revisión 2: marca Vitta Dental; la revisión 1 fue aprobada el 2026-11-25)
 - Decisión de la política: Integrante 2, 2026-11-25, al empezar C-06 (primer cambio visual sin política registrada).
 
 ## Propósito
@@ -23,12 +23,12 @@ Una base visual compartida para las pantallas y los mockups del proyecto. Con la
 | `brand.md` | Nombre, tono, logo, imágenes y reglas de uso |
 | `brand.js` | Constante `BRAND_NAME` y enlace a `[data-brand-name]` para las vistas locales |
 | `components.html` | Componentes de referencia y sus estados |
-| `assets/logo.svg` | Logo **provisional** |
+| `assets/logo.svg` | Ícono de Vitta Dental (diente con hoja, fondo transparente), recortado de `assets/vitta-dental-logo.png` |
+| `assets/vitta-dental-logo.png` | Logo completo de Vitta Dental (ícono + nombre), provisto por Integrante 2 el 2026-11-26 |
 | `previews/` | Capturas de `components.html` en 390×844 y 1440×900 |
 
 ## Decisiones abiertas (TBD)
 
-- Logo definitivo del producto.
 - Nombre del consultorio que se muestra en el bot.
 - Hosting de las fuentes: `public/styles/tokens.css` carga Bricolage Grotesque y DM Sans desde Google Fonts. Este design system no depende de fuentes remotas y cae en Arial Black o Helvetica/Arial cuando no están instaladas.
 
@@ -38,6 +38,11 @@ Una base visual compartida para las pantallas y los mockups del proyecto. Con la
 2. **Logo**: reemplazar `design-system/assets/logo.svg` por el definitivo, manteniendo el nombre y la ruta.
 3. **Valores visuales**: editar el token en `design-system/tokens.css` y el valor equivalente en `public/styles/tokens.css`, que es lo que usa la app.
 4. Todo cambio en un token o asset compartido **aumenta `Revision:`**, vuelve `Approval:` a `pending` y obliga a volver a revisar los mockups afectados.
+
+## Historial de revisiones
+
+- **2** (2026-11-26, pendiente de aprobación): nombre visible `Vitta Dental` en `brand.js` y logo de Vitta Dental en `assets/logo.svg`. Afecta al panel (`/admin/`, que sirve ambos archivos desde acá) y a los mockups que cargan `brand.js` o `logo.svg`. Capturas: `previews/panel-login-rev2.jpg`, `panel-dashboard-rev2.jpg`, `panel-dashboard-oscuro-rev2.jpg` y `panel-sidebar-rev2.png`.
+- **1** (2026-11-25, aprobada): base inicial.
 
 ## Vista previa
 
