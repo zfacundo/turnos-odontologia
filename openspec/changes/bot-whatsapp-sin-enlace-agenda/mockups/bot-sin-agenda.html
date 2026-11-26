@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Bot · Sin enlace a la agenda</title>
+  <link rel="stylesheet" href="../../../../design-system/tokens.css">
+  <link rel="stylesheet" href="bot.css">
+  <script src="../../../../design-system/brand.js" defer></script>
+</head>
+<body>
+  <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+  <header class="top">
+    <img src="../../../../design-system/assets/logo.svg" alt="Logo provisional (TBD)">
+    <strong data-brand-name>Turnos Odontología</strong>
+    <nav aria-label="Secciones"><a href="#" aria-current="page">Bot WhatsApp (sim.)</a></nav>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-panel">
+      <h1 id="t-panel">Chat del paciente</h1>
+      <p class="lead">Elegí un teléfono ficticio para escribir como ese paciente. Lo que reserves aparece en la agenda real con origen WhatsApp.</p>
+      <label for="tel">Teléfono del paciente</label>
+      <select class="input" id="tel">
+        <option selected>+54 9 11 0000-0001 · Paciente Ficticio Uno</option>
+        <option>+54 9 11 0000-0099 · número nuevo</option>
+      </select>
+      <p class="hint">Solo números ficticios del seed. Cambiar de teléfono empieza otra conversación.</p>
+      <button class="btn" type="button">Enviar recordatorio 24 h</button>
+      <p class="hint">Demo: el bot escribe el recordatorio del próximo turno de este número.</p>
+      <div class="meta"><strong>Estado mostrado</strong>Encabezado sin el enlace "Agenda": arriba a la derecha queda solo "Bot WhatsApp (sim.)" como página actual. El chat no cambia.</div>
+    </section>
+
+    <section aria-label="Conversación simulada">
+      <div class="phone">
+        <p class="sim" role="note">Simulación — no es WhatsApp real</p>
+        <div class="phone-head">Asistente del consultorio<small>Consultorio (TBD) · +54 9 11 0000-0001</small></div>
+        <div class="msgs" aria-live="polite">
+          <div class="b bot">¿Qué tipo de consulta necesitás?<time>09:01</time></div>
+          <div class="b me">Control y limpieza<time>09:01</time></div>
+          <div class="b bot">¿Con qué profesional?<time>09:01</time></div>
+        </div>
+        <div class="opts">
+          <button class="chip" type="button">Dra. Ficticia Perez</button>
+          <button class="chip" type="button">Dr. Ficticio Gomez</button>
+          <button class="chip nav" type="button">Volver atrás</button>
+          <button class="chip nav" type="button">Volver al menú</button>
+        </div>
+        <form class="bar" onsubmit="return false">
+          <label class="visually-hidden" for="msg">Mensaje</label>
+          <input class="input" id="msg" placeholder="Elegí una opción" disabled>
+          <button class="btn btn-primary" type="submit" disabled>Enviar</button>
+        </form>
+      </div>
+
+    </section>
+  </main>
+</body>
+</html>
