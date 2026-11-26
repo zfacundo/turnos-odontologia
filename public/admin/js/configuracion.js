@@ -10,7 +10,6 @@ const DIAS = [
   [6, 'Sábado'],
   [7, 'Domingo'],
 ];
-const ESTADOS = ['activo', 'con_copago', 'sin_cobertura', 'error_simulado'];
 const FECHA_DEMO = '2026-11-30';
 
 function iso(fecha, hora) {
@@ -34,12 +33,11 @@ export async function montarConfiguracion(contenedor, ctx) {
   const { api, usuario } = ctx;
   const puedeConfigurar = puedeConfigurarConsultorio(usuario.rol);
   const puedeBloquear = puedeGestionarBloqueos(usuario.rol);
-  ctx.titulo('Configuración', 'Consultorio · agenda y padrón simulado');
+  ctx.titulo('Configuración', 'Consultorio · agenda y reglas');
 
   const estado = {
     catalogo: { sillones: [], prestaciones: [], profesionales: [] },
     bloqueos: [],
-    padron: { obrasSociales: [], afiliados: [] },
     profesionalId: 'prof-1',
     franjas: [],
   };
@@ -74,21 +72,6 @@ export async function montarConfiguracion(contenedor, ctx) {
     bloqMotivo: h('input', { class: 'input', type: 'text', placeholder: 'Ej.: Control (ficticio)', disabled: !puedeBloquear }),
     bloqueos: h('div', { class: 'config-lista' }),
     bloqError: h('div', { role: 'alert' }),
-
-    osCodigo: h('input', { class: 'input', type: 'text', placeholder: 'OS-05', disabled: !puedeConfigurar }),
-    osNombre: h('input', { class: 'input', type: 'text', placeholder: 'Obra Social Demo', disabled: !puedeConfigurar }),
-    osPlanes: h('input', { class: 'input', type: 'text', placeholder: 'Plan Demo, Plan Demo Plus', disabled: !puedeConfigurar }),
-    osError: h('div', { role: 'alert' }),
-    obras: h('div', { class: 'config-lista' }),
-
-    afNro: h('input', { class: 'input', type: 'text', placeholder: 'AF-0005' }),
-    afObra: h('select', { class: 'select' }),
-    afPlan: h('select', { class: 'select' }),
-    afCobertura: h('input', { class: 'input', type: 'number', min: '0', max: '100', value: '70' }),
-    afCopago: h('input', { class: 'input', type: 'number', min: '0', max: '100', value: '30' }),
-    afEstado: h('select', { class: 'select' }, ESTADOS.map((e) => h('option', { value: e }, e.replace(/_/g, ' ')))),
-    afError: h('div', { role: 'alert' }),
-    afiliados: h('div', { class: 'config-lista' }),
   };
 
   const botonSillon = h('button', { class: 'btn btn-primary', type: 'button', disabled: !puedeConfigurar, onClick: crearSillon }, 'Crear sillón');
@@ -96,8 +79,6 @@ export async function montarConfiguracion(contenedor, ctx) {
   const botonAgregarFranja = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !puedeConfigurar, onClick: agregarFranja }, 'Agregar franja');
   const botonGuardarDisp = h('button', { class: 'btn btn-primary', type: 'button', disabled: !puedeConfigurar, onClick: guardarDisponibilidad }, 'Guardar disponibilidad');
   const botonBloqueo = h('button', { class: 'btn btn-primary', type: 'button', disabled: !puedeBloquear, onClick: crearBloqueo }, 'Crear bloqueo');
-  const botonObra = h('button', { class: 'btn btn-primary', type: 'button', disabled: !puedeConfigurar, onClick: crearObraSocial }, 'Registrar obra social');
-  const botonAfiliado = h('button', { class: 'btn btn-primary', type: 'button', disabled: !puedeConfigurar && usuario.rol !== 'recepcion', onClick: crearAfiliado }, 'Registrar afiliado');
 
   reemplazar(
     contenedor,
@@ -174,53 +155,9 @@ export async function montarConfiguracion(contenedor, ctx) {
         ),
         h('p', { class: 'small muted' }, 'RN-CF-03: un odontólogo solo puede bloquear su propia agenda.'),
       ),
-      h(
-        'section',
-        { class: 'card', 'aria-labelledby': 'cfg-padron' },
-        h('div', { class: 'card-head' }, h('h2', { id: 'cfg-padron' }, 'Obras sociales y afiliados (SIMULACIÓN)')),
-        h('p', { class: 'small muted' }, 'Lo que se registra acá queda disponible en Clientes, en /sim/obras-sociales.html y en el bot de WhatsApp.'),
-        h('h3', null, 'Obras sociales'),
-        n.obras,
-        h(
-          'form',
-          { class: 'form-grid', style: { marginTop: '12px' }, onSubmit: (e) => { e.preventDefault(); crearObraSocial(); } },
-          h('div', { class: 'form-row' },
-            h('div', { class: 'field' }, h('label', { for: 'cfg-os-codigo' }, 'Código'), n.osCodigo, h('span', { class: 'hint' }, 'Formato OS-NN.')),
-            h('div', { class: 'field' }, h('label', { for: 'cfg-os-nombre' }, 'Nombre'), n.osNombre),
-          ),
-          h('div', { class: 'field' }, h('label', { for: 'cfg-os-planes' }, 'Planes'), n.osPlanes, h('span', { class: 'hint' }, 'Separalos con comas.'))
-        ),
-        h('div', { style: { marginTop: '12px' } }, n.osError, botonObra),
-        h('h3', { style: { marginTop: '24px' } }, 'Números de afiliado'),
-        n.afiliados,
-        h(
-          'form',
-          { class: 'form-grid', style: { marginTop: '12px' }, onSubmit: (e) => { e.preventDefault(); crearAfiliado(); } },
-          h('div', { class: 'form-row' },
-            h('div', { class: 'field' }, h('label', { for: 'cfg-af-nro' }, 'Número'), n.afNro, h('span', { class: 'hint' }, 'Formato AF-NNNN.')),
-            h('div', { class: 'field' }, h('label', { for: 'cfg-af-obra' }, 'Obra social'), n.afObra),
-          ),
-          h('div', { class: 'form-row' },
-            h('div', { class: 'field' }, h('label', { for: 'cfg-af-plan' }, 'Plan'), n.afPlan),
-            h('div', { class: 'field' }, h('label', { for: 'cfg-af-estado' }, 'Estado'), n.afEstado),
-          ),
-          h('div', { class: 'form-row' },
-            h('div', { class: 'field' }, h('label', { for: 'cfg-af-cobertura' }, 'Cobertura %'), n.afCobertura),
-            h('div', { class: 'field' }, h('label', { for: 'cfg-af-copago' }, 'Copago %'), n.afCopago),
-          ),
-          n.afError,
-          botonAfiliado,
-        ),
-        h('p', { class: 'small muted' }, 'RN-DA-02: la ficha de Clientes enmascara DNI y teléfono. RN-SM-02: AF-0004 simula una falla de padrón. RN-SM-04: ninguna consulta sale del servidor local.'),
-        h('div', { class: 'actions', style: { marginTop: '12px' } },
-          h('a', { class: 'btn btn-secondary', href: '/sim/obras-sociales.html' }, 'Consultar en pantalla simulada'),
-          h('a', { class: 'btn btn-secondary', href: '/bot.html' }, 'Probar en el bot de WhatsApp'),
-        ),
-      ),
     ),
   );
 
-  /* ------------------------------ Dibujo ------------------------------ */
   function dibujarSillones() {
     reemplazar(
       n.sillones,
@@ -290,61 +227,18 @@ export async function montarConfiguracion(contenedor, ctx) {
     );
   }
 
-  function sincronizarPlanes() {
-    const obra = estado.padron.obrasSociales.find((o) => o.codigo === n.afObra.value);
-    reemplazar(n.afPlan, ...(obra?.planes ?? []).map((p) => h('option', { value: p }, p)));
-  }
-
-  function dibujarPadron() {
-    reemplazar(
-      n.afObra,
-      ...estado.padron.obrasSociales.map((o) => h('option', { value: o.codigo, selected: o.codigo === n.afObra.value }, `${o.codigo} · ${o.nombre}`)),
-    );
-    sincronizarPlanes();
-    reemplazar(
-      n.obras,
-      ...estado.padron.obrasSociales.map((o) =>
-        h(
-          'div',
-          { class: 'config-item' },
-          h('strong', null, o.codigo),
-          h('span', null, o.nombre),
-          h('span', { class: 'small muted' }, o.planes.join(', ')),
-        ),
-      ),
-    );
-    reemplazar(
-      n.afiliados,
-      ...estado.padron.afiliados.map((a) =>
-        h(
-          'div',
-          { class: 'config-item' },
-          h('strong', { class: 'num' }, a.nroAfiliado),
-          h('span', { class: 'small muted' }, `${a.obraSocial} · ${a.plan} · ${a.cobertura}% / ${a.copagoPct}% · ${a.estado}`),
-        ),
-      ),
-    );
-  }
-
-  /* ------------------------------ Acciones ------------------------------ */
   async function recargar() {
-    const [catalogo, bloqueos, padron] = await Promise.all([
-      api.get('/api/catalogo'),
-      api.get('/api/bloqueos'),
-      api.get('/api/sim/obras-sociales/padron'),
-    ]);
+    const [catalogo, bloqueos] = await Promise.all([api.get('/api/catalogo'), api.get('/api/bloqueos')]);
     if (!ctx.esActual()) return;
     estado.catalogo = catalogo;
     estado.bloqueos = bloqueos.bloqueos;
-    estado.padron = padron;
     reemplazar(n.profSeleccion, ...opcionesProfesionales(estado.catalogo.profesionales, estado.profesionalId));
-    reemplazar(n.bloqProfesional, h('option', { value: '' }, 'Todos los profesionales'), ...opcionesProfesionales(estado.catalogo.profesionales, estado.bloqProfesional.value));
+    reemplazar(n.bloqProfesional, h('option', { value: '' }, 'Todos los profesionales'), ...opcionesProfesionales(estado.catalogo.profesionales, n.bloqProfesional.value));
     estado.franjas = (estado.catalogo.profesionales.find((p) => p.id === estado.profesionalId)?.disponibilidad ?? []).map((f) => ({ ...f }));
     dibujarSillones();
     dibujarPrestaciones();
     dibujarFranjas();
     dibujarBloqueos();
-    dibujarPadron();
   }
 
   async function crearSillon() {
@@ -446,49 +340,6 @@ export async function montarConfiguracion(contenedor, ctx) {
       if (ctx.esActual()) errorEn(n.bloqError, error);
     }
   }
-
-  async function crearObraSocial() {
-    limpiar(n.osError);
-    try {
-      await api.post('/api/sim/obras-sociales/obras-sociales', {
-        codigo: n.osCodigo.value.trim(),
-        nombre: n.osNombre.value.trim(),
-        planes: n.osPlanes.value.split(',').map((p) => p.trim()).filter((p) => p !== ''),
-      });
-      if (!ctx.esActual()) return;
-      n.osCodigo.value = '';
-      n.osNombre.value = '';
-      n.osPlanes.value = '';
-      await recargar();
-      n.afObra.value = 'OS-05';
-      sincronizarPlanes();
-      ctx.toast('Obra social registrada');
-    } catch (error) {
-      if (ctx.esActual()) errorEn(n.osError, error);
-    }
-  }
-
-  async function crearAfiliado() {
-    limpiar(n.afError);
-    try {
-      await api.post('/api/sim/obras-sociales/afiliados', {
-        nroAfiliado: n.afNro.value.trim(),
-        obraSocial: n.afObra.value,
-        plan: n.afPlan.value,
-        cobertura: Number(n.afCobertura.value),
-        copagoPct: Number(n.afCopago.value),
-        estado: n.afEstado.value,
-      });
-      if (!ctx.esActual()) return;
-      n.afNro.value = '';
-      await recargar();
-      ctx.toast('Afiliado registrado');
-    } catch (error) {
-      if (ctx.esActual()) errorEn(n.afError, error);
-    }
-  }
-
-  n.afObra.addEventListener('change', sincronizarPlanes);
 
   try {
     await recargar();

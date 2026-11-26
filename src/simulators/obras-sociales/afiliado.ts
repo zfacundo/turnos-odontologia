@@ -23,9 +23,3 @@ export interface AfiliadoSimulado {
 export interface RegistroAfiliado extends AfiliadoSimulado {
   readonly nombrePacienteFicticio: string;
 }
-
-export type ErrorRegistroPadron =
-  | { readonly tipo: 'entrada'; readonly mensaje: string }
-  | { readonly tipo: 'duplicado'; readonly mensaje: string };
-
-export type ResultadoRegistroPadron<T> = { ok: true; valor: T } | { ok: false; error: ErrorRegistroPadron };

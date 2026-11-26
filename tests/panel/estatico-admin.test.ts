@@ -223,8 +223,12 @@ describe('seguridad del cliente (S-3, S-6)', () => {
     expect(clientes).toContain('/api/sim/obras-sociales/padron');
     expect(clientes).toContain('/sim/obras-sociales.html');
     const configuracion = fuentesJs.find((f) => f.nombre === 'configuracion.js')?.texto ?? '';
-    expect(configuracion).toContain('/api/sim/obras-sociales/obras-sociales');
-    expect(configuracion).toContain('/api/sim/obras-sociales/afiliados');
+    expect(configuracion).not.toContain('/api/sim/obras-sociales/obras-sociales');
+    expect(configuracion).not.toContain('/api/sim/obras-sociales/afiliados');
+    for (const titulo of ['Sillones', 'Prestaciones', 'Disponibilidad semanal', 'Bloqueos de agenda']) {
+      expect(configuracion).toContain(titulo);
+    }
+    expect(configuracion).not.toContain('Obras sociales y afiliados');
   });
 
   it('dado el script build cuando se lee entonces compila y copia public a dist/public', () => {
