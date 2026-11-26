@@ -76,3 +76,12 @@ describe('pantalla /bot.html - navegacion secundaria', () => {
     expect(HTML).toMatch(/\.chip\.nav\s*\{\s*border-color:\s*var\(--line\);\s*color:\s*var\(--muted\);\s*\}/);
   });
 });
+
+describe('pantalla /bot.html - sin enlace a la agenda', () => {
+  it('dado el HTML del bot cuando se revisa el encabezado entonces no enlaza a la agenda del panel', () => {
+    const nav = /<nav aria-label="Secciones">([\s\S]*?)<\/nav>/.exec(HTML)?.[1] ?? '';
+    expect(nav).not.toMatch(/Agenda/);
+    expect(HTML).not.toMatch(/href="\/admin\//);
+    expect(nav).toMatch(/aria-current="page">Bot WhatsApp \(sim\.\)</);
+  });
+});

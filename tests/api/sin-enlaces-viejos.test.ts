@@ -36,8 +36,9 @@ describe('sin enlaces a la agenda vieja', () => {
     }
   });
 
-  it('dado el bot de WhatsApp y la pantalla de ARCA cuando se revisa su navegacion entonces "Agenda" apunta al panel', () => {
-    for (const nombre of ['bot.html', 'sim/arca.html']) {
+  // bot.html ya no tiene enlace "Agenda" (change bot-whatsapp-sin-enlace-agenda); lo cubre pantalla.test.ts.
+  it('dado la pantalla de ARCA cuando se revisa su navegacion entonces "Agenda" apunta al panel', () => {
+    for (const nombre of ['sim/arca.html']) {
       const pagina = paginas.find((p) => p.nombre === nombre);
       expect(pagina, nombre).toBeDefined();
       expect(hrefsDe(pagina?.texto ?? ''), nombre).toContain('/admin/#/agenda');
