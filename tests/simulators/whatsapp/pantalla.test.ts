@@ -120,3 +120,11 @@ describe('pantalla /bot.html - sin telefonos completos', () => {
     expect(JS).not.toMatch(/\{ telefono:/);
   });
 });
+
+describe('pantalla /bot.html - marca Vitta Dental', () => {
+  it('dado el HTML del bot cuando se revisan el titulo y el encabezado entonces dicen Vitta Dental y no Turnos Odontologia', () => {
+    expect(HTML).toMatch(/<title>Bot de WhatsApp \(simulación\) \| Vitta Dental<\/title>/);
+    expect(HTML).toMatch(/<header class="top">\s*<strong>Vitta Dental<\/strong>/);
+    expect(HTML).not.toMatch(/Turnos Odontología/);
+  });
+});
