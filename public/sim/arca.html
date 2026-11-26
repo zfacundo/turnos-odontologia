@@ -23,7 +23,7 @@
     header.top nav a[aria-current] { color: var(--accent); font-weight: 700; }
 
     main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 40px; }
-    .layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
+    .layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); align-items: start; }
     @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
 
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 1px 2px rgba(16, 36, 43, .08); min-width: 0; }
@@ -101,7 +101,23 @@
       .comprobante { box-shadow: none; border-color: #999; }
       .comprobante .sim, .pie { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
-    @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+    .nota { font-size: .875rem; font-weight: 700; color: var(--ink); margin: 12px 0 0; padding: 8px 12px; border-left: 4px solid var(--warn); background: var(--accent-soft); border-radius: 6px; }
+    .previa { background: var(--accent-soft); color: var(--ink); }
+
+    dialog.confirmar {
+      width: min(92vw, 420px); padding: 24px; border: 1px solid var(--line); border-radius: 14px;
+      background: var(--surface); color: var(--ink); box-shadow: 0 8px 28px rgba(16, 36, 43, .25);
+    }
+    dialog.confirmar::backdrop { background: rgba(16, 36, 43, .5); }
+    dialog.confirmar[open] { animation: fundido 120ms ease-out; }
+    @keyframes fundido { from { opacity: 0; } to { opacity: 1; } }
+    dialog.confirmar h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 12px; }
+    dialog.confirmar dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 12px; font-size: .875rem; }
+    dialog.confirmar dt { color: var(--muted); }
+    dialog.confirmar dd { margin: 0; font-weight: 500; }
+    dialog.confirmar .advertencia { margin: 0 0 16px; font-weight: 700; }
+    dialog.confirmar .actions { justify-content: flex-end; }
+    @media (prefers-reduced-motion: reduce) { dialog.confirmar[open] { animation: none; } .btn { transition: none; } }
   </style>
 </head>
 <body>
@@ -123,9 +139,11 @@
         </dl>
         <div class="actions">
           <button class="btn btn-primary" type="button" id="emitir">Emitir factura C</button>
+          <button class="btn btn-secondary" type="button" id="ver">Ver factura</button>
           <button class="btn btn-secondary" type="button" id="imprimir" hidden>Imprimir</button>
         </div>
-        <p class="hint" id="ayuda">La factura se emite solo al tocar el botón. Recargar la página no emite otra.</p>
+        <p class="nota" id="nota-factura" role="status" hidden></p>
+        <p class="hint" id="ayuda">La factura se emite solo al confirmar. Recargar la página no emite otra.</p>
         <div class="toast" id="aviso" role="status" aria-live="polite" hidden>
           <p><strong id="aviso-titulo"></strong></p>
           <p id="aviso-texto"></p>
@@ -134,6 +152,7 @@
 
       <article class="comprobante" id="comprobante" aria-labelledby="t-comp" hidden>
         <p class="sim" role="note">SIMULACIÓN — sin validez fiscal</p>
+        <p class="sim previa" id="c-vista-previa" role="note" hidden>VISTA PREVIA — no emitida</p>
         <div class="marca" aria-hidden="true">SIMULACIÓN</div>
         <div class="cab">
           <div class="emisor">
@@ -172,12 +191,32 @@
     </div>
   </main>
 
+  <dialog class="confirmar" id="confirmar" aria-labelledby="t-confirmar" aria-describedby="confirmar-texto">
+    <h2 id="t-confirmar">¿Emitir Factura C?</h2>
+    <dl>
+      <dt>Paciente</dt><dd id="dlg-paciente"></dd>
+      <dt>Prestación</dt><dd id="dlg-prestacion"></dd>
+      <dt>Importe</dt><dd id="dlg-importe"></dd>
+    </dl>
+    <p class="advertencia" id="confirmar-texto">La emisión (simulada) no se puede deshacer.</p>
+    <div class="actions">
+      <button class="btn btn-secondary" type="button" id="confirmar-cancelar">Cancelar</button>
+      <button class="btn btn-primary" type="button" id="confirmar-emitir">Emitir</button>
+    </div>
+  </dialog>
+
   <script>
     (function () {
       var turnoId = new URLSearchParams(window.location.search).get('turnoId');
       var emitir = document.getElementById('emitir');
       var imprimir = document.getElementById('imprimir');
       var aviso = document.getElementById('aviso');
+      var ver = document.getElementById('ver');
+      var notaFactura = document.getElementById('nota-factura');
+      var dialogo = document.getElementById('confirmar');
+      var confirmarCancelar = document.getElementById('confirmar-cancelar');
+      var confirmarEmitir = document.getElementById('confirmar-emitir');
+      var ENCABEZADOS = { 'X-Rol': 'recepcion', 'X-Usuario': 'recepcion-sim' };
 
       function texto(id, valor) { document.getElementById(id).textContent = valor; }
       function mostrarFila(ids, si) { ids.forEach(function (id) { document.getElementById(id).hidden = !si; }); }
@@ -200,11 +239,13 @@
         return '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
-      function mostrarComprobante(f) {
+      /** modo: 'emitida' (comprobante guardado) o 'vista-previa' (borrador sin número, CAE ni vencimiento). */
+      function mostrarComprobante(f, modo) {
+        var previa = modo === 'vista-previa';
         texto('c-razon', f.emisor.razonSocial);
         texto('c-cuit', f.emisor.cuit);
         texto('c-iva', f.emisor.condicionIva);
-        texto('c-numero', f.numero);
+        texto('c-numero', previa ? '—' : f.numero);
         texto('c-emision', fecha(f.fechaEmision));
         texto('c-condicion', f.receptor.condicion);
         texto('c-nombre', f.receptor.nombre || '');
@@ -214,24 +255,108 @@
         texto('c-concepto', f.concepto);
         texto('c-importe', pesos(f.importe));
         texto('c-total', pesos(f.importe));
-        texto('c-cae', f.cae);
-        texto('c-vto', fecha(f.vencimientoCae));
+        texto('c-cae', previa ? '—' : f.cae);
+        texto('c-vto', previa ? '—' : fecha(f.vencimientoCae));
         if (f.receptor.nombre) { texto('paciente', f.receptor.nombre); mostrarFila(['dt-paciente', 'paciente'], true); }
         texto('prestacion', f.concepto);
         mostrarFila(['dt-prestacion', 'prestacion'], true);
+        document.getElementById('c-vista-previa').hidden = !previa;
         document.getElementById('comprobante').hidden = false;
-        imprimir.hidden = false;
+        imprimir.hidden = previa;
+      }
+
+      function nota(mensaje) {
+        notaFactura.textContent = mensaje;
+        notaFactura.hidden = false;
+      }
+
+      function marcarEmitida() {
+        emitir.disabled = true;
+        document.getElementById('ayuda').hidden = true;
+        nota('Este turno ya tiene factura');
+      }
+
+      /** Ajusta "Emitir factura C" según lo que dice el servidor (decisiones Q-1..Q-3). */
+      function aplicarEstado(cuerpo) {
+        if (cuerpo.estado === 'emitida') { marcarEmitida(); return; }
+        if (cuerpo.emitible) { emitir.disabled = false; notaFactura.hidden = true; return; }
+        var regla = cuerpo.motivo && cuerpo.motivo.regla ? ' (' + cuerpo.motivo.regla + ')' : '';
+        emitir.disabled = true;
+        nota('El turno tiene que estar atendido para emitir la factura' + regla + '.');
+      }
+
+      function mensajeDe(cuerpo, defecto) {
+        return cuerpo && cuerpo.error && cuerpo.error.mensaje ? cuerpo.error.mensaje : defecto;
+      }
+
+      async function consultar() {
+        var res = await fetch('/api/sim/arca/facturas/' + encodeURIComponent(turnoId), { headers: ENCABEZADOS });
+        return { res: res, cuerpo: await res.json() };
+      }
+
+      async function cargarEstadoInicial() {
+        try {
+          var r = await consultar();
+          if (r.res.ok) { aplicarEstado(r.cuerpo); return; }
+          avisar('error', 'No se pudo consultar la factura', mensajeDe(r.cuerpo, 'Error inesperado del simulador.'));
+        } catch (e) {
+          avisar('error', 'Sin conexión', 'No se pudo contactar al servidor local.');
+        }
       }
 
       if (!turnoId) {
         emitir.disabled = true;
+        ver.disabled = true;
         document.getElementById('ayuda').hidden = true;
         avisar('error', 'Falta el turno', 'Abrí esta pantalla desde un turno atendido (?turnoId=…).');
         return;
       }
       texto('turno', turnoId);
+      cargarEstadoInicial();
 
+      ver.addEventListener('click', async function () {
+        try {
+          var r = await consultar();
+          if (!r.res.ok) { avisar('error', 'No se pudo consultar la factura', mensajeDe(r.cuerpo, 'Error inesperado del simulador.')); return; }
+          aviso.hidden = true;
+          mostrarComprobante(r.cuerpo.factura, r.cuerpo.estado);
+          aplicarEstado(r.cuerpo);
+        } catch (e) {
+          avisar('error', 'Sin conexión', 'No se pudo contactar al servidor local.');
+        }
+      });
+
+      /** Tocar "Emitir factura C": consulta primero; solo abre la confirmación si hay algo para emitir. */
       emitir.addEventListener('click', async function () {
+        try {
+          var r = await consultar();
+          if (!r.res.ok) { avisar('error', 'No se pudo consultar la factura', mensajeDe(r.cuerpo, 'Error inesperado del simulador.')); return; }
+          var c = r.cuerpo;
+          aplicarEstado(c);
+          if (c.estado === 'emitida') { mostrarComprobante(c.factura, 'emitida'); return; }
+          confirmarEmitir.disabled = !c.emitible;
+          if (!c.emitible) { mostrarComprobante(c.factura, 'vista-previa'); return; }
+          texto('dlg-paciente', c.factura.receptor.nombre || 'Consumidor Final');
+          texto('dlg-prestacion', c.factura.concepto);
+          texto('dlg-importe', pesos(c.factura.importe));
+          dialogo.showModal();
+          confirmarCancelar.focus();
+        } catch (e) {
+          avisar('error', 'Sin conexión', 'No se pudo contactar al servidor local.');
+        }
+      });
+
+      confirmarCancelar.addEventListener('click', function () { dialogo.close(); });
+      // Escape lo cierra el <dialog> nativo; en cualquier cierre el foco vuelve al botón que lo abrió.
+      dialogo.addEventListener('close', function () { if (!emitir.disabled) { emitir.focus(); } });
+
+      confirmarEmitir.addEventListener('click', async function () {
+        confirmarEmitir.disabled = true;
+        dialogo.close();
+        await emitirFactura();
+      });
+
+      async function emitirFactura() {
         emitir.disabled = true;
         avisar('', 'Emitiendo…', 'Generando el comprobante simulado.');
         try {
@@ -242,14 +367,23 @@
           });
           var cuerpo = await res.json();
           if (res.ok) {
-            mostrarComprobante(cuerpo.factura);
-            document.getElementById('ayuda').hidden = true;
+            mostrarComprobante(cuerpo.factura, 'emitida');
+            marcarEmitida();
             avisar('ok', 'Factura emitida', 'Número ' + cuerpo.factura.numero + '. Para otra copia, imprimí esta pantalla: no se puede volver a emitir.');
             return;
           }
           var error = cuerpo.error || {};
           var codigo = error.regla ? ' ' + error.regla : '';
           if (res.status === 409 && error.conflicto && error.conflicto.facturaId) {
+            // Otra pestaña ya facturó el turno: se muestra la factura existente (Q-3).
+            var existente = await consultar();
+            if (existente.res.ok && existente.cuerpo.estado === 'emitida') {
+              mostrarComprobante(existente.cuerpo.factura, 'emitida');
+              aviso.hidden = true;
+              marcarEmitida();
+              return;
+            }
+            marcarEmitida();
             avisar('warn', 'Este turno ya tiene factura', (error.mensaje || '') + codigo);
             return;
           }
@@ -263,7 +397,7 @@
           avisar('error', 'Sin conexión', 'No se pudo contactar al servidor local.');
           emitir.disabled = false;
         }
-      });
+      }
 
       imprimir.addEventListener('click', function () { window.print(); });
     })();

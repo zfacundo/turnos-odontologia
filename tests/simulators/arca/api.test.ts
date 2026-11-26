@@ -164,3 +164,111 @@ describe('POST /api/sim/arca/facturas: reglas (409)', () => {
     expect(otra.body.factura.numero).toBe('00001-00000002');
   });
 });
+
+// spec: arca-ver-factura-y-confirmar-emision
+const consultar = (app: Express, turnoId: string, headers: Record<string, string> = RECEPCION) =>
+  request(app).get(`${RUTA}/${turnoId}`).set(headers);
+
+describe('GET /api/sim/arca/facturas/:turnoId: factura emitida', () => {
+  it('dado T facturado cuando recepcion consulta T entonces responde 200 rotulado con estado emitida y la misma factura que devolvio el POST', async () => {
+    const app = nuevaApp(turno('turno-T'));
+    const emitida = await facturar(app, { turnoId: 'turno-T' });
+    const res = await consultar(app, 'turno-T');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ simulado: true, aviso: AVISO, estado: 'emitida', factura: emitida.body.factura });
+    expect(res.body.factura.numero).toBe('00001-00000001');
+    expect(res.body.factura.cae).toBe('26120101000001');
+  });
+
+  it('dado T facturado cuando admin consulta T entonces responde 200 con estado emitida', async () => {
+    const app = nuevaApp(turno('turno-T'));
+    const emitida = await facturar(app, { turnoId: 'turno-T' });
+    const res = await consultar(app, 'turno-T', ADMIN);
+    expect(res.status).toBe(200);
+    expect(res.body.estado).toBe('emitida');
+    expect(res.body.factura.id).toBe(emitida.body.factura.id);
+  });
+
+  it('dado T facturado cuando se consulta dos veces y se factura otro turno U entonces U es 00001-00000002', async () => {
+    const app = nuevaApp(turno('turno-T'), turno('turno-U'));
+    await facturar(app, { turnoId: 'turno-T' });
+    await consultar(app, 'turno-T');
+    await consultar(app, 'turno-T');
+    const otra = await facturar(app, { turnoId: 'turno-U' });
+    expect(otra.body.factura.numero).toBe('00001-00000002');
+  });
+});
+
+describe('GET /api/sim/arca/facturas/:turnoId: vista previa', () => {
+  it('dado T atendido sin factura cuando recepcion consulta T entonces responde 200 con vista-previa emitible, sin numero ni cae y sin el DNI completo', async () => {
+    const app = nuevaApp(turno('turno-T'));
+    const res = await consultar(app, 'turno-T');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      simulado: true,
+      aviso: AVISO,
+      estado: 'vista-previa',
+      emitible: true,
+      factura: {
+        turnoId: 'turno-T',
+        tipo: 'C',
+        fechaEmision: '2026-12-01',
+        importe: IMPORTE_FACTURA_SIMULADA,
+        concepto: 'Control y limpieza',
+        emisor: { razonSocial: 'Consultorio Ficticio', cuit: '20-99999999-0', condicionIva: 'Monotributo' },
+        receptor: { condicion: 'Consumidor Final', nombre: 'Paciente Ficticio Uno', dni: '99****01' },
+        numero: null,
+        cae: null,
+        vencimientoCae: null,
+        simulado: true,
+      },
+    });
+    expect(res.text).not.toContain('99000001');
+  });
+
+  it('dado T atendido sin factura cuando se consulta dos veces y despues se factura entonces el numero es 00001-00000001', async () => {
+    const app = nuevaApp(turno('turno-T'));
+    await consultar(app, 'turno-T');
+    const segunda = await consultar(app, 'turno-T');
+    expect(segunda.body.estado).toBe('vista-previa');
+    const emitida = await facturar(app, { turnoId: 'turno-T' });
+    expect(emitida.body.factura.numero).toBe('00001-00000001');
+  });
+
+  it('dado T reservado sin factura cuando recepcion consulta T entonces responde 200 no emitible con RN-SM-03 citando SU-07', async () => {
+    const app = nuevaApp(turno('turno-T', 'reservado'));
+    const res = await consultar(app, 'turno-T');
+    expect(res.status).toBe(200);
+    expect(res.body.estado).toBe('vista-previa');
+    expect(res.body.emitible).toBe(false);
+    expect(res.body.motivo.regla).toBe('RN-SM-03');
+    expect(res.body.motivo.mensaje).toContain('SU-07');
+  });
+});
+
+describe('GET /api/sim/arca/facturas/:turnoId: errores', () => {
+  it('dado un turno inexistente cuando recepcion consulta entonces responde 404 nombrandolo', async () => {
+    const res = await consultar(nuevaApp(), 'turno-inexistente');
+    expect(res.status).toBe(404);
+    expect(res.body.error.tipo).toBe('no-encontrado');
+    expect(res.body.error.mensaje).toContain('turno-inexistente');
+  });
+
+  it('dado T facturado cuando el odontologo consulta entonces responde 403 sin la factura', async () => {
+    const app = nuevaApp(turno('turno-T'));
+    await facturar(app, { turnoId: 'turno-T' });
+    const res = await consultar(app, 'turno-T', ODONTO);
+    expect(res.status).toBe(403);
+    expect(res.text).not.toContain('00001-00000001');
+  });
+
+  it('dado T atendido cuando el paciente consulta entonces responde 403', async () => {
+    const res = await consultar(nuevaApp(turno('turno-T')), 'turno-T', PACIENTE);
+    expect(res.status).toBe(403);
+  });
+
+  it('dado un pedido sin rol cuando consulta un turno inexistente entonces responde 403 y no 404', async () => {
+    const res = await request(nuevaApp()).get(`${RUTA}/turno-inexistente`);
+    expect(res.status).toBe(403);
+  });
+});

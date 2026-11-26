@@ -6,6 +6,8 @@ import {
   EMISOR_SIMULADO,
   IMPORTE_FACTURA_SIMULADA,
   PUNTO_DE_VENTA,
+  armarBorradorFacturaC,
+  armarCuerpoFacturaC,
   fechaArgentina,
   formatearNumero,
   generarCae,
@@ -90,5 +92,60 @@ describe('fechaArgentina y sumarDias (fechas de calendario en Argentina)', () =>
 
   it('dado el 2026-12-28 cuando se suman 10 dias entonces cruza el año y es 2027-01-07', () => {
     expect(sumarDias('2026-12-28', 10)).toBe('2027-01-07');
+  });
+});
+
+// spec: arca-ver-factura-y-confirmar-emision
+describe('armarCuerpoFacturaC / armarBorradorFacturaC (cuerpo compartido)', () => {
+  const receptor = { condicion: 'Consumidor Final', nombre: 'Paciente Ficticio Uno', dni: '99****01' } as const;
+
+  it('dado un instante al mediodia en Argentina cuando se arma el cuerpo entonces la fecha de emision es la del dia argentino y los datos son los fijos del simulador', () => {
+    const cuerpo = armarCuerpoFacturaC({
+      turnoId: 'turno-T',
+      concepto: 'Control y limpieza',
+      receptor,
+      ahora: new Date('2026-12-01T12:00:00-03:00'),
+    });
+    expect(cuerpo).toEqual({
+      turnoId: 'turno-T',
+      tipo: 'C',
+      fechaEmision: '2026-12-01',
+      importe: IMPORTE_FACTURA_SIMULADA,
+      concepto: 'Control y limpieza',
+      emisor: EMISOR_SIMULADO,
+      receptor,
+      simulado: true,
+    });
+  });
+
+  it('dado las 23:59 en Argentina cuando se arma el cuerpo entonces la fecha de emision sigue siendo la del dia argentino', () => {
+    const cuerpo = armarCuerpoFacturaC({
+      turnoId: 'turno-T',
+      concepto: 'x',
+      receptor,
+      ahora: new Date('2026-11-30T23:59:00-03:00'),
+    });
+    expect(cuerpo.fechaEmision).toBe('2026-11-30');
+  });
+
+  it('dado el mismo cuerpo cuando se arma el borrador entonces agrega numero, cae y vencimiento en null y no tiene id ni emitidaEn', () => {
+    const entrada = { turnoId: 'turno-T', concepto: 'Control y limpieza', receptor, ahora: new Date('2026-12-01T12:00:00-03:00') };
+    const borrador = armarBorradorFacturaC(entrada);
+    expect(borrador).toEqual({ ...armarCuerpoFacturaC(entrada), numero: null, cae: null, vencimientoCae: null });
+    expect(borrador).not.toHaveProperty('id');
+    expect(borrador).not.toHaveProperty('emitidaEn');
+  });
+
+  it('dado otro turno y otro concepto cuando se arma el borrador entonces refleja esos datos', () => {
+    const borrador = armarBorradorFacturaC({
+      turnoId: 'turno-U',
+      concepto: 'Ortodoncia',
+      receptor: { condicion: 'Consumidor Final' },
+      ahora: new Date('2026-12-02T09:00:00-03:00'),
+    });
+    expect(borrador.turnoId).toBe('turno-U');
+    expect(borrador.concepto).toBe('Ortodoncia');
+    expect(borrador.fechaEmision).toBe('2026-12-02');
+    expect(borrador.receptor).toEqual({ condicion: 'Consumidor Final' });
   });
 });

@@ -4,6 +4,7 @@ import { ErrorDeEntrada, ErrorDePermiso, FalloDeRegla } from '../../api/middlewa
 import type { Usuario } from '../../domain/shared/rol';
 import { emitirFacturaC } from './emitirFacturaC';
 import { AVISO_SIMULACION } from './facturaC';
+import { verFacturaC } from './verFacturaC';
 import { FacturaCRepositoryEnMemoria, type FacturaCRepository } from './facturaCRepository';
 
 /**
@@ -56,6 +57,21 @@ export function arcaRouter(
       }
     }
     res.status(201).json({ simulado: true, aviso: AVISO_SIMULACION, factura: resultado.valor });
+  });
+
+  router.get('/sim/arca/facturas/:turnoId', (req, res, next) => {
+    const usuario = res.locals.usuario as Usuario | undefined;
+    const resultado = verFacturaC(depsFactura, usuario, req.params.turnoId ?? '');
+    if (!resultado.ok) {
+      const error = resultado.error;
+      if (error.tipo === 'permiso') {
+        next(new ErrorDePermiso(error.mensaje));
+        return;
+      }
+      res.status(404).json({ error: { tipo: 'no-encontrado', mensaje: error.mensaje } });
+      return;
+    }
+    res.status(200).json({ simulado: true, aviso: AVISO_SIMULACION, ...resultado.valor });
   });
 
   return router;

@@ -1,5 +1,6 @@
 // Cálculos puros de la agenda del panel (design D9): semanas, posición de bloques, filtros y
 // mini-calendario. Sin DOM ni red. Zona fija America/Argentina/Buenos_Aires = UTC-03:00.
+import { puedeEmitirFactura } from './permisos-ui.js';
 
 const OFFSET_MIN = 3 * 60;
 const MIN_POR_FILA = 15;
@@ -263,4 +264,14 @@ export function asignarCarriles(turnos) {
   }
   cerrar();
   return resultado;
+}
+
+/**
+ * Acción "Emitir factura" del detalle del turno (panel-boton-emitir-factura): visible solo para
+ * recepción y admin; habilitada solo con el turno atendido, y entonces lleva al simulador de ARCA.
+ */
+export function accionFactura(rol, turno) {
+  if (!puedeEmitirFactura(rol)) return { visible: false, habilitado: false, href: undefined };
+  if (turno.estado !== 'atendido') return { visible: true, habilitado: false, href: undefined };
+  return { visible: true, habilitado: true, href: `/sim/arca.html?turnoId=${encodeURIComponent(turno.id)}` };
 }
