@@ -65,3 +65,14 @@ describe('pantallas - seña pagada y pago simulado', () => {
     expect(JS).toMatch(/rechazado \(simulación\)|falla simulada|No encontré el afiliado/);
   });
 });
+
+describe('pantalla /bot.html - navegacion secundaria', () => {
+  it('dado el JS del bot cuando pinta las opciones entonces Volver atras y Volver al menu usan la clase chip nav', () => {
+    expect(JS).toMatch(/var NAVEGACION = \['atras', 'menu'\];/);
+    expect(JS).toMatch(/'chip nav'/);
+  });
+
+  it('dado el HTML del bot cuando se revisan los estilos entonces define .chip.nav con borde neutro y texto atenuado', () => {
+    expect(HTML).toMatch(/\.chip\.nav\s*\{\s*border-color:\s*var\(--line\);\s*color:\s*var\(--muted\);\s*\}/);
+  });
+});
