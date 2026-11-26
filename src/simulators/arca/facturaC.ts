@@ -40,23 +40,58 @@ export interface Receptor {
   readonly dni?: string;
 }
 
-export interface FacturaC {
-  readonly id: string;
+/** Datos del comprobante comunes a la factura emitida y a la vista previa (arca-ver-factura-y-confirmar-emision D2). */
+export interface CuerpoFacturaC {
   readonly turnoId: string;
   readonly tipo: 'C';
-  readonly numero: string;
-  readonly cae: string;
   /** Fecha de calendario en Argentina, AAAA-MM-DD. */
   readonly fechaEmision: string;
-  /** Fecha de calendario en Argentina, AAAA-MM-DD. */
-  readonly vencimientoCae: string;
-  /** Instante del reloj al emitir. */
-  readonly emitidaEn: Date;
   readonly importe: number;
   readonly concepto: string;
   readonly emisor: Emisor;
   readonly receptor: Receptor;
   readonly simulado: true;
+}
+
+export interface FacturaC extends CuerpoFacturaC {
+  readonly id: string;
+  readonly numero: string;
+  readonly cae: string;
+  /** Fecha de calendario en Argentina, AAAA-MM-DD. */
+  readonly vencimientoCae: string;
+  /** Instante del reloj al emitir. */
+  readonly emitidaEn: Date;
+}
+
+/** Vista previa: el comprobante sin numero, CAE ni vencimiento, y sin id ni emitidaEn. */
+export interface BorradorFacturaC extends CuerpoFacturaC {
+  readonly numero: null;
+  readonly cae: null;
+  readonly vencimientoCae: null;
+}
+
+export interface EntradaCuerpoFacturaC {
+  readonly turnoId: string;
+  readonly concepto: string;
+  readonly receptor: Receptor;
+  readonly ahora: Date;
+}
+
+export function armarCuerpoFacturaC(entrada: EntradaCuerpoFacturaC): CuerpoFacturaC {
+  return {
+    turnoId: entrada.turnoId,
+    tipo: 'C',
+    fechaEmision: fechaArgentina(entrada.ahora),
+    importe: IMPORTE_FACTURA_SIMULADA,
+    concepto: entrada.concepto,
+    emisor: EMISOR_SIMULADO,
+    receptor: entrada.receptor,
+    simulado: true,
+  };
+}
+
+export function armarBorradorFacturaC(entrada: EntradaCuerpoFacturaC): BorradorFacturaC {
+  return { ...armarCuerpoFacturaC(entrada), numero: null, cae: null, vencimientoCae: null };
 }
 
 /** RN-SM-03 + SU-07: solo se factura un turno atendido. */

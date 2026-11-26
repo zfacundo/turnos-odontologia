@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  accionFactura,
   aHoraLocal,
   asignarCarriles,
   diasDeSemana,
@@ -416,5 +417,54 @@ describe('formatearRegistro', () => {
   it('dado eventos con la misma fecha cuando se formatea entonces el ultimo registrado va primero', () => {
     const r = formatearRegistro([ev('2026-12-01T13:00:00.000Z', 'a'), ev('2026-12-01T13:00:00.000Z', 'b')]);
     expect(r.items.map((i) => i.mensaje)).toEqual(['b', 'a']);
+  });
+});
+
+// spec: panel-boton-emitir-factura
+describe('accionFactura (acción "Emitir factura" del detalle)', () => {
+  const conEstado = (estado: string, id = 't-1'): TurnoPanel =>
+    turno({ id, estado, inicioLocal: '2026-12-01T10:00', finLocal: '2026-12-01T10:30' });
+
+  it('dado recepcion y un turno atendido cuando se decide la accion entonces esta habilitada con destino al simulador', () => {
+    expect(accionFactura('recepcion', conEstado('atendido'))).toEqual({
+      visible: true,
+      habilitado: true,
+      href: '/sim/arca.html?turnoId=t-1',
+    });
+  });
+
+  it.each(['reservado', 'confirmado', 'cancelado', 'ausente'])(
+    'dado recepcion y un turno %s cuando se decide la accion entonces es visible, deshabilitada y sin destino',
+    (estado) => {
+      const r = accionFactura('recepcion', conEstado(estado));
+      expect(r.visible).toBe(true);
+      expect(r.habilitado).toBe(false);
+      expect(r.href).toBeUndefined();
+    },
+  );
+
+  it('dado admin y un turno atendido cuando se decide la accion entonces esta habilitada con destino al simulador', () => {
+    expect(accionFactura('admin', conEstado('atendido'))).toEqual({
+      visible: true,
+      habilitado: true,
+      href: '/sim/arca.html?turnoId=t-1',
+    });
+  });
+
+  it('dado admin y un turno reservado cuando se decide la accion entonces es visible, deshabilitada y sin destino', () => {
+    const r = accionFactura('admin', conEstado('reservado'));
+    expect(r.visible).toBe(true);
+    expect(r.habilitado).toBe(false);
+    expect(r.href).toBeUndefined();
+  });
+
+  it('dado el rol odontologo y un turno atendido cuando se decide la accion entonces no es visible', () => {
+    expect(accionFactura('odontologo', conEstado('atendido'))).toEqual({ visible: false, habilitado: false, href: undefined });
+  });
+
+  it('dado un id con caracteres especiales cuando se decide la accion entonces el destino lo codifica', () => {
+    expect(accionFactura('recepcion', conEstado('atendido', 't 1/&?')).href).toBe(
+      '/sim/arca.html?turnoId=t%201%2F%26%3F',
+    );
   });
 });

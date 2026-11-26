@@ -77,6 +77,11 @@ export function puedeCrearTurnos(rol) {
   return rol === 'admin' || rol === 'recepcion';
 }
 
+/** Acción "Emitir factura" del detalle del turno: recepción y admin. */
+export function puedeEmitirFactura(rol) {
+  return rol === 'recepcion' || rol === 'admin';
+}
+
 /** Tarjeta "Lo que hizo el sistema": admin y recepción. */
 export function puedeVerRegistro(rol) {
   return rol === 'admin' || rol === 'recepcion';

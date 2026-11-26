@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Tema oscuro · Historial clínico</title>
+  <script src="tema-arranque.js"></script>
+  <link rel="stylesheet" href="adm.css">
+  <link rel="stylesheet" href="adm-oscuro.css">
+  <script src="tema.js" defer></script>
+  <script src="../../../../design-system/brand.js" defer></script>
+  <script src="shell.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar" data-open="false" aria-label="Navegación del panel">
+    <a class="brand" href="#"><img src="../../../../design-system/assets/logo.svg" alt="" width="28" height="28"><span data-brand-name>Turnos Odontología</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <span class="nav-label">Consultorio</span>
+      <a href="dashboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+      <a href="agenda.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</a>
+      <a href="clientes.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>Clientes</a>
+      <span class="nav-label">Clínica</span>
+      <a href="historial.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6M4 7v14h3"/></svg>Historial clínico</a>
+    </nav>
+    <p class="sidebar-foot">SIMULACIÓN · datos ficticios</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div><h1>Historial clínico</h1><span class="crumbs"><a href="clientes.html">Clientes</a> / Paciente Ficticio Uno</span></div>
+      <span class="spacer"></span>
+      <div class="user"><span class="avatar" aria-hidden="true">FP</span><span class="who"><strong>Dra. Ficticia Perez</strong><span class="rol" style="display:block">Odontóloga</span></span></div>
+      <button class="icon-btn tema-btn" type="button" data-tema-toggle aria-pressed="false" aria-label="Tema oscuro" title="Tema oscuro"><svg class="luna" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><svg class="sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <button class="btn btn-secondary" type="button">Cerrar sesión</button>
+    </header>
+
+    <main class="content">
+      <p class="sim" role="note" style="border-radius:var(--adm-radius-md);border:1px solid var(--adm-blue-300)">Datos ficticios — no es una historia clínica legal</p>
+      <div class="split">
+        <section class="card" aria-labelledby="t-tl">
+          <div class="card-head"><h2 id="t-tl">Paciente Ficticio Uno</h2><span class="small muted num">DNI 99****01 · 3 entradas</span></div>
+          <ol class="timeline" id="tl">
+            <li>
+              <div class="fecha">15/11/2026<span>10:00</span></div>
+              <div>
+                <h3>Tratamiento — arreglo de pieza 16</h3>
+                <span class="small muted">Dra. Ficticia Perez</span>
+                <p>Se reemplaza arreglo roto (dato ficticio). Control en 30 días.</p>
+                <button class="btn btn-ghost" type="button" aria-expanded="false" style="padding:0;min-height:36px">Ver piezas del turno</button>
+              </div>
+            </li>
+            <li>
+              <div class="fecha">01/10/2026<span>09:30</span></div>
+              <div>
+                <h3>Control y limpieza</h3>
+                <span class="small muted">Dr. Ficticio Gomez</span>
+                <p>Sin hallazgos (dato ficticio).</p>
+              </div>
+            </li>
+            <li>
+              <div class="fecha">12/08/2026<span>11:00</span></div>
+              <div>
+                <h3>Corrección de la entrada del 10/08</h3>
+                <span class="small muted">Dra. Ficticia Perez</span>
+                <p>Las correcciones se registran como entradas nuevas: el historial no se edita ni se borra.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="card" aria-labelledby="t-form">
+          <h2 id="t-form" style="margin-bottom:14px">Nueva entrada</h2>
+          <form class="form-grid" novalidate onsubmit="return false">
+            <div class="form-row">
+              <div class="field"><label for="f">Fecha y hora</label><input id="f" class="input num" type="datetime-local" value="2026-12-01T10:00"><span class="hint">No puede ser futura.</span></div>
+              <div class="field"><label for="tu">Turno vinculado (opcional)</label>
+                <select id="tu" class="select"><option value="">Sin turno</option><option>Mar 01/12 10:00 · Control y limpieza</option></select></div>
+            </div>
+            <div class="field">
+              <label for="p">Procedimiento</label>
+              <input id="p" class="input" maxlength="120" aria-invalid="true" aria-describedby="p-err">
+              <span class="err" id="p-err">Escribí el procedimiento (hasta 120 caracteres).</span>
+            </div>
+            <div class="field">
+              <label for="n">Notas</label>
+              <textarea id="n" class="input" maxlength="1000" aria-describedby="n-hint"></textarea>
+              <span class="hint num" id="n-hint">0 / 1000 · Solo datos ficticios.</span>
+            </div>
+            <div class="actions"><button class="btn btn-primary" type="submit">Guardar entrada</button></div>
+            <p class="small muted" style="margin:0">Se registra con tu profesional (Dra. Ficticia Perez). Queda en la auditoría sin el contenido clínico.</p>
+          </form>
+        </section>
+      </div>
+
+      <section class="ref" aria-labelledby="t-ref">
+        <h2 id="t-ref">Otros estados</h2>
+        <div class="ref-grid">
+          <div class="card"><h3>Admin (solo lectura)</h3><p class="small muted">Ve la línea de tiempo; no ve el formulario “Nueva entrada”.</p></div>
+          <div class="card"><h3>Recepción</h3><div class="alert alert-info" role="status" style="margin-top:10px">Tu rol no tiene acceso a esta sección.</div></div>
+          <div class="card empty"><h3 style="color:var(--adm-text)">Sin entradas todavía</h3><p class="small">La primera consulta registrada aparece acá.</p></div>
+          <div class="card"><h3>Fecha futura (409 RN-HC-02)</h3><div class="alert alert-error" role="alert" style="margin-top:10px">La fecha no puede ser posterior a ahora.</div></div>
+          <div class="card"><h3>Odontograma del turno (RN-OD-04)</h3>
+            <div class="piezas" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-top:10px" aria-label="Piezas de ejemplo">
+              <button class="pieza" type="button" aria-label="Pieza 15, sin marcar">15</button>
+              <button class="pieza a_revisar" type="button" aria-label="Pieza 16, a revisar">16 !</button>
+              <button class="pieza hecho" type="button" aria-label="Pieza 17, hecho">17 ✓</button>
+              <button class="pieza" type="button" aria-pressed="true" aria-label="Pieza 18, seleccionada">18</button>
+            </div>
+            <p class="small muted" style="margin:10px 0 0">Rojo con "!" = a revisar · azul con "✓" = hecho · contorno = pieza elegida.</p></div>
+          <div class="card"><h3>Toast</h3><p class="small muted">Tras guardar aparece abajo al centro (visible ahora como referencia).</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" role="status" aria-live="polite" id="toast" data-visible="true">Entrada guardada</div>
+</body>
+</html>

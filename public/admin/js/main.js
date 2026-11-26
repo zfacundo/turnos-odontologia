@@ -10,6 +10,7 @@ import { montarHistorial } from './historial.js';
 import { montarOdontograma } from './odontograma.js';
 import { parsearRuta, puedeVer, seccionesPara } from './permisos-ui.js';
 import { crearSesion } from './sesion.js';
+import { almacenLocalDeTema, iniciarTema } from './tema.js';
 
 const AVISO_VENCIDA = 'Tu sesión venció, volvé a ingresar.';
 const AVISO_SIN_ACCESO = 'Tu rol no tiene acceso a esta sección.';
@@ -342,6 +343,7 @@ async function renderizar() {
 
 /* ------------------------------ Arranque ------------------------------ */
 armarShell();
+iniciarTema({ documento: document, almacen: almacenLocalDeTema(), matchMedia: (q) => window.matchMedia(q) });
 $('form-login').addEventListener('submit', enviarLogin);
 window.addEventListener('hashchange', () => {
   renderizar().then(() => {

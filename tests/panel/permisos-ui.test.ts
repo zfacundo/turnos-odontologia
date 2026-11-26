@@ -4,6 +4,7 @@ import {
   puedeCrearHistorial,
   puedeConfigurarConsultorio,
   puedeCrearTurnos,
+  puedeEmitirFactura,
   puedeGestionarBloqueos,
   puedeVerOdontograma,
   puedeVerRegistro,
@@ -159,5 +160,19 @@ describe('permisos del odontograma, alta de turnos y registro', () => {
     for (const rol of ['admin', 'recepcion', 'odontologo', 'paciente', undefined]) {
       expect(ids(rol)).not.toContain('odontograma');
     }
+  });
+});
+
+// spec: panel-boton-emitir-factura
+describe('permiso de emitir factura', () => {
+  it('dado el rol recepcion o admin cuando se pregunta puedeEmitirFactura entonces es true', () => {
+    expect(puedeEmitirFactura('recepcion')).toBe(true);
+    expect(puedeEmitirFactura('admin')).toBe(true);
+  });
+
+  it('dado odontologo, paciente o sin rol cuando se pregunta puedeEmitirFactura entonces es false', () => {
+    expect(puedeEmitirFactura('odontologo')).toBe(false);
+    expect(puedeEmitirFactura('paciente')).toBe(false);
+    expect(puedeEmitirFactura(undefined)).toBe(false);
   });
 });

@@ -103,3 +103,10 @@ export function fechaLocalDe(instante?: string): string;
 export function asignarCarriles(
   turnos: readonly Pick<TurnoPanel, 'id' | 'inicio' | 'fin'>[],
 ): Map<string, { carril: number; carriles: number }>;
+export interface AccionFactura {
+  visible: boolean;
+  habilitado: boolean;
+  /** Destino de navegación; solo cuando está habilitada. */
+  href: string | undefined;
+}
+export function accionFactura(rol: string | undefined, turno: Pick<TurnoPanel, 'id' | 'estado'>): AccionFactura;

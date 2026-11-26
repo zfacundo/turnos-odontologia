@@ -17,3 +17,4 @@ export function puedeCrearTurnos(rol: string | undefined): boolean;
 export function puedeVerRegistro(rol: string | undefined): boolean;
 export function puedeConfigurarConsultorio(rol: string | undefined): boolean;
 export function puedeGestionarBloqueos(rol: string | undefined): boolean;
+export function puedeEmitirFactura(rol: string | undefined): boolean;

@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  var BRAND_NAME = 'Turnos Odontología';
+  var BRAND_NAME = 'Vitta Dental';
 
   function aplicar() {
     var nodos = document.querySelectorAll('[data-brand-name]');

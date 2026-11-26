@@ -1,0 +1,8 @@
+/* Mockup — panel-tema-oscuro. Base del tema claro = la hoja REAL del panel (ya aprobada e implementada),
+   asi el claro del mockup es exactamente el de produccion. El tema oscuro propuesto vive en adm-oscuro.css. */
+@import url("../../../../public/admin/admin.css");
+
+/* Solo mockup: seccion "Otros estados" (copiado de los mockups de panel-admin-agenda). */
+.ref { margin-top: 8px; border-top: 2px dashed var(--adm-blue-300); padding-top: 16px; }
+.ref > h2 { font-size: var(--adm-text-sm); text-transform: uppercase; letter-spacing: .06em; color: var(--adm-text-muted); margin-bottom: 12px; }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }

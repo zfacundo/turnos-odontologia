@@ -3,10 +3,10 @@ import { aHoraLocal, diasDeSemana, etiquetaEstado, hhmm, lunesDeLaSemana } from 
 import { h, mensajeDe, reemplazar } from './dom.js';
 
 const ORDEN_ESTADOS = [
-  { clave: 'reservado', color: 'var(--adm-blue-300)' },
-  { clave: 'confirmado', color: 'var(--adm-blue-500)' },
-  { clave: 'atendido', color: 'var(--adm-blue-700)' },
-  { clave: 'ausente', color: 'var(--adm-st-ausente-fg)' },
+  { clave: 'reservado', color: 'var(--adm-bar-reservado, var(--adm-blue-300))' },
+  { clave: 'confirmado', color: 'var(--adm-bar-confirmado, var(--adm-blue-500))' },
+  { clave: 'atendido', color: 'var(--adm-bar-atendido, var(--adm-blue-700))' },
+  { clave: 'ausente', color: 'var(--adm-bar-ausente, var(--adm-st-ausente-fg))' },
 ];
 
 /** '2026-12-01' → 'Martes 01/12/2026'. */

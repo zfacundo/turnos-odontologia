@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Tema oscuro · Comparar</title>
+  <style>
+    body { margin: 0; font-family: "DM Sans", "Helvetica Neue", Arial, sans-serif; background: #EEF4F7; color: #001040; }
+    header { padding: 16px 24px; border-bottom: 1px solid #C9DCE5; background: #F7FAFC; }
+    h1 { margin: 0; font-size: 1.25rem; }
+    p { margin: 6px 0 0; font-size: .875rem; color: #4A5F75; }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    nav a { color: #006F9C; font-weight: 700; }
+    a:focus-visible { outline: 3px solid #0088BE; outline-offset: 2px; }
+    section { padding: 16px 24px 24px; }
+    h2 { font-size: 1rem; margin: 0 0 8px; }
+    .par { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    figure { margin: 0; }
+    figcaption { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #4A5F75; margin-bottom: 6px; }
+    iframe { width: 100%; height: 720px; border: 1px solid #C9DCE5; border-radius: 10px; background: #FFFFFF; }
+    @media (max-width: 900px) { .par { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Tema claro vs tema oscuro — panel <code>/admin/</code></h1>
+  <p>Cada par carga la misma pantalla forzando el tema con <code>?tema=</code> (solo mockup; no guarda la elección). Abrí cada pantalla sola para probar el botón de tema, <code>Tab</code> y el foco.</p>
+  <nav aria-label="Pantallas">
+    <a href="#login">Login</a> <a href="#dashboard">Dashboard</a> <a href="#agenda">Agenda</a> <a href="#historial">Historial y odontograma</a>
+  </nav>
+</header>
+<main>
+  <section id="login" aria-labelledby="t-login"><h2 id="t-login">Login</h2>
+    <div class="par"><figure><figcaption>Claro</figcaption><iframe title="Login en tema claro" src="login.html?tema=claro"></iframe></figure>
+    <figure><figcaption>Oscuro</figcaption><iframe title="Login en tema oscuro" src="login.html?tema=oscuro"></iframe></figure></div></section>
+  <section id="dashboard" aria-labelledby="t-dash"><h2 id="t-dash">Dashboard</h2>
+    <div class="par"><figure><figcaption>Claro</figcaption><iframe title="Dashboard en tema claro" src="dashboard.html?tema=claro"></iframe></figure>
+    <figure><figcaption>Oscuro</figcaption><iframe title="Dashboard en tema oscuro" src="dashboard.html?tema=oscuro"></iframe></figure></div></section>
+  <section id="agenda" aria-labelledby="t-agenda"><h2 id="t-agenda">Agenda (click en un bloque abre el drawer)</h2>
+    <div class="par"><figure><figcaption>Claro</figcaption><iframe title="Agenda en tema claro" src="agenda.html?tema=claro"></iframe></figure>
+    <figure><figcaption>Oscuro</figcaption><iframe title="Agenda en tema oscuro" src="agenda.html?tema=oscuro"></iframe></figure></div></section>
+  <section id="historial" aria-labelledby="t-hist"><h2 id="t-hist">Historial clínico, formulario con error, odontograma y toast</h2>
+    <div class="par"><figure><figcaption>Claro</figcaption><iframe title="Historial en tema claro" src="historial.html?tema=claro"></iframe></figure>
+    <figure><figcaption>Oscuro</figcaption><iframe title="Historial en tema oscuro" src="historial.html?tema=oscuro"></iframe></figure></div></section>
+</main>
+</body>
+</html>

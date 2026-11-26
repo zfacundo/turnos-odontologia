@@ -1,6 +1,7 @@
 // Agenda semanal (mockups/agenda.html): grilla Lunes-Domingo de 15 min, mini-calendario, filtros y
 // drawer de detalle con las acciones que ya expone la API. Cambiar de semana o de filtro no anima.
 import {
+  accionFactura,
   aHoraLocal,
   asignarCarriles,
   diasDeSemana,
@@ -112,7 +113,7 @@ export async function montarAgenda(contenedor, ctx) {
         h('span', {
           class: 'swatch',
           style: {
-            background: 'repeating-linear-gradient(45deg,#EEF2F5 0 4px,#E2E9EE 4px 8px)',
+            background: 'repeating-linear-gradient(45deg,var(--adm-bloqueo-a, #EEF2F5) 0 4px,var(--adm-bloqueo-b, #E2E9EE) 4px 8px)',
             border: '1px solid var(--adm-line)',
           },
         }),
@@ -535,6 +536,12 @@ export async function montarAgenda(contenedor, ctx) {
     const acciones = accionesDisponibles(t);
     const errorRegion = h('div', { role: 'alert', id: 'detalle-error' }, mensajeError ? h('div', { class: 'alert alert-error' }, mensajeError) : false);
     const enlaceOdontograma = h('a', { class: 'btn btn-secondary', href: `#/odontograma/${encodeURIComponent(t.id)}` }, 'Odontograma');
+    const factura = accionFactura(usuario.rol, t);
+    const enlaceFactura = !factura.visible
+      ? false
+      : factura.habilitado
+        ? h('a', { class: 'btn btn-secondary', href: factura.href }, 'Emitir factura')
+        : h('a', { class: 'btn btn-secondary', role: 'link', 'aria-disabled': 'true', 'aria-describedby': 'factura-ayuda' }, 'Emitir factura');
     const motivo = h('textarea', { class: 'input', id: 'motivo', maxlength: '200', 'aria-describedby': 'motivo-ayuda' });
 
     const botones = acciones
@@ -587,9 +594,10 @@ export async function montarAgenda(contenedor, ctx) {
         h('dt', null, 'Sillón'), h('dd', null, nombreDe(estado.catalogo.sillones, t.sillonId)),
         h('dt', null, 'Origen'), h('dd', null, t.origen === 'whatsapp' ? 'WhatsApp (simulado)' : 'Recepción'),
       ),
-      acciones.length === 0 && !puedeVerOdontograma(usuario.rol)
+      acciones.length === 0 && !puedeVerOdontograma(usuario.rol) && !factura.visible
         ? h('p', { class: 'small muted' }, 'Este turno no tiene acciones disponibles para tu rol.')
-        : h('div', { class: 'actions' }, botones, puedeVerOdontograma(usuario.rol) ? enlaceOdontograma : false),
+        : h('div', { class: 'actions' }, botones, puedeVerOdontograma(usuario.rol) ? enlaceOdontograma : false, enlaceFactura),
+      factura.visible && !factura.habilitado ? h('p', { class: 'small muted', id: 'factura-ayuda' }, 'Disponible cuando el turno esté atendido') : false,
       confirmandoCancelacion
         ? h(
             'div',
