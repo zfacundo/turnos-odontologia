@@ -6,23 +6,19 @@ import type {
   PrestacionRepository,
   TurnoRepository,
 } from '../../application/ports/repositorios';
-import { pacientePublico } from '../../application/pacientes/pacientePublico';
 import type { Turno } from '../../domain/agenda/turno';
 import { fallo, ok, type ErrorDeRegla, type Result } from '../../domain/shared/result';
 import type { Usuario } from '../../domain/shared/rol';
 import {
-  CONCEPTO_POR_DEFECTO,
   DIAS_VENCIMIENTO_CAE,
-  EMISOR_SIMULADO,
-  IMPORTE_FACTURA_SIMULADA,
-  fechaArgentina,
+  armarCuerpoFacturaC,
   formatearNumero,
   generarCae,
   sumarDias,
   validarEmisionFacturaC,
   type FacturaC,
-  type Receptor,
 } from './facturaC';
+import { entradaDelComprobante, puedeOperarFacturas } from './comprobanteDelTurno';
 import type { FacturaCRepository } from './facturaCRepository';
 
 /** Caso de uso "emitir Factura C" del simulador de ARCA (design D2, D5-D8). */
@@ -46,8 +42,6 @@ export type ErrorEmitirFacturaC =
       readonly facturaId: string;
     };
 
-const ROLES_QUE_EMITEN: readonly Usuario['rol'][] = ['admin', 'recepcion'];
-
 function esObjeto(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
 }
@@ -62,19 +56,13 @@ function parsearTurnoId(cuerpo: unknown): Result<string, ErrorEmitirFacturaC> {
   return ok(turnoId);
 }
 
-function receptorDe(deps: DepsEmitirFacturaC, turno: Turno): Receptor {
-  const paciente = deps.pacientes.buscarPorId(turno.pacienteId);
-  if (paciente === undefined) return { condicion: 'Consumidor Final' };
-  return { condicion: 'Consumidor Final', nombre: paciente.nombre, dni: pacientePublico(paciente).dni };
-}
-
 /** Orden (gana el primer fallo): rol -> entrada -> 404 -> estado -> ya facturado -> armar -> guardar -> auditar. */
 export function emitirFacturaC(
   deps: DepsEmitirFacturaC,
   usuario: Usuario | undefined,
   cuerpo: unknown,
 ): Result<FacturaC, ErrorEmitirFacturaC> {
-  if (usuario === undefined || !ROLES_QUE_EMITEN.includes(usuario.rol)) {
+  if (!puedeOperarFacturas(usuario)) {
     return fallo({ tipo: 'permiso', mensaje: 'Solo recepción o administración pueden emitir la factura C.' });
   }
   const entrada = parsearTurnoId(cuerpo);
@@ -99,21 +87,14 @@ export function emitirFacturaC(
 
   const ahora = deps.clock.ahora();
   const numero = deps.facturas.ultimoNumero() + 1;
-  const fechaEmision = fechaArgentina(ahora);
+  const cuerpoFactura = armarCuerpoFacturaC(entradaDelComprobante(deps, turno, ahora));
   const factura: FacturaC = {
+    ...cuerpoFactura,
     id: randomUUID(),
-    turnoId,
-    tipo: 'C',
     numero: formatearNumero(numero),
-    cae: generarCae(fechaEmision, numero),
-    fechaEmision,
-    vencimientoCae: sumarDias(fechaEmision, DIAS_VENCIMIENTO_CAE),
+    cae: generarCae(cuerpoFactura.fechaEmision, numero),
+    vencimientoCae: sumarDias(cuerpoFactura.fechaEmision, DIAS_VENCIMIENTO_CAE),
     emitidaEn: ahora,
-    importe: IMPORTE_FACTURA_SIMULADA,
-    concepto: deps.prestaciones.buscarPorId(turno.prestacionId)?.nombre ?? CONCEPTO_POR_DEFECTO,
-    emisor: EMISOR_SIMULADO,
-    receptor: receptorDe(deps, turno),
-    simulado: true,
   };
 
   deps.facturas.guardar(factura);

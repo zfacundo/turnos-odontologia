@@ -20,10 +20,12 @@ describe('pantalla /sim/arca.html', () => {
     expect(res.text).toMatch(/<button[^>]*>\s*Emitir factura C\s*<\/button>/);
   });
 
-  it('dado el HTML de la pantalla cuando se revisan sus llamadas entonces solo hace fetch a la ruta relativa del simulador', () => {
+  it('dado el HTML de la pantalla cuando se revisan sus llamadas entonces toda llamada fetch es a una ruta relativa del simulador que empieza con /api/sim/arca/facturas', () => {
     const contenido = html();
     const llamadas = [...contenido.matchAll(/fetch\(\s*(['"`])([^'"`]+)\1/g)].map((m) => m[2]);
-    expect(llamadas).toEqual(['/api/sim/arca/facturas']);
+    expect(llamadas.length).toBeGreaterThan(0);
+    for (const llamada of llamadas) expect(llamada).toMatch(/^\/api\/sim\/arca\/facturas/);
+    expect(llamadas.some((l) => (l ?? '').startsWith('/api/sim/arca/facturas/'))).toBe(true);
     expect(contenido).not.toMatch(/fetch\(\s*[^'"`]/);
   });
 
@@ -36,5 +38,50 @@ describe('pantalla /sim/arca.html', () => {
     expect(contenido).not.toBe('');
     expect(contenido).not.toMatch(/https?:\/\//i);
     expect(contenido).not.toMatch(/(src|href)\s*=\s*['"]\/\//i);
+  });
+});
+
+// spec: arca-ver-factura-y-confirmar-emision
+describe('pantalla /sim/arca.html: ver factura y confirmar emision', () => {
+  it('dado el HTML cuando se revisan las acciones entonces Ver factura esta en el mismo grupo que Emitir factura C', () => {
+    const grupo = html().match(/<div class="actions">([\s\S]*?)<\/div>/);
+    expect(grupo).not.toBeNull();
+    expect(grupo?.[1]).toMatch(/<button[^>]*>\s*Ver factura\s*<\/button>/);
+    expect(grupo?.[1]).toMatch(/<button[^>]*>\s*Emitir factura C\s*<\/button>/);
+  });
+
+  it('dado el HTML cuando se revisa la ventana de confirmacion entonces es un dialog accesible con titulo, Cancelar, Emitir y showModal', () => {
+    const c = html();
+    const dialogo = c.match(/<dialog[^>]*aria-labelledby="([^"]+)"[^>]*>/);
+    expect(dialogo).not.toBeNull();
+    expect(c).toMatch(new RegExp('id="' + (dialogo?.[1] ?? '') + '"[^>]*>\s*¿Emitir Factura C\?'));
+    expect(c).toMatch(/<button[^>]*>\s*Cancelar\s*<\/button>/);
+    expect(c).toMatch(/<button[^>]*id="confirmar-emitir"[^>]*>\s*Emitir\s*<\/button>/);
+    expect(c).toContain('showModal(');
+  });
+
+  it('dado el HTML cuando se buscan estilos de movimiento entonces respeta prefers-reduced-motion para la ventana', () => {
+    expect(html()).toMatch(/@media \(prefers-reduced-motion: reduce\)[^}]*dialog/);
+  });
+
+  it('dado el HTML cuando se buscan los textos de la vista previa y la nota entonces estan', () => {
+    const c = html();
+    expect(c).toContain('VISTA PREVIA — no emitida');
+    expect(c).toContain('Este turno ya tiene factura');
+  });
+
+  it('dado el HTML cuando se busca innerHTML entonces no aparece', () => {
+    expect(html()).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML/);
+  });
+
+  it('dado el HTML cuando se revisa el arranque entonces consulta el estado inicial al cargar y maneja el 409 consultando la factura', () => {
+    const c = html();
+    expect(c).toMatch(/cargarEstadoInicial\(\)/);
+    expect(c).toMatch(/status === 409/);
+    expect(c).toMatch(/consultar\(\)/);
+  });
+
+  it('dado el HTML cuando se revisa la ventana entonces Emitir se deshabilita segun emitible', () => {
+    expect(html()).toMatch(/confirmarEmitir\.disabled\s*=\s*!/);
   });
 });
