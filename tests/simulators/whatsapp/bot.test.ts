@@ -71,7 +71,7 @@ describe('bot - horarios desde la agenda real (RN-WA-01)', () => {
     chat.hastaHorarios();
     const huecos = consultarHuecos(deps, RECEPCION, { prestacionId: 'prest-control', profesionalId: 'prof-1', fecha: '2026-11-30' });
     if (!huecos.ok) throw new Error('consultarHuecos fallo');
-    expect(chat.opciones()).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días']);
+    expect(chat.opciones()).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días', 'Volver atrás', 'Volver al menú']);
     expect(huecos.valor.slice(0, 3).map((h) => h.inicio)).toEqual([en('09:00'), en('09:15'), en('09:30')]);
   });
 
@@ -93,7 +93,7 @@ describe('bot - horarios desde la agenda real (RN-WA-01)', () => {
     const chat = new Chat(seed(), TEL_UNO);
     chat.hastaHorarios();
     chat.elegir('Ver más días');
-    expect(chat.opciones()).toEqual(['Mar 1/12 09:00', 'Mar 1/12 09:15', 'Mar 1/12 09:30', 'Ver más días']);
+    expect(chat.opciones()).toEqual(['Mar 1/12 09:00', 'Mar 1/12 09:15', 'Mar 1/12 09:30', 'Ver más días', 'Volver atrás', 'Volver al menú']);
   });
 
   it('dado un profesional sin franjas cuando se piden horarios entonces informa que no hay horarios en 2 semanas', () => {
@@ -134,7 +134,7 @@ describe('bot - reserva con los casos de uso (RN-WA-02)', () => {
     crearTurno(deps, RECEPCION, { pacienteId: 'pac-05', prestacionId: 'prest-control', profesionalId: 'prof-1', sillonId: 'sillon-1', inicio: en('09:00') });
     chat.reservar('Lun 30/11 09:00');
     expect(chat.texto()).toMatch(/ya se ocupó/);
-    expect(chat.opciones()).toEqual(['Lun 30/11 09:30', 'Lun 30/11 09:45', 'Lun 30/11 10:00', 'Ver más días']);
+    expect(chat.opciones()).toEqual(['Lun 30/11 09:30', 'Lun 30/11 09:45', 'Lun 30/11 10:00', 'Ver más días', 'Volver atrás', 'Volver al menú']);
     expect(turnosDe(deps, 'pac-01')).toEqual([]);
     expect(deps.turnos.listarActivos({ profesionalId: 'prof-1' })).toHaveLength(1);
   });
@@ -198,7 +198,7 @@ describe('bot - ver, confirmar y cancelar', () => {
     chat.escribir('hola');
     chat.elegir('Ver mi turno');
     expect(chat.texto()).toMatch(/Mar 1\/12 10:00 · Control y limpieza · Dra\. Ficticia Perez/);
-    expect(chat.opciones()).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(chat.opciones()).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un telefono sin turnos cuando elige Ver mi turno entonces informa y ofrece Pedir un turno', () => {
@@ -206,7 +206,7 @@ describe('bot - ver, confirmar y cancelar', () => {
     chat.escribir('hola');
     chat.elegir('Ver mi turno');
     expect(chat.texto()).toMatch(/No encontré turnos próximos/);
-    expect(chat.opciones()).toEqual(['Pedir un turno']);
+    expect(chat.opciones()).toEqual(['Pedir un turno', 'Volver al menú']);
   });
 
   it('dado el turno mostrado cuando elige Confirmo entonces queda confirmado, y repetirlo informa que ya estaba confirmado', () => {
@@ -266,7 +266,7 @@ describe('bot - ver, confirmar y cancelar', () => {
     chat.escribir('hola');
     chat.elegir('Ver mi turno');
     expect(chat.texto()).toMatch(/Seña pagada/);
-    expect(chat.opciones()).toEqual(['Confirmo', 'Cancelar turno']);
+    expect(chat.opciones()).toEqual(['Confirmo', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un turno del martes cuando se envia el recordatorio entonces el bot lo recuerda por nombre con las 3 opciones', () => {
@@ -274,7 +274,7 @@ describe('bot - ver, confirmar y cancelar', () => {
     chat.enviar({ tipo: 'recordatorio' });
     expect(chat.texto()).toMatch(/Hola Paciente Ficticio Uno, te recordamos tu turno/);
     expect(chat.texto()).toMatch(/Dra\. Ficticia Perez/);
-    expect(chat.opciones()).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(chat.opciones()).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un turno ya pasado cuando se envia el recordatorio entonces informa que no hay turnos proximos', () => {
@@ -290,7 +290,7 @@ describe('bot - revisar el horario antes de reservar', () => {
     const chat = new Chat(deps, TEL_UNO);
     chat.hastaHorarios();
     chat.elegir('Lun 30/11 09:00');
-    expect(chat.opciones()).toEqual(['Confirmar turno', 'Volver atrás']);
+    expect(chat.opciones()).toEqual(['Confirmar turno', 'Volver atrás', 'Volver al menú']);
     expect(deps.turnos.listarActivos()).toEqual([]);
   });
 
@@ -300,7 +300,7 @@ describe('bot - revisar el horario antes de reservar', () => {
     chat.hastaHorarios();
     chat.elegir('Lun 30/11 09:00');
     chat.elegir('Volver atrás');
-    expect(chat.opciones()).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días']);
+    expect(chat.opciones()).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días', 'Volver atrás', 'Volver al menú']);
     expect(deps.turnos.listarActivos()).toEqual([]);
   });
 });
@@ -375,6 +375,7 @@ describe('bot - consultar mi obra social (padron ficticio)', () => {
     chat.escribir('hola');
     chat.elegir('Consultar mi obra social');
     chat.escribir(nro);
+    chat.elegir('Confirmar');
     return chat;
   }
 

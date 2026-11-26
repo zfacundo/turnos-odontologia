@@ -68,6 +68,7 @@ export type Paso =
   | 'ofrecerSena'
   | 'pagoSena'
   | 'afiliado'
+  | 'confirmarAfiliado'
   | 'gestion'
   | 'confirmarCancelacion'
   | 'fin'
@@ -130,6 +131,8 @@ export interface Sesion {
   readonly aviso?: AvisoHorarios;
   /** Numero de afiliado consultado (para el aviso de "no encontrado"). */
   readonly nroAfiliado?: string;
+  /** Desde donde se abrio la pantalla de pago, para "Volver atrás" (design D2). */
+  readonly origenPago?: 'ofrecerSena' | 'gestion';
 }
 
 export type Salida = { readonly sesion: Sesion; readonly respuesta: Respuesta } | { readonly sesion: Sesion; readonly efecto: Efecto };
@@ -146,6 +149,7 @@ const OP = {
   menu: { id: 'menu', etiqueta: 'Volver al menú' },
   mas: { id: 'mas', etiqueta: 'Ver más días' },
   reservar: { id: 'reservar', etiqueta: 'Confirmar turno' },
+  confirmarAfiliado: { id: 'confirmar-afiliado', etiqueta: 'Confirmar' },
   atras: { id: 'atras', etiqueta: 'Volver atrás' },
   confirmar: { id: 'confirmar', etiqueta: 'Confirmo' },
   sena: { id: 'sena', etiqueta: 'Pagar seña' },
@@ -251,13 +255,18 @@ function mostrarTurno(sesion: Sesion, turno: TurnoResumen, encabezado: string, p
   const texto = lineas.join('\n');
   return responder({ ...sesion, turno }, 'gestion', {
     mensajes: [msg(texto)],
-    opciones: opcionesTurno(turno),
+    opciones: conNavegacion(opcionesTurno(turno), false),
     pideTexto: false,
   });
 }
 
+/** Fila de navegacion al final de cada paso distinto del menu (design D3). */
+function conNavegacion(opciones: readonly Opcion[], atras: boolean): readonly Opcion[] {
+  return [...opciones, ...(atras ? [OP.atras] : []), OP.menu];
+}
+
 function fin(sesion: Sesion, mensajes: readonly Mensaje[]): Salida {
-  return responder(sesion, 'fin', { mensajes, opciones: [OP.menu], pideTexto: false });
+  return responder(sesion, 'fin', { mensajes, opciones: conNavegacion([], false), pideTexto: false });
 }
 
 function pedirDatos(sesion: Sesion, motivo?: string): Salida {
@@ -265,7 +274,7 @@ function pedirDatos(sesion: Sesion, motivo?: string): Salida {
     motivo === undefined
       ? `Genial. ¿Me pasás tu nombre completo y DNI?\n${EJEMPLO_DATOS}`
       : `${motivo}\nEscribilos así: ${EJEMPLO_DATOS.replace('Ej.: ', '')}`;
-  return responder(sesion, 'datos', { mensajes: [msg(texto)], opciones: [], pideTexto: true });
+  return responder(sesion, 'datos', { mensajes: [msg(texto)], opciones: conNavegacion([], true), pideTexto: true });
 }
 
 /** '<nombre>, <DNI>' con la ultima coma como separador y DNI ficticio 99xxxxxx (design D4). */
@@ -281,12 +290,34 @@ function parsearDatos(t: string): { nombre: string; dni: string } | { error: str
 
 const INTRO_HORARIOS = 'Estos son los próximos horarios libres:';
 
+function mostrarTipos(sesion: Sesion, catalogo: Catalogo): Salida {
+  return responder(sesion, 'tipo', {
+    mensajes: [msg('¿Qué tipo de consulta necesitás?')],
+    opciones: conNavegacion(
+      tiposDeConsulta(catalogo).map((p) => ({ id: `prest:${p.id}`, etiqueta: p.nombre })),
+      false,
+    ),
+    pideTexto: false,
+  });
+}
+
+function mostrarProfesionales(sesion: Sesion, catalogo: Catalogo): Salida {
+  return responder(sesion, 'profesional', {
+    mensajes: [msg('¿Con qué profesional?')],
+    opciones: conNavegacion(
+      catalogo.profesionales.map((x) => ({ id: `prof:${x.id}`, etiqueta: x.nombre })),
+      true,
+    ),
+    pideTexto: false,
+  });
+}
+
 /** Muestra los huecos guardados en la sesion (oferta inicial o "Volver atrás", design D1). */
 function mostrarHorarios(sesion: Sesion, intro: string): Salida {
   const huecos = sesion.huecos ?? [];
   return responder({ ...sesion, elegido: undefined }, 'horarios', {
     mensajes: [msg(intro)],
-    opciones: [...huecos.map((h, i) => ({ id: `hueco:${i}`, etiqueta: etiquetaHorario(h.inicio) })), OP.mas],
+    opciones: conNavegacion([...huecos.map((h, i) => ({ id: `hueco:${i}`, etiqueta: etiquetaHorario(h.inicio) })), OP.mas], true),
     pideTexto: false,
   });
 }
@@ -297,28 +328,37 @@ function revisarHorario(sesion: Sesion, elegido: HuecoOfrecido): Salida {
   const texto = `Elegiste:\n${etiquetaHorario(elegido.inicio)} · ${prestacion.nombre} · ${profesional.nombre}\n¿Confirmás el turno?`;
   return responder({ ...sesion, elegido }, 'revisarHorario', {
     mensajes: [msg(texto)],
-    opciones: [OP.reservar, OP.atras],
+    opciones: conNavegacion([OP.reservar], true),
     pideTexto: false,
   });
 }
 
 function ofrecerSena(sesion: Sesion, mensajes: readonly Mensaje[]): Salida {
-  return responder(sesion, 'ofrecerSena', { mensajes, opciones: [OP.sena, OP.menu], pideTexto: false });
+  return responder(sesion, 'ofrecerSena', { mensajes, opciones: conNavegacion([OP.sena], false), pideTexto: false });
 }
 
 /** Pantalla de pago SIMULADA dentro del chat (design D2). */
-function pantallaPago(sesion: Sesion, turno: TurnoResumen): Salida {
+function pantallaPago(sesion: Sesion, turno: TurnoResumen, origenPago: 'ofrecerSena' | 'gestion'): Salida {
   const texto = `Mercado Pago (SIMULACIÓN)\nSeña del turno ${etiquetaHorario(turno.inicio)}: ${montoPesos(MONTO_SENA_SIMULADA)} (monto ficticio)\nElegí el resultado del pago:`;
-  return responder({ ...sesion, turno }, 'pagoSena', {
+  return responder({ ...sesion, turno, origenPago }, 'pagoSena', {
     mensajes: [msg(texto)],
-    opciones: [OP.aprobarPago, OP.rechazarPago, OP.menu],
+    opciones: conNavegacion([OP.aprobarPago, OP.rechazarPago], true),
     pideTexto: false,
   });
 }
 
 function pedirAfiliado(sesion: Sesion, motivo?: string): Salida {
   const texto = motivo ?? `Escribí tu número de afiliado.\n${EJEMPLO_AFILIADO}`;
-  return responder(sesion, 'afiliado', { mensajes: [msg(texto)], opciones: [OP.menu], pideTexto: true });
+  return responder(sesion, 'afiliado', { mensajes: [msg(texto)], opciones: conNavegacion([], false), pideTexto: true });
+}
+
+/** Pregunta si el numero escrito es correcto antes de consultar el padron (design D5). */
+function confirmarAfiliado(sesion: Sesion, nro: string): Salida {
+  return responder({ ...sesion, nroAfiliado: nro }, 'confirmarAfiliado', {
+    mensajes: [msg(`¿El número de afiliado es ${nro}?`)],
+    opciones: conNavegacion([OP.confirmarAfiliado], true),
+    pideTexto: false,
+  });
 }
 
 function estadoLegible(estado: string): string {
@@ -342,8 +382,7 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
   if (entrada.tipo === 'texto') {
     if (sesion.paso === 'inicio' || pideMenu(entrada.texto)) return menu();
     if (sesion.paso === 'afiliado') {
-      const nro = entrada.texto.trim().toUpperCase();
-      return declarar({ ...sesion, nroAfiliado: nro }, { tipo: 'consultarObraSocial', nro });
+      return confirmarAfiliado(sesion, entrada.texto.trim().toUpperCase());
     }
     if (sesion.paso !== 'datos') return noEntendi(sesion);
     const datos = parsearDatos(entrada.texto);
@@ -355,13 +394,7 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
   if (id === OP.menu.id) return menu();
   switch (sesion.paso) {
     case 'menu':
-      if (id === OP.pedir.id) {
-        return responder(sesion, 'tipo', {
-          mensajes: [msg('¿Qué tipo de consulta necesitás?')],
-          opciones: tiposDeConsulta(catalogo).map((p) => ({ id: `prest:${p.id}`, etiqueta: p.nombre })),
-          pideTexto: false,
-        });
-      }
+      if (id === OP.pedir.id) return mostrarTipos(sesion, catalogo);
       if (id === OP.ver.id) return declarar(sesion, { tipo: 'buscarProximoTurno', modo: 'ver' });
       if (id === OP.os.id) return pedirAfiliado(sesion);
       break;
@@ -370,21 +403,17 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
       break;
     case 'tipo': {
       const p = tiposDeConsulta(catalogo).find((x) => `prest:${x.id}` === id);
-      if (p !== undefined) {
-        return responder({ ...sesion, prestacion: p }, 'profesional', {
-          mensajes: [msg('¿Con qué profesional?')],
-          opciones: catalogo.profesionales.map((x) => ({ id: `prof:${x.id}`, etiqueta: x.nombre })),
-          pideTexto: false,
-        });
-      }
+      if (p !== undefined) return mostrarProfesionales({ ...sesion, prestacion: p }, catalogo);
       break;
     }
     case 'profesional': {
+      if (id === OP.atras.id) return mostrarTipos(sesion, catalogo);
       const p = catalogo.profesionales.find((x) => `prof:${x.id}` === id);
       if (p !== undefined) return buscarHuecos({ ...sesion, profesional: p, aviso: undefined });
       break;
     }
     case 'horarios': {
+      if (id === OP.atras.id) return mostrarProfesionales(sesion, catalogo);
       if (id === OP.mas.id && sesion.fechaMostrada !== undefined) {
         return buscarHuecos({ ...sesion, aviso: undefined }, diaSiguiente(sesion.fechaMostrada));
       }
@@ -398,13 +427,28 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
       if (id === OP.atras.id) return mostrarHorarios(sesion, INTRO_HORARIOS);
       break;
     }
+    case 'confirmarAfiliado': {
+      const nro = sesion.nroAfiliado;
+      if (id === OP.confirmarAfiliado.id && nro !== undefined) return declarar(sesion, { tipo: 'consultarObraSocial', nro });
+      if (id === OP.atras.id) return pedirAfiliado(sesion);
+      break;
+    }
+    case 'datos': {
+      if (id === OP.atras.id && sesion.elegido !== undefined) return revisarHorario(sesion, sesion.elegido);
+      break;
+    }
     case 'ofrecerSena': {
-      if (id === OP.sena.id && sesion.turno !== undefined) return pantallaPago(sesion, sesion.turno);
+      if (id === OP.sena.id && sesion.turno !== undefined) return pantallaPago(sesion, sesion.turno, 'ofrecerSena');
       break;
     }
     case 'pagoSena': {
       const turno = sesion.turno;
       if (turno === undefined) break;
+      if (id === OP.atras.id) {
+        return sesion.origenPago === 'gestion'
+          ? mostrarTurno(sesion, turno, 'Tu próximo turno es:')
+          : ofrecerSena(sesion, [msg('¿Querés pagar la seña ahora?')]);
+      }
       if (id === OP.aprobarPago.id) return declarar(sesion, { tipo: 'pagarSena', turnoId: turno.id, resultado: 'aprobado' });
       if (id === OP.rechazarPago.id) return declarar(sesion, { tipo: 'pagarSena', turnoId: turno.id, resultado: 'rechazado' });
       break;
@@ -413,11 +457,11 @@ export function avanzar(sesion: Sesion, entrada: Entrada, catalogo: Catalogo): S
       const turno = sesion.turno;
       if (turno === undefined) break;
       if (id === OP.confirmar.id) return declarar(sesion, { tipo: 'confirmar', turnoId: turno.id });
-      if (id === OP.sena.id && !turno.senado) return pantallaPago(sesion, turno);
+      if (id === OP.sena.id && !turno.senado) return pantallaPago(sesion, turno, 'gestion');
       if (id === OP.cancelar.id) {
         return responder(sesion, 'confirmarCancelacion', {
           mensajes: [msg(`¿Querés cancelar el turno del ${etiquetaHorario(turno.inicio)}?`)],
-          opciones: [OP.cancelarSi, OP.cancelarNo],
+          opciones: conNavegacion([OP.cancelarSi, OP.cancelarNo], false),
           pideTexto: false,
         });
       }
@@ -492,7 +536,7 @@ export function resolver(sesion: Sesion, resultado: ResultadoEfecto, catalogo: C
       if (t === undefined) {
         const texto =
           modo === 'recordatorio' ? 'No hay turnos próximos para este número.' : 'No encontré turnos próximos para este número. ¿Querés pedir uno?';
-        return responder(sesion, 'fin', { mensajes: [msg(texto)], opciones: [OP.pedir], pideTexto: false });
+        return responder(sesion, 'fin', { mensajes: [msg(texto)], opciones: conNavegacion([OP.pedir], false), pideTexto: false });
       }
       if (modo === 'recordatorio') {
         const saludo = resultado.nombrePaciente === undefined ? 'Hola' : `Hola ${resultado.nombrePaciente}`;
@@ -564,7 +608,7 @@ export function resolver(sesion: Sesion, resultado: ResultadoEfecto, catalogo: C
             },
           },
         ],
-        opciones: [OP.pedir, OP.menu],
+        opciones: conNavegacion([OP.pedir], false),
         pideTexto: false,
       });
     }

@@ -104,7 +104,7 @@ describe('conversacion - tipo de consulta y profesional', () => {
   it('dado el menu cuando elige Pedir un turno entonces ofrece las prestaciones sin Urgencia', () => {
     let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
     s = elegir(s, 'Pedir un turno');
-    expect(etiquetas(respuesta(s))).toEqual(['Control y limpieza', 'Ortodoncia', 'Tratamiento', 'Estetica dental']);
+    expect(etiquetas(respuesta(s))).toEqual(['Control y limpieza', 'Ortodoncia', 'Tratamiento', 'Estetica dental', 'Volver al menú']);
     expect(textos(respuesta(s))).toMatch(/tipo de consulta/);
   });
 
@@ -112,7 +112,7 @@ describe('conversacion - tipo de consulta y profesional', () => {
     let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
     s = elegir(s, 'Pedir un turno');
     s = elegir(s, 'Control y limpieza');
-    expect(etiquetas(respuesta(s))).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez']);
+    expect(etiquetas(respuesta(s))).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez', 'Volver atrás', 'Volver al menú']);
   });
 
   it('dado los profesionales cuando elige uno entonces declara el efecto de buscar huecos desde hoy', () => {
@@ -127,7 +127,7 @@ describe('conversacion - tipo de consulta y profesional', () => {
 describe('conversacion - horarios ofrecidos (RN-WA-01)', () => {
   it('dado cuatro huecos encontrados cuando se resuelve la busqueda entonces ofrece exactamente los 3 primeros y Ver mas dias', () => {
     const r = respuesta(hastaHorarios());
-    expect(etiquetas(r)).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días']);
+    expect(etiquetas(r)).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días', 'Volver atrás', 'Volver al menú']);
     expect(textos(r)).toMatch(/próximos horarios libres/);
   });
 
@@ -181,7 +181,7 @@ describe('conversacion - identificacion y reserva', () => {
     const r = respuesta(resolver(s.sesion, { tipo: 'identificarPorTelefono' }, CATALOGO));
     expect(textos(r)).toMatch(/nombre completo y DNI/);
     expect(r.pideTexto).toBe(true);
-    expect(r.opciones).toEqual([]);
+    expect(r.opciones.map((o) => o.etiqueta)).toEqual(['Volver atrás', 'Volver al menú']);
   });
 
   function pidiendoDatos(): Sesion {
@@ -246,7 +246,7 @@ describe('conversacion - identificacion y reserva', () => {
     });
     const r = respuesta(resolver(s.sesion, huecosLunes(['09:30', '09:45', '10:00']), CATALOGO));
     expect(textos(r)).toMatch(/ya se ocupó/);
-    expect(etiquetas(r)).toEqual(['Lun 30/11 09:30', 'Lun 30/11 09:45', 'Lun 30/11 10:00', 'Ver más días']);
+    expect(etiquetas(r)).toEqual(['Lun 30/11 09:30', 'Lun 30/11 09:45', 'Lun 30/11 10:00', 'Ver más días', 'Volver atrás', 'Volver al menú']);
   });
 
   it('dado que el paciente ya tiene turno a esa hora (RN-AG-05) cuando se resuelve la reserva entonces avisa y vuelve a ofrecer', () => {
@@ -261,7 +261,7 @@ describe('conversacion - ver mi turno', () => {
   it('dado un proximo turno cuando se resuelve entonces lo muestra con Confirmo, Pagar seña y Cancelar turno', () => {
     const r = respuesta(hastaGestion());
     expect(textos(r)).toMatch(/Mar 1\/12 10:00 · Control y limpieza · Dra\. Ficticia Perez/);
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un telefono sin turnos cuando se resuelve entonces informa y ofrece Pedir un turno', () => {
@@ -269,7 +269,7 @@ describe('conversacion - ver mi turno', () => {
     s = elegir(s, 'Ver mi turno');
     const r = respuesta(resolver(s.sesion, { tipo: 'buscarProximoTurno' }, CATALOGO));
     expect(textos(r)).toMatch(/No encontré turnos próximos/);
-    expect(etiquetas(r)).toEqual(['Pedir un turno']);
+    expect(etiquetas(r)).toEqual(['Pedir un turno', 'Volver al menú']);
   });
 
   it('dado el turno mostrado cuando elige Confirmo entonces declara confirmar y al resolver muestra Turno confirmado', () => {
@@ -288,12 +288,12 @@ describe('conversacion - ver mi turno', () => {
   it('dado el turno mostrado cuando elige Cancelar turno entonces pide confirmacion con Si, cancelar y No', () => {
     const r = respuesta(elegir(hastaGestion(), 'Cancelar turno'));
     expect(textos(r)).toMatch(/¿Querés cancelar el turno del Mar 1\/12 10:00\?/);
-    expect(etiquetas(r)).toEqual(['Sí, cancelar', 'No']);
+    expect(etiquetas(r)).toEqual(['Sí, cancelar', 'No', 'Volver al menú']);
   });
 
   it('dado la confirmacion de cancelacion cuando elige No entonces vuelve a las opciones del turno', () => {
     const r = respuesta(elegir(elegir(hastaGestion(), 'Cancelar turno'), 'No'));
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado la confirmacion de cancelacion cuando elige Si, cancelar entonces declara cancelar y al resolver confirma', () => {
@@ -313,7 +313,7 @@ describe('conversacion - ver mi turno', () => {
   it('dado el turno mostrado cuando llega la opcion cambiar ya eliminada entonces responde No entendi y repite las opciones', () => {
     const r = respuesta(avanzar(hastaGestion().sesion, opcion('cambiar'), CATALOGO));
     expect(textos(r)).toMatch(/No entendí/);
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un turno señado cuando se muestra entonces indica Seña pagada y no ofrece pagar', () => {
@@ -321,7 +321,7 @@ describe('conversacion - ver mi turno', () => {
     s = elegir(s, 'Ver mi turno');
     const r = respuesta(resolver(s.sesion, { tipo: 'buscarProximoTurno', turno: { ...TURNO, senado: true } }, CATALOGO));
     expect(textos(r)).toMatch(/Seña pagada/);
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un pedido de recordatorio cuando se resuelve con turno entonces escribe el recordatorio con las 3 opciones', () => {
@@ -332,7 +332,7 @@ describe('conversacion - ver mi turno', () => {
     );
     expect(textos(r)).toMatch(/Hola Paciente Ficticio Uno, te recordamos tu turno/);
     expect(textos(r)).toMatch(/¿Confirmás tu asistencia\?/);
-    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 
   it('dado un pedido de recordatorio sin turnos cuando se resuelve entonces informa que no hay turnos proximos', () => {
@@ -348,7 +348,7 @@ describe('conversacion - opcion no reconocida', () => {
     s = elegir(s, 'Pedir un turno');
     const r = respuesta(avanzar(s.sesion, opcion('no-existe'), CATALOGO));
     expect(textos(r)).toMatch(/No entendí/);
-    expect(etiquetas(r)).toEqual(['Control y limpieza', 'Ortodoncia', 'Tratamiento', 'Estetica dental']);
+    expect(etiquetas(r)).toEqual(['Control y limpieza', 'Ortodoncia', 'Tratamiento', 'Estetica dental', 'Volver al menú']);
   });
 
   it('dado los tipos de consulta cuando llega texto libre entonces responde No entendi sin cambiar de paso', () => {
@@ -365,13 +365,13 @@ describe('conversacion - revisar el horario antes de reservar', () => {
     const s = elegir(hastaHorarios(), 'Lun 30/11 09:00');
     const r = respuesta(s);
     expect(textos(r)).toMatch(/Elegiste:\nLun 30\/11 09:00 · Control y limpieza · Dra\. Ficticia Perez\n¿Confirmás el turno\?/);
-    expect(etiquetas(r)).toEqual(['Confirmar turno', 'Volver atrás']);
+    expect(etiquetas(r)).toEqual(['Confirmar turno', 'Volver atrás', 'Volver al menú']);
     expect(s.sesion.efectoPendiente).toBeUndefined();
   });
 
   it('dado el resumen del horario cuando elige Volver atras entonces repite los mismos horarios sin efecto', () => {
     const r = respuesta(elegir(elegir(hastaHorarios(), 'Lun 30/11 09:15'), 'Volver atrás'));
-    expect(etiquetas(r)).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días']);
+    expect(etiquetas(r)).toEqual(['Lun 30/11 09:00', 'Lun 30/11 09:15', 'Lun 30/11 09:30', 'Ver más días', 'Volver atrás', 'Volver al menú']);
     expect(textos(r)).toMatch(/próximos horarios libres/);
   });
 
@@ -396,7 +396,7 @@ describe('conversacion - pagar seña simulada', () => {
     const r = respuesta(elegir(reservado(), 'Pagar seña'));
     expect(textos(r)).toMatch(/Mercado Pago \(SIMULACIÓN\)/);
     expect(textos(r)).toMatch(/Lun 30\/11 09:15: \$5\.000 \(monto ficticio\)/);
-    expect(etiquetas(r)).toEqual(['Aprobar pago (simulación)', 'Rechazar pago (simulación)', 'Volver al menú']);
+    expect(etiquetas(r)).toEqual(['Aprobar pago (simulación)', 'Rechazar pago (simulación)', 'Volver atrás', 'Volver al menú']);
   });
 
   it('dado la pantalla de pago cuando elige Aprobar entonces declara pagarSena aprobado y al resolver muestra Seña pagada', () => {
@@ -437,6 +437,25 @@ describe('conversacion - consultar mi obra social', () => {
   function pidiendoAfiliado(): Salida {
     return elegir(avanzar(nuevaSesion(), texto('hola'), CATALOGO), 'Consultar mi obra social');
   }
+  /** Escribe el numero y elige Confirmar (design D5). */
+  function confirmarAfiliado(s: Salida, nro: string): Salida {
+    return elegir(avanzar(s.sesion, texto(nro), CATALOGO), 'Confirmar');
+  }
+
+  it('dado el pedido de afiliado cuando escribe en minusculas con espacios entonces pregunta si el numero normalizado es correcto sin consultar', () => {
+    const r = respuesta(avanzar(pidiendoAfiliado().sesion, texto(' af-0001 '), CATALOGO));
+    expect(textos(r)).toMatch(/¿El número de afiliado es AF-0001\?/);
+    expect(etiquetas(r)).toEqual(['Confirmar', 'Volver atrás', 'Volver al menú']);
+    expect(r.pideTexto).toBe(false);
+  });
+
+  it('dado la pregunta de confirmacion cuando elige Volver atras entonces vuelve a pedir el numero sin consultar el padron', () => {
+    const s = elegir(avanzar(pidiendoAfiliado().sesion, texto('AF-0011'), CATALOGO), 'Volver atrás');
+    const r = respuesta(s);
+    expect(textos(r)).toMatch(/Escribí tu número de afiliado/);
+    expect(r.pideTexto).toBe(true);
+    expect(efecto(confirmarAfiliado(s, 'AF-0001'))).toEqual({ tipo: 'consultarObraSocial', nro: 'AF-0001' });
+  });
 
   it('dado el menu cuando elige Consultar mi obra social entonces pide el numero de afiliado con texto habilitado', () => {
     const r = respuesta(pidiendoAfiliado());
@@ -445,13 +464,13 @@ describe('conversacion - consultar mi obra social', () => {
     expect(etiquetas(r)).toEqual(['Volver al menú']);
   });
 
-  it('dado el pedido de afiliado cuando escribe en minusculas con espacios entonces declara consultar con el numero normalizado', () => {
-    const s = avanzar(pidiendoAfiliado().sesion, texto(' af-0002 '), CATALOGO);
+  it('dado el pedido de afiliado cuando escribe en minusculas con espacios y confirma entonces declara consultar con el numero normalizado', () => {
+    const s = confirmarAfiliado(pidiendoAfiliado(), ' af-0002 ');
     expect(efecto(s)).toEqual({ tipo: 'consultarObraSocial', nro: 'AF-0002' });
   });
 
   it('dado un afiliado encontrado cuando se resuelve entonces muestra obra social, plan, cobertura, copago y estado', () => {
-    const s = avanzar(pidiendoAfiliado().sesion, texto('AF-0002'), CATALOGO);
+    const s = confirmarAfiliado(pidiendoAfiliado(), 'AF-0002');
     const r = respuesta(
       resolver(
         s.sesion,
@@ -469,15 +488,15 @@ describe('conversacion - consultar mi obra social', () => {
   });
 
   it('dado un afiliado inexistente cuando se resuelve entonces avisa y vuelve a pedir el numero', () => {
-    const s = avanzar(pidiendoAfiliado().sesion, texto('AF-9999'), CATALOGO);
+    const s = confirmarAfiliado(pidiendoAfiliado(), 'AF-9999');
     const r = resolver(s.sesion, { tipo: 'consultarObraSocial', error: 'no-encontrado' }, CATALOGO);
     expect(textos(respuesta(r))).toMatch(/No encontré el afiliado AF-9999 en el padrón simulado/);
     expect(respuesta(r).pideTexto).toBe(true);
-    expect(efecto(avanzar(r.sesion, texto('AF-0001'), CATALOGO))).toEqual({ tipo: 'consultarObraSocial', nro: 'AF-0001' });
+    expect(efecto(confirmarAfiliado(r, 'AF-0001'))).toEqual({ tipo: 'consultarObraSocial', nro: 'AF-0001' });
   });
 
   it('dado una falla simulada del padron cuando se resuelve entonces informa sin datos de cobertura', () => {
-    const s = avanzar(pidiendoAfiliado().sesion, texto('AF-0004'), CATALOGO);
+    const s = confirmarAfiliado(pidiendoAfiliado(), 'AF-0004');
     const r = respuesta(resolver(s.sesion, { tipo: 'consultarObraSocial', error: 'falla' }, CATALOGO));
     expect(textos(r)).toMatch(/padrón de obras sociales no respondió \(falla simulada\)/);
     expect(r.mensajes.some((m) => m.tarjeta !== undefined)).toBe(false);
@@ -487,5 +506,83 @@ describe('conversacion - consultar mi obra social', () => {
   it('dado el pedido de afiliado cuando escribe "menú" entonces vuelve al menu inicial', () => {
     const r = respuesta(avanzar(pidiendoAfiliado().sesion, texto('menú'), CATALOGO));
     expect(etiquetas(r)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
+  });
+});
+
+/** Hasta la pregunta "¿Querés pagar la seña ahora?" con un turno recien reservado. */
+function hastaOfrecerSena(): Salida {
+  const s = confirmarHorario('Lun 30/11 09:00');
+  return resolver(s.sesion, { tipo: 'reservar', turno: { ...TURNO, inicio: en('09:00') } }, CATALOGO);
+}
+
+describe('conversacion - navegacion en cada paso', () => {
+  it('dado Pedir un turno y Control y limpieza cuando el bot ofrece los profesionales entonces agrega Volver atras y Volver al menu', () => {
+    let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
+    s = elegir(elegir(s, 'Pedir un turno'), 'Control y limpieza');
+    expect(etiquetas(respuesta(s))).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez', 'Volver atrás', 'Volver al menú']);
+  });
+
+  it('dado el menu cuando elige Pedir un turno entonces las opciones terminan en Volver al menu sin Volver atras', () => {
+    const r = respuesta(elegir(avanzar(nuevaSesion(), texto('hola'), CATALOGO), 'Pedir un turno'));
+    expect(etiquetas(r).at(-1)).toBe('Volver al menú');
+    expect(etiquetas(r)).not.toContain('Volver atrás');
+  });
+
+  it('dado un horario confirmado cuando el bot responde Turno reservado entonces ofrece Pagar seña y Volver al menu sin Volver atras', () => {
+    expect(etiquetas(respuesta(hastaOfrecerSena()))).toEqual(['Pagar seña', 'Volver al menú']);
+  });
+
+  it('dado los horarios cuando ofrece la fila de navegacion entonces termina en Volver atras y Volver al menu', () => {
+    expect(etiquetas(respuesta(hastaHorarios())).slice(-3)).toEqual(['Ver más días', 'Volver atrás', 'Volver al menú']);
+  });
+
+  it('dado el resumen del horario cuando se muestra entonces ofrece Confirmar turno, Volver atras y Volver al menu', () => {
+    expect(etiquetas(respuesta(elegir(hastaHorarios(), 'Lun 30/11 09:00')))).toEqual(['Confirmar turno', 'Volver atrás', 'Volver al menú']);
+  });
+
+  it('dado Ver mi turno cuando muestra el turno entonces termina en Volver al menu sin Volver atras', () => {
+    expect(etiquetas(respuesta(hastaGestion()))).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
+  });
+
+  it('dado la confirmacion de cancelacion cuando se muestra entonces ofrece Sí, No y Volver al menu', () => {
+    expect(etiquetas(respuesta(elegir(hastaGestion(), 'Cancelar turno')))).toEqual(['Sí, cancelar', 'No', 'Volver al menú']);
+  });
+});
+
+describe('conversacion - volver atras', () => {
+  it('dado los horarios de la Dra. cuando elige Volver atras entonces vuelve a ofrecer los profesionales sin declarar efectos', () => {
+    const s = elegir(hastaHorarios(), 'Volver atrás');
+    expect(textos(respuesta(s))).toMatch(/¿Con qué profesional\?/);
+    expect(etiquetas(respuesta(s))).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez', 'Volver atrás', 'Volver al menú']);
+  });
+
+  it('dado los profesionales cuando elige Volver atras entonces vuelve a ofrecer los tipos de consulta', () => {
+    let s = avanzar(nuevaSesion(), texto('hola'), CATALOGO);
+    s = elegir(elegir(elegir(s, 'Pedir un turno'), 'Control y limpieza'), 'Volver atrás');
+    expect(etiquetas(respuesta(s))).toEqual(['Control y limpieza', 'Ortodoncia', 'Tratamiento', 'Estetica dental', 'Volver al menú']);
+  });
+
+  it('dado el pedido de nombre y DNI cuando elige Volver atras entonces vuelve al resumen del horario con Confirmar turno', () => {
+    const c = confirmarHorario('Lun 30/11 09:00');
+    const datos = resolver(c.sesion, { tipo: 'identificarPorTelefono' }, CATALOGO);
+    expect(respuesta(datos).pideTexto).toBe(true);
+    expect(etiquetas(respuesta(datos))).toEqual(['Volver atrás', 'Volver al menú']);
+    const r = respuesta(elegir(datos, 'Volver atrás'));
+    expect(textos(r)).toMatch(/Lun 30\/11 09:00 · Control y limpieza · Dra\. Ficticia Perez/);
+    expect(etiquetas(r)).toEqual(['Confirmar turno', 'Volver atrás', 'Volver al menú']);
+  });
+
+  it('dado la pantalla de pago abierta tras reservar cuando elige Volver atras entonces vuelve a preguntar si quiere pagar la seña', () => {
+    const pago = elegir(hastaOfrecerSena(), 'Pagar seña');
+    expect(etiquetas(respuesta(pago))).toEqual(['Aprobar pago (simulación)', 'Rechazar pago (simulación)', 'Volver atrás', 'Volver al menú']);
+    const r = respuesta(elegir(pago, 'Volver atrás'));
+    expect(textos(r)).toMatch(/¿Querés pagar la seña ahora\?/);
+    expect(etiquetas(r)).toEqual(['Pagar seña', 'Volver al menú']);
+  });
+
+  it('dado la pantalla de pago abierta desde Ver mi turno cuando elige Volver atras entonces vuelve a mostrar el turno', () => {
+    const r = respuesta(elegir(elegir(hastaGestion(), 'Pagar seña'), 'Volver atrás'));
+    expect(textos(r)).toMatch(/Tu próximo turno es:/);
+    expect(etiquetas(r)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
   });
 });

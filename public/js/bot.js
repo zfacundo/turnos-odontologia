@@ -45,6 +45,13 @@
 
   var ALERTAS = /ya se ocupó|Ya tenés otro turno|menos de 24 h|No pude|rechazado \(simulación\)|falla simulada|No encontré el afiliado/;
   var PELIGRO = ['cancelar', 'rechazar-pago'];
+  var NAVEGACION = ['atras', 'menu'];
+
+  function claseChip(id) {
+    if (PELIGRO.indexOf(id) >= 0) return 'chip danger';
+    if (NAVEGACION.indexOf(id) >= 0) return 'chip nav';
+    return 'chip';
+  }
 
   function mostrar(respuesta) {
     respuesta.mensajes.forEach(function (m) {
@@ -58,7 +65,7 @@
     respuesta.opciones.forEach(function (o) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = PELIGRO.indexOf(o.id) >= 0 ? 'chip danger' : 'chip';
+      b.className = claseChip(o.id);
       b.textContent = o.etiqueta;
       b.addEventListener('click', function () {
         burbuja('me', o.etiqueta);

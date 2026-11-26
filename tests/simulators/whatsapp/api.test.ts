@@ -71,7 +71,7 @@ describe('POST /api/sim/whatsapp/mensaje - contrato', () => {
     expect(a.body.opciones.map((o: Opcion) => o.etiqueta)).toContain('Ortodoncia');
     expect(b.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Pedir un turno', 'Ver mi turno', 'Consultar mi obra social']);
     const sigueA = await mensaje(app, { telefono: TEL_UNO, opcionId: idDe(a.body.opciones, 'Ortodoncia') });
-    expect(sigueA.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez']);
+    expect(sigueA.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez', 'Volver atrás', 'Volver al menú']);
   });
 });
 
@@ -114,7 +114,7 @@ describe('POST /api/sim/whatsapp/recordatorio', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ simulado: true, aviso: AVISO });
     expect(res.body.mensajes[0].texto).toMatch(/te recordamos tu turno[\s\S]*Mar 1\/12 10:00[\s\S]*¿Confirmás tu asistencia\?/);
-    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno']);
+    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Confirmo', 'Pagar seña', 'Cancelar turno', 'Volver al menú']);
     const confirmo = await mensaje(app, { telefono: TEL_UNO, opcionId: idDe(res.body.opciones, 'Confirmo') });
     expect(confirmo.body.mensajes.some((m: { tarjeta?: { titulo: string } }) => m.tarjeta?.titulo === 'Turno confirmado')).toBe(true);
   });
@@ -166,7 +166,9 @@ describe('POST /api/sim/whatsapp/mensaje - seña y obra social', () => {
   it('dado el menu cuando consulta la obra social AF-0001 entonces responde con la cobertura rotulada como simulacion', async () => {
     const app = nuevaApp();
     await chatear(app, TEL_NUEVO, ['Consultar mi obra social']);
-    const res = await mensaje(app, { telefono: TEL_NUEVO, texto: 'AF-0001' });
+    const pregunta = await mensaje(app, { telefono: TEL_NUEVO, texto: 'AF-0001' });
+    expect(pregunta.body.mensajes[0].texto).toBe('¿El número de afiliado es AF-0001?');
+    const res = await mensaje(app, { telefono: TEL_NUEVO, opcionId: idDe(pregunta.body.opciones, 'Confirmar') });
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ simulado: true, aviso: AVISO });
     const tarjeta = res.body.mensajes.find((m: { tarjeta?: { titulo: string } }) => m.tarjeta !== undefined).tarjeta;
@@ -174,5 +176,27 @@ describe('POST /api/sim/whatsapp/mensaje - seña y obra social', () => {
       titulo: 'Tu cobertura (simulación)',
       lineas: ['Obra social: OS-01', 'Plan: Plan Base', 'Cobertura: 80%', 'Copago: 20%', 'Estado: activo'],
     });
+  });
+});
+
+describe('POST /api/sim/whatsapp/mensaje - volver atras', () => {
+  const turnosDelLunes = (app: Express) =>
+    request(app)
+      .get('/api/turnos')
+      .query({ desde: '2026-11-30T00:00:00-03:00', hasta: '2026-12-01T00:00:00-03:00' })
+      .set(RECEPCION);
+
+  it('dado los horarios ofrecidos cuando elige Volver atras entonces vuelve a los profesionales y no crea turnos', async () => {
+    const app = nuevaApp();
+    const res = await chatear(app, TEL_UNO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Volver atrás']);
+    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Dra. Ficticia Perez', 'Dr. Ficticio Gomez', 'Volver atrás', 'Volver al menú']);
+    expect((await turnosDelLunes(app)).body.turnos).toEqual([]);
+  });
+
+  it('dado un numero nuevo al que se le piden los datos cuando elige Volver atras entonces vuelve al resumen y no crea turnos', async () => {
+    const app = nuevaApp();
+    const res = await chatear(app, TEL_NUEVO, ['Pedir un turno', 'Control y limpieza', 'Dra. Ficticia Perez', 'Lun 30/11 09:00', 'Confirmar turno', 'Volver atrás']);
+    expect(res.body.opciones.map((o: Opcion) => o.etiqueta)).toEqual(['Confirmar turno', 'Volver atrás', 'Volver al menú']);
+    expect((await turnosDelLunes(app)).body.turnos).toEqual([]);
   });
 });
