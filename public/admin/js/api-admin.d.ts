@@ -23,9 +23,11 @@ export interface ApiAdmin {
   token(): string | undefined;
   guardarToken(valor: string): void;
   borrarToken(): void;
+  definirIdentidad(usuario: { id: string; rol: string } | undefined): void;
   get(ruta: string, opciones?: OpcionesLlamada): Promise<unknown>;
   post(ruta: string, cuerpo?: unknown, opciones?: OpcionesLlamada): Promise<unknown>;
   put(ruta: string, cuerpo?: unknown, opciones?: OpcionesLlamada): Promise<unknown>;
+  delete(ruta: string, opciones?: OpcionesLlamada): Promise<unknown>;
 }
 
 export function crearApiAdmin(deps: {

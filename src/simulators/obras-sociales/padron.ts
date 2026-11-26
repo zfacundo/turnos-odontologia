@@ -1,4 +1,11 @@
-import type { AfiliadoSimulado, RegistroAfiliado } from './afiliado';
+import type { AfiliadoSimulado, ObraSocialSimulada, RegistroAfiliado } from './afiliado';
+
+const OBRAS_SOCIALES: readonly ObraSocialSimulada[] = [
+  { codigo: 'OS-01', nombre: 'Obra Social Ficticia Uno', planes: ['Plan Base', 'Plan Plus'], simulado: true },
+  { codigo: 'OS-02', nombre: 'Obra Social Ficticia Dos', planes: ['Plan Copago', 'Plan Premium'], simulado: true },
+  { codigo: 'OS-03', nombre: 'Obra Social Ficticia Tres', planes: ['Plan Sin Cobertura'], simulado: true },
+  { codigo: 'OS-04', nombre: 'Obra Social Ficticia Cuatro', planes: ['Plan Error Simulado'], simulado: true },
+];
 
 const REGISTROS: readonly RegistroAfiliado[] = [
   {
@@ -55,6 +62,10 @@ function sinNombre(registro: RegistroAfiliado): AfiliadoSimulado {
 
 export function afiliadosDelPadron(): AfiliadoSimulado[] {
   return REGISTROS.map(sinNombre);
+}
+
+export function obrasSocialesDelPadron(): ObraSocialSimulada[] {
+  return OBRAS_SOCIALES.map((o) => structuredClone(o));
 }
 
 export function buscarEnPadron(nroAfiliado: string): AfiliadoSimulado | undefined {

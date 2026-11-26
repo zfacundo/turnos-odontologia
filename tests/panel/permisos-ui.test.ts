@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   parsearRuta,
   puedeCrearHistorial,
+  puedeConfigurarConsultorio,
   puedeCrearTurnos,
+  puedeGestionarBloqueos,
   puedeVerOdontograma,
   puedeVerRegistro,
   puedeEditarClientes,
@@ -15,16 +17,16 @@ const ids = (rol: string | undefined) => seccionesPara(rol).map((s) => s.id);
 
 describe('seccionesPara (matriz D8)', () => {
   it('dado el rol recepcion cuando se arma la navegacion entonces no incluye Historial clinico', () => {
-    expect(ids('recepcion')).toEqual(['dashboard', 'agenda', 'clientes']);
+    expect(ids('recepcion')).toEqual(['dashboard', 'agenda', 'clientes', 'configuracion']);
     expect(seccionesPara('recepcion').map((s) => s.titulo)).not.toContain('Historial clínico');
   });
 
-  it('dado el rol odontologo cuando se arma la navegacion entonces ve las cuatro secciones', () => {
-    expect(ids('odontologo')).toEqual(['dashboard', 'agenda', 'clientes', 'historial']);
+  it('dado el rol odontologo cuando se arma la navegacion entonces ve las cinco secciones', () => {
+    expect(ids('odontologo')).toEqual(['dashboard', 'agenda', 'clientes', 'configuracion', 'historial']);
   });
 
-  it('dado el rol admin cuando se arma la navegacion entonces ve las cuatro secciones', () => {
-    expect(ids('admin')).toEqual(['dashboard', 'agenda', 'clientes', 'historial']);
+  it('dado el rol admin cuando se arma la navegacion entonces ve las cinco secciones', () => {
+    expect(ids('admin')).toEqual(['dashboard', 'agenda', 'clientes', 'configuracion', 'historial']);
   });
 
   it('dado el rol paciente o sin rol cuando se arma la navegacion entonces no ve ninguna seccion', () => {
@@ -38,6 +40,7 @@ describe('seccionesPara (matriz D8)', () => {
       expect(s.ruta).toBe(`#/${s.id}`);
       expect(s.titulo.length).toBeGreaterThan(0);
       expect(['Consultorio', 'Clínica']).toContain(s.grupo);
+      expect(seccionesPara('admin').find((x) => x.id === 'configuracion')?.titulo).toBe('Configuración');
     }
   });
 });
@@ -54,7 +57,7 @@ describe('puedeVer(rol, ruta)', () => {
 
   it('dado cualquier rol de panel cuando abre agenda, dashboard o clientes entonces puede verlas', () => {
     for (const rol of ['admin', 'recepcion', 'odontologo']) {
-      for (const ruta of ['#/dashboard', '#/agenda', '#/clientes', '#/clientes/pac-01']) {
+      for (const ruta of ['#/dashboard', '#/agenda', '#/clientes', '#/configuracion', '#/clientes/pac-01']) {
         expect(puedeVer(rol, ruta)).toBe(true);
       }
     }
@@ -105,6 +108,19 @@ describe('permisos finos de la UI', () => {
     expect(puedeCrearHistorial('odontologo')).toBe(true);
     expect(puedeCrearHistorial('admin')).toBe(false);
     expect(puedeCrearHistorial('recepcion')).toBe(false);
+  });
+
+  it('dado cada rol cuando se pregunta por configurar el consultorio entonces solo admin puede', () => {
+    expect(puedeConfigurarConsultorio('admin')).toBe(true);
+    expect(puedeConfigurarConsultorio('recepcion')).toBe(false);
+    expect(puedeConfigurarConsultorio('odontologo')).toBe(false);
+  });
+
+  it('dado cada rol cuando se pregunta por gestionar bloqueos entonces admin, recepcion y odontologo pueden', () => {
+    expect(puedeGestionarBloqueos('admin')).toBe(true);
+    expect(puedeGestionarBloqueos('recepcion')).toBe(true);
+    expect(puedeGestionarBloqueos('odontologo')).toBe(true);
+    expect(puedeGestionarBloqueos('paciente')).toBe(false);
   });
 });
 

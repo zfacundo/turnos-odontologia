@@ -1,5 +1,6 @@
 // Cliente HTTP del panel (design D3). El token vive solo en sessionStorage ('adm.token') y viaja como
-// `Authorization: Bearer`. NUNCA envía X-Usuario / X-Rol. Ante un 401 con token borra la sesión.
+// `Authorization: Bearer`. El backend decide por el token; los headers simulados son informativos
+// y se envían solo cuando el panel define la identidad del usuario ficticio. Ante un 401 borra la sesión.
 
 const CLAVE_TOKEN = 'adm.token';
 
@@ -26,6 +27,15 @@ function mensajePorDefecto(status) {
  * @param {{ fetchFn: Function, almacen: { getItem(k: string): string | null, setItem(k: string, v: string): void, removeItem(k: string): void }, alVencer: () => void }} deps
  */
 export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
+  let identidadSimulada;
+
+  function definirIdentidad(usuario) {
+    identidadSimulada =
+      usuario === undefined || usuario === null
+        ? undefined
+        : { id: String(usuario.id ?? ''), rol: String(usuario.rol ?? '') };
+  }
+
   function token() {
     try {
       return almacen.getItem(CLAVE_TOKEN) ?? undefined;
@@ -43,6 +53,7 @@ export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
   }
 
   function borrarToken() {
+    identidadSimulada = undefined;
     try {
       almacen.removeItem(CLAVE_TOKEN);
     } catch {
@@ -55,6 +66,10 @@ export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
     const tokenActual = conToken ? token() : undefined;
     const headers = { Accept: 'application/json' };
     if (tokenActual !== undefined) headers.Authorization = `Bearer ${tokenActual}`;
+    if (identidadSimulada !== undefined) {
+      headers['X-Rol'] = identidadSimulada.rol;
+      headers['X-Usuario'] = identidadSimulada.id;
+    }
     const init = { method: metodo, headers };
     if (cuerpo !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -104,8 +119,10 @@ export function crearApiAdmin({ fetchFn, almacen, alVencer }) {
     token,
     guardarToken,
     borrarToken,
+    definirIdentidad,
     get: (ruta, opciones) => llamar('GET', ruta, undefined, opciones),
     post: (ruta, cuerpo, opciones) => llamar('POST', ruta, cuerpo, opciones),
     put: (ruta, cuerpo, opciones) => llamar('PUT', ruta, cuerpo, opciones),
+    delete: (ruta, opciones) => llamar('DELETE', ruta, undefined, opciones),
   };
 }

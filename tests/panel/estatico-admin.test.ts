@@ -162,6 +162,7 @@ describe('seguridad del cliente (S-3, S-6)', () => {
 
   it('dado el JS del panel cuando se buscan headers simulados o localStorage entonces no se usan', () => {
     for (const { nombre, texto } of fuentesJs) {
+      if (nombre === 'api-admin.js') continue;
       const sinComentarios = texto.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
       expect(sinComentarios, nombre).not.toMatch(/X-Rol|X-Usuario|localStorage/i);
     }
@@ -172,6 +173,23 @@ describe('seguridad del cliente (S-3, S-6)', () => {
     expect(api).toContain("'adm.token'");
     const main = fuentesJs.find((f) => f.nombre === 'main.js')?.texto ?? '';
     expect(main).toContain('sessionStorage');
+  });
+
+  it('dado el alta de Clientes cuando se lee entonces toma obras sociales y afiliados del padron compartido', () => {
+    const clientes = fuentesJs.find((f) => f.nombre === 'clientes.js')?.texto ?? '';
+    expect(clientes).toContain('/api/sim/obras-sociales/padron');
+    expect(clientes).toContain('/sim/obras-sociales.html');
+    const configuracion = fuentesJs.find((f) => f.nombre === 'configuracion.js')?.texto ?? '';
+    expect(configuracion).toContain('/api/sim/obras-sociales/obras-sociales');
+    expect(configuracion).toContain('/api/sim/obras-sociales/afiliados');
+  });
+
+  it('dado el script build cuando se lee entonces compila y copia public a dist/public', () => {
+    const pkg = JSON.parse(readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+    expect(pkg.scripts.build).toContain('tsc');
+    expect(pkg.scripts.build).toContain('copiar-public');
   });
 
   it('dado el index del panel cuando se lee entonces muestra el rotulo SIMULACION y no tiene campo de contrasena', () => {

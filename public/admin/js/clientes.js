@@ -11,13 +11,15 @@ const CAMPOS_FORM = [
   { clave: 'dni', etiqueta: 'DNI', ayuda: 'Formato ficticio 99NNNNNN.', requerido: true },
   { clave: 'telefono', etiqueta: 'Teléfono', ayuda: 'Formato ficticio +54 9 11 0000-00NN.', requerido: true },
   { clave: 'email', etiqueta: 'Email (opcional)', ayuda: 'Debe terminar en @ejemplo.invalid.' },
-  { clave: 'obraSocialId', etiqueta: 'Obra social (opcional)', ayuda: 'Formato OS-NN.' },
-  { clave: 'nroAfiliado', etiqueta: 'Nº de afiliado (opcional)', ayuda: 'Formato AF-NNNN.' },
+  { clave: 'obraSocialId', etiqueta: 'Obra social (opcional)', ayuda: 'Elegí una obra social registrada (OS-NN).' },
+  { clave: 'nroAfiliado', etiqueta: 'Nº de afiliado (opcional)', ayuda: 'Elegí un afiliado registrado (AF-NNNN).' },
 ];
 
-function obraSocialTexto(p) {
+function obraSocialTexto(p, padron) {
   if (!p.obraSocialId) return '—';
-  return p.nroAfiliado ? `${p.obraSocialId} (sim.) · afiliado ${p.nroAfiliado}` : `${p.obraSocialId} (sim.)`;
+  const nombre = padron.obrasSociales.find((o) => o.codigo === p.obraSocialId)?.nombre;
+  const base = nombre === undefined ? p.obraSocialId : `${p.obraSocialId} · ${nombre}`;
+  return p.nroAfiliado ? `${base} (sim.) · afiliado ${p.nroAfiliado}` : `${base} (sim.)`;
 }
 
 export async function montarClientes(contenedor, ctx) {
@@ -31,6 +33,7 @@ export async function montarClientes(contenedor, ctx) {
     seleccionId: ctx.id,
     turnos: [],
     prestaciones: [],
+    padron: { obrasSociales: [], afiliados: [] },
     modo: undefined, // 'nuevo' | 'editar'
   };
 
@@ -105,9 +108,14 @@ export async function montarClientes(contenedor, ctx) {
         desde: new Date(ahora).toISOString(),
         hasta: new Date(ahora + 90 * DIA_MS).toISOString(),
       });
-      const [turnos, catalogo] = await Promise.all([api.get(`/api/turnos?${rango}`), api.get('/api/catalogo')]);
+      const [turnos, catalogo, padron] = await Promise.all([
+        api.get(`/api/turnos?${rango}`),
+        api.get('/api/catalogo'),
+        api.get('/api/sim/obras-sociales/padron'),
+      ]);
       estado.turnos = turnos.turnos;
       estado.prestaciones = catalogo.prestaciones;
+      estado.padron = padron;
     } catch (error) {
       if (error?.status === 401) throw error;
       estado.turnos = []; // el próximo turno es informativo: la ficha sigue funcionando
@@ -129,7 +137,7 @@ export async function montarClientes(contenedor, ctx) {
           h('td', null, p.nombre),
           h('td', { class: 'num' }, p.dni),
           h('td', { class: 'num hide-sm' }, p.telefono),
-          h('td', { class: 'hide-sm' }, obraSocialTexto(p)),
+          h('td', { class: 'hide-sm' }, obraSocialTexto(p, estado.padron)),
           h(
             'td',
             null,
@@ -197,7 +205,7 @@ export async function montarClientes(contenedor, ctx) {
         h('dt', null, 'DNI'), h('dd', { class: 'num' }, p.dni),
         h('dt', null, 'Teléfono'), h('dd', { class: 'num' }, p.telefono),
         h('dt', null, 'Email'), h('dd', null, p.email ?? '—'),
-        h('dt', null, 'Obra social'), h('dd', null, obraSocialTexto(p)),
+        h('dt', null, 'Obra social'), h('dd', null, obraSocialTexto(p, estado.padron)),
       ),
       h('h3', { style: { marginTop: '20px' } }, 'Próximo turno'),
       turno
@@ -213,10 +221,12 @@ export async function montarClientes(contenedor, ctx) {
         'div',
         { class: 'actions', style: { marginTop: '20px' } },
         h('a', { class: 'btn btn-secondary', href: '#/agenda' }, 'Ver en la agenda'),
+        h('a', { class: 'btn btn-secondary', href: '/sim/obras-sociales.html' }, 'Cobertura (sim.)'),
         puedeLeerHistorial(usuario.rol)
           ? h('a', { class: 'btn btn-secondary', href: `#/historial/${encodeURIComponent(p.id)}` }, 'Ver historial clínico')
           : false,
       ),
+      h('p', { class: 'small muted', style: { margin: '16px 0 0' } }, 'RN-DA-02: DNI y teléfono se muestran enmascarados; RN-DA-01: solo datos ficticios.'),
       puedeLeerHistorial(usuario.rol)
         ? false
         : h('p', { class: 'small muted', style: { margin: '16px 0 0' } }, 'El historial clínico no está disponible para recepción.'),
@@ -235,16 +245,37 @@ export async function montarClientes(contenedor, ctx) {
     const error = h('div', { role: 'alert' });
     const inputs = new Map();
     const campos = CAMPOS_FORM.map((c) => {
-      const input = h('input', {
-        id: `p-${c.clave}`,
-        class: 'input',
-        type: 'text',
-        autocomplete: 'off',
-        'aria-describedby': `p-${c.clave}-ayuda`,
-        'aria-required': c.requerido ? 'true' : false,
-        // DNI y teléfono llegan enmascarados: al editar hay que volver a ingresarlos.
-        value: actual && !['dni', 'telefono'].includes(c.clave) ? (actual[c.clave] ?? '') : '',
-      });
+      const esSeleccion = c.clave === 'obraSocialId' || c.clave === 'nroAfiliado';
+      const valorActual = actual && !['dni', 'telefono'].includes(c.clave) ? (actual[c.clave] ?? '') : '';
+      const input = esSeleccion
+        ? h('select', {
+            id: `p-${c.clave}`,
+            class: 'select',
+            'aria-describedby': `p-${c.clave}-ayuda`,
+          })
+        : h('input', {
+            id: `p-${c.clave}`,
+            class: 'input',
+            type: 'text',
+            autocomplete: 'off',
+            'aria-describedby': `p-${c.clave}-ayuda`,
+            'aria-required': c.requerido ? 'true' : false,
+            // DNI y teléfono llegan enmascarados: al editar hay que volver a ingresarlos.
+            value: valorActual,
+          });
+      if (esSeleccion) {
+        const valores = c.clave === 'obraSocialId'
+          ? estado.padron.obrasSociales.map((o) => ({ value: o.codigo, texto: `${o.codigo} · ${o.nombre}` }))
+          : estado.padron.afiliados.map((a) => ({ value: a.nroAfiliado, texto: `${a.nroAfiliado} · ${a.obraSocial}` }));
+        reemplazar(
+          input,
+          h('option', { value: '', selected: valorActual === '' }, c.clave === 'obraSocialId' ? 'Sin obra social' : 'Sin afiliado'),
+          ...valores.map((v) => h('option', { value: v.value, selected: v.value === valorActual }, v.texto)),
+          valorActual !== '' && !valores.some((v) => v.value === valorActual)
+            ? h('option', { value: valorActual, selected: true }, valorActual)
+            : false,
+        );
+      }
       inputs.set(c.clave, input);
       const ayuda =
         editando && ['dni', 'telefono'].includes(c.clave)

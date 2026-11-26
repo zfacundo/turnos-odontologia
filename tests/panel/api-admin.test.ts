@@ -46,6 +46,21 @@ describe('crearApiAdmin - token', () => {
     expect(Object.keys(headers).map((h) => h.toLowerCase())).not.toContain('x-usuario');
   });
 
+  it('dado la identidad del usuario logueado cuando se hace una llamada entonces envia los headers simulados junto al token', async () => {
+    const almacen = almacenEnMemoria({ 'adm.token': 'tok-abc' });
+    const { fetchFn, llamadas } = fetchFalso([{ status: 200, cuerpo: { ok: 1 } }]);
+    const api = crearApiAdmin({ fetchFn, almacen, alVencer: () => undefined });
+    api.definirIdentidad({ id: 'u-admin', rol: 'admin' });
+    await api.get('/api/catalogo');
+    const headers = llamadas[0]?.init.headers ?? {};
+    expect(headers.Authorization).toBe('Bearer tok-abc');
+    expect(headers['X-Usuario']).toBe('u-admin');
+    expect(headers['X-Rol']).toBe('admin');
+    api.borrarToken();
+    await api.get('/api/catalogo');
+    expect(llamadas[1]?.init.headers?.['X-Rol']).toBeUndefined();
+  });
+
   it('dado ningun token cuando se hace una llamada entonces no envia Authorization', async () => {
     const { fetchFn, llamadas } = fetchFalso([{ status: 200, cuerpo: {} }]);
     const api = crearApiAdmin({ fetchFn, almacen: almacenEnMemoria(), alVencer: () => undefined });

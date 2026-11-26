@@ -70,6 +70,10 @@
     dl { margin: 16px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
     dt { color: var(--muted); }
     dd { margin: 0; font-weight: 600; word-break: break-all; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .chips button { width: auto; min-height: 36px; margin: 0; padding: 0 12px; font-size: .875rem; }
+    .nav { margin: 20px 0 0; font-size: .875rem; }
+    .nav a { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -83,6 +87,7 @@
         <input id="nro" name="nro" type="text" placeholder="AF-0001" autocomplete="off">
         <button type="submit">Consultar</button>
       </form>
+      <div id="afiliados" class="chips" aria-label="Afiliados del padrón simulado"></div>
       <p id="resultado" role="status" aria-live="polite"></p>
       <dl id="detalle" hidden>
         <dt>Obra social</dt>
@@ -96,15 +101,19 @@
         <dt>Estado</dt>
         <dd id="estado-afiliado">—</dd>
       </dl>
+      <p class="nav"><a href="/admin/#/clientes">Clientes</a> · <a href="/admin/#/configuracion">Configuración</a> · <a href="/bot.html">Bot de WhatsApp</a></p>
     </section>
   </main>
 
   <script>
     (function () {
+      const CABECERAS = { 'X-Rol': 'recepcion', 'X-Usuario': 'u-recepcion' };
       const formulario = document.getElementById('formulario');
       const nro = document.getElementById('nro');
       const resultado = document.getElementById('resultado');
       const detalle = document.getElementById('detalle');
+      const afiliados = document.getElementById('afiliados');
+      let padron = { obrasSociales: [], afiliados: [] };
 
       function mostrar(texto, tipo) {
         resultado.textContent = texto;
@@ -120,24 +129,42 @@
         document.getElementById('estado-afiliado').textContent = '—';
       }
 
-      formulario.addEventListener('submit', async function (evento) {
-        evento.preventDefault();
+      function cargarPadron() {
+        return fetch('/api/sim/obras-sociales/padron', { headers: CABECERAS })
+          .then(function (res) { return res.ok ? res.json() : { obrasSociales: [], afiliados: [] }; })
+          .then(function (datos) {
+            padron = datos;
+            afiliados.replaceChildren();
+            padron.afiliados.forEach(function (a) {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.textContent = a.nroAfiliado + (a.estado === 'error_simulado' ? ' (falla sim.)' : '');
+              b.addEventListener('click', function () {
+                nro.value = a.nroAfiliado;
+                consultar(a.nroAfiliado);
+              });
+              afiliados.appendChild(b);
+            });
+          })
+          .catch(function () { mostrar('No se pudo cargar el padrón simulado.', 'error'); });
+      }
+
+      async function consultar(valor) {
         limpiar();
-        const valor = nro.value.trim();
         if (valor === '') {
           mostrar('Ingresá un número de afiliado ficticio, por ejemplo AF-0001.', 'error');
           return;
         }
         try {
-          const res = await fetch('/api/sim/obras-sociales/afiliados/' + encodeURIComponent(valor), {
-            headers: { 'X-Rol': 'recepcion', 'X-Usuario': 'u-recepcion' }
-          });
+          const res = await fetch('/api/sim/obras-sociales/afiliados/' + encodeURIComponent(valor), { headers: CABECERAS });
           const cuerpo = await res.json();
           if (!res.ok) {
-            mostrar((cuerpo.error && cuerpo.error.mensaje) || 'No se pudo consultar el padrón simulado.', 'error');
+            const error = cuerpo.error || {};
+            mostrar((error.regla ? error.regla + ' — ' : '') + (error.mensaje || 'No se pudo consultar el padrón simulado.'), 'error');
             return;
           }
-          document.getElementById('obra-social').textContent = cuerpo.obraSocial;
+          const obra = padron.obrasSociales.find(function (o) { return o.codigo === cuerpo.obraSocial; });
+          document.getElementById('obra-social').textContent = obra ? cuerpo.obraSocial + ' · ' + obra.nombre : cuerpo.obraSocial;
           document.getElementById('plan').textContent = cuerpo.plan;
           document.getElementById('cobertura').textContent = cuerpo.cobertura + '%';
           document.getElementById('copago').textContent = cuerpo.copagoPct + '%';
@@ -147,7 +174,14 @@
         } catch (e) {
           mostrar('No se pudo contactar al servidor local.', 'error');
         }
+      }
+
+      formulario.addEventListener('submit', function (evento) {
+        evento.preventDefault();
+        consultar(nro.value.trim());
       });
+
+      cargarPadron();
     })();
   </script>
 </body>

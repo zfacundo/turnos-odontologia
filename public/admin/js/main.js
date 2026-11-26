@@ -3,6 +3,7 @@
 import { crearApiAdmin } from './api-admin.js';
 import { montarAgenda } from './agenda.js';
 import { montarClientes } from './clientes.js';
+import { montarConfiguracion } from './configuracion.js';
 import { montarDashboard } from './dashboard.js';
 import { h, icono, iniciales, mensajeDe, reemplazar } from './dom.js';
 import { montarHistorial } from './historial.js';
@@ -17,6 +18,7 @@ const VISTAS = {
   dashboard: montarDashboard,
   agenda: montarAgenda,
   clientes: montarClientes,
+  configuracion: montarConfiguracion,
   historial: montarHistorial,
   odontograma: montarOdontograma, // ruta sin menú: #/odontograma/<turnoId> (solo odontólogo)
 };
@@ -221,6 +223,7 @@ function armarShell() {
 }
 
 function mostrarShell(usuario) {
+  api.definirIdentidad(usuario);
   $('vista-login').hidden = true;
   $('vista-shell').hidden = false;
   $('usuario-avatar').textContent = iniciales(usuario.nombre);
