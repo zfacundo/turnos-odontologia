@@ -7,25 +7,18 @@ TBD - created by archiving change vista-agenda-y-registro-del-sistema. Update Pu
 
 ### Requirement: Consulta de turnos
 
-El sistema SHALL consultar GET /api/turnos para obtener los turnos reales y mostrarlos en la agenda visual.
+La agenda del panel SHALL consultar `GET /api/turnos` con el rango de la semana visible y mostrar los turnos recibidos en la grilla semanal.
 
 #### Scenario: Agenda con turnos
-
-\- \*\*GIVEN\*\* que existen turnos registrados
-
-\- \*\*WHEN\*\* el usuario abre la agenda
-
-\- \*\*THEN\*\* el sistema consulta GET /api/turnos
-
-\- \*\*AND\*\* muestra los turnos recibidos en sus fechas y horarios correspondientes
+- **GIVEN** que existen turnos registrados en la semana visible
+- **WHEN** un usuario con sesión del panel abre `/admin/#/agenda`
+- **THEN** el panel consulta `GET /api/turnos` con el rango de esa semana
+- **AND** muestra cada turno recibido en su día y horario
 
 #### Scenario: Agenda vacía
-
-\- \*\*GIVEN\*\* que no existen turnos registrados
-
-\- \*\*WHEN\*\* el usuario abre la agenda
-
-\- \*\*THEN\*\* muestra una grilla vacía sin generar errores
+- **GIVEN** que no existen turnos en la semana visible
+- **WHEN** el usuario abre la agenda del panel
+- **THEN** se muestra la grilla vacía y el aviso "Sin turnos en esta semana", sin errores
 
 ### Requirement: Grilla de 15 minutos
 
@@ -56,22 +49,6 @@ Cada turno SHALL ocupar visualmente el tiempo comprendido entre su inicio y su f
 \- \*\*WHEN\*\* se muestra en la agenda
 
 \- \*\*THEN\*\* ocupa visualmente cuatro intervalos de 15 minutos
-
-### Requirement: Vistas diaria y semanal
-
-La interfaz SHALL permitir alternar entre una vista diaria y una semanal.
-
-#### Scenario: Vista diaria
-
-\- \*\*WHEN\*\* el usuario selecciona "Día"
-
-\- \*\*THEN\*\* visualiza los horarios correspondientes a la fecha seleccionada
-
-#### Scenario: Vista semanal
-
-\- \*\*WHEN\*\* el usuario selecciona "Semana"
-
-\- \*\*THEN\*\* visualiza los siete días de la semana correspondiente a la fecha seleccionada
 
 ### Requirement: Filtros por profesional y sillón
 
@@ -109,59 +86,51 @@ Los filtros SHALL funcionar individualmente y en combinación.
 
 ### Requirement: Información visual de los turnos
 
-La agenda SHALL mostrar información suficiente para identificar cada turno.
-
-La interfaz SHALL diferenciar las prestaciones mediante colores y mostrar el estado, profesional, sillón y paciente.
+La agenda del panel SHALL mostrar información suficiente para identificar cada turno. El color del bloque SHALL indicar el estado, y el estado SHALL aparecer también en el nombre accesible del bloque. El detalle del turno SHALL mostrar paciente, prestación, horario, profesional y sillón. Los turnos con origen `whatsapp` SHALL tener un indicador visible y accesible. Los turnos cuyo fin ya pasó respecto de la hora actual del navegador SHALL verse atenuados.
 
 #### Scenario: Identificar una prestación
-
-\- \*\*GIVEN\*\* que existen turnos con distintas prestaciones
-
-\- \*\*WHEN\*\* se muestran en la agenda
-
-\- \*\*THEN\*\* utilizan colores diferenciados por prestación
-
-\- \*\*AND\*\* muestran el nombre de la prestación correspondiente
+- **GIVEN** un turno de la prestación "Ortodoncia"
+- **WHEN** el usuario abre su detalle
+- **THEN** el detalle muestra "Ortodoncia" como prestación
 
 #### Scenario: Mostrar estado reservado
-
-\- \*\*GIVEN\*\* que un turno tiene estado "reservado"
-
-\- \*\*WHEN\*\* aparece en la agenda
-
-\- \*\*THEN\*\* muestra el texto "Sin confirmar"
+- **GIVEN** que un turno tiene estado `reservado`
+- **WHEN** aparece en la agenda
+- **THEN** su bloque usa el color de "Sin confirmar" y su nombre accesible incluye "Sin confirmar"
 
 #### Scenario: Mostrar estado confirmado
-
-\- \*\*GIVEN\*\* que un turno tiene estado "confirmado"
-
-\- \*\*WHEN\*\* aparece en la agenda
-
-\- \*\*THEN\*\* muestra el texto "Confirmó"
+- **GIVEN** que un turno tiene estado `confirmado`
+- **WHEN** aparece en la agenda
+- **THEN** su nombre accesible y su detalle muestran "Confirmado"
 
 #### Scenario: Mostrar estado atendido
-
-\- \*\*GIVEN\*\* que un turno tiene estado "atendido"
-
-\- \*\*WHEN\*\* aparece en la agenda
-
-\- \*\*THEN\*\* muestra el texto "Atendido"
+- **GIVEN** que un turno tiene estado `atendido`
+- **WHEN** aparece en la agenda
+- **THEN** su nombre accesible y su detalle muestran "Atendido"
 
 #### Scenario: Identificar origen WhatsApp
+- **GIVEN** que un turno tiene origen `whatsapp`
+- **WHEN** aparece en la agenda
+- **THEN** su bloque muestra un indicador de WhatsApp
+- **AND** su nombre accesible incluye "reservado por WhatsApp"
+- **AND** el detalle muestra "Origen: WhatsApp (simulado)"
 
-\- \*\*GIVEN\*\* que un turno tiene origen "whatsapp"
-
-\- \*\*WHEN\*\* aparece en la agenda
-
-\- \*\*THEN\*\* se muestra un indicador visual de WhatsApp
+#### Scenario: Turno de origen recepción
+- **GIVEN** que un turno tiene origen distinto de `whatsapp`
+- **WHEN** aparece en la agenda
+- **THEN** no muestra el indicador de WhatsApp
 
 #### Scenario: Atenuar horarios pasados
+- **GIVEN** que la hora actual es 2026-12-01 11:00 (Argentina)
+- **AND** un turno de ese día termina a las 10:30 y otro empieza a las 11:30
+- **WHEN** se muestran en la agenda
+- **THEN** el turno de las 10:30 se ve atenuado y el de las 11:30 no
 
-\- \*\*GIVEN\*\* que un horario ya transcurrió
-
-\- \*\*WHEN\*\* se muestra en la agenda
-
-\- \*\*THEN\*\* aparece visualmente atenuado
+#### Scenario: Turno que termina justo ahora
+- **GIVEN** que la hora actual es 2026-12-01 11:00 (Argentina)
+- **AND** un turno termina exactamente a las 11:00
+- **WHEN** se muestra en la agenda
+- **THEN** se ve atenuado, porque su intervalo `[inicio, fin)` ya terminó
 
 ### Requirement: Horarios locales
 
@@ -177,124 +146,122 @@ La interfaz SHALL presentar las fechas y horas según la zona horaria argentina 
 
 ### Requirement: Creación de turnos
 
-La interfaz SHALL proporcionar un formulario para crear turnos mediante POST /api/turnos.
-
-La validación de las reglas de negocio SHALL permanecer en el servidor.
+La agenda del panel SHALL ofrecer a admin y recepción un botón "Nuevo turno" que abra un formulario con paciente, prestación, profesional, sillón, fecha y hora de inicio, y que envíe `POST /api/turnos`. La validación de las reglas de negocio SHALL quedar en el servidor. El odontólogo MUST NOT ver el botón.
 
 #### Scenario: Crear turno correctamente
-
-\- \*\*GIVEN\*\* que el usuario tiene permisos y los datos son válidos
-
-\- \*\*WHEN\*\* completa el formulario y presiona "Crear turno"
-
-\- \*\*THEN\*\* la interfaz envía POST /api/turnos
-
-\- \*\*AND\*\* muestra un mensaje de confirmación
-
-\- \*\*AND\*\* actualiza la agenda
+- **GIVEN** recepción con sesión y datos válidos de un horario libre
+- **WHEN** completa el formulario y presiona "Crear turno"
+- **THEN** el panel envía `POST /api/turnos` con esos datos
+- **AND** muestra "Turno creado"
+- **AND** el turno aparece en la grilla de su semana
 
 #### Scenario: Conflicto de horario
+- **GIVEN** que el horario elegido se superpone con otro turno del mismo profesional
+- **WHEN** el servidor responde `409` con la regla `RN-AG-0x` y el turno en conflicto
+- **THEN** el formulario sigue abierto con los datos cargados
+- **AND** muestra el código de la regla, el mensaje del servidor y el identificador del turno en conflicto
 
-\- \*\*GIVEN\*\* que el horario solicitado entra en conflicto con otro turno
-
-\- \*\*WHEN\*\* el servidor responde HTTP 409
-
-\- \*\*THEN\*\* la interfaz muestra un mensaje de conflicto
-
-\- \*\*AND\*\* muestra el identificador del turno en conflicto cuando está disponible
+#### Scenario: Campos incompletos
+- **GIVEN** que falta elegir el paciente
+- **WHEN** el usuario presiona "Crear turno"
+- **THEN** el panel no envía la solicitud
+- **AND** marca el campo faltante con un mensaje asociado
 
 #### Scenario: Rol sin permiso
-
-\- \*\*GIVEN\*\* que el usuario tiene rol "odontologo"
-
-\- \*\*WHEN\*\* intenta crear un turno sin autorización
-
-\- \*\*THEN\*\* el servidor responde HTTP 403
-
-\- \*\*AND\*\* la interfaz informa que no tiene permiso
-
-### Requirement: Selector de rol simulado
-
-La interfaz SHALL permitir seleccionar un rol simulado para utilizar los mecanismos de autenticación existentes.
-
-#### Scenario: Seleccionar recepción
-
-\- \*\*WHEN\*\* el usuario selecciona "Recepción"
-
-\- \*\*THEN\*\* la interfaz guarda el rol simulado
-
-\- \*\*AND\*\* las solicitudes posteriores utilizan los encabezados X-Usuario y X-Rol mediante api.js
-
-#### Scenario: Cambiar de rol
-
-\- \*\*WHEN\*\* el usuario selecciona otro rol
-
-\- \*\*THEN\*\* las siguientes solicitudes utilizan el nuevo rol
+- **GIVEN** un odontólogo con sesión
+- **WHEN** abre la agenda del panel
+- **THEN** no ve el botón "Nuevo turno"
+- **AND** si igual envía `POST /api/turnos`, el servidor responde `403`
 
 ### Requirement: Integración con el registro
 
-La pantalla SHALL mostrar un panel denominado "Lo que hizo el sistema".
+La agenda del panel SHALL mostrar a admin y recepción una tarjeta "Lo que hizo el sistema" con los mensajes de `GET /api/registro`, del más reciente al más antiguo. La tarjeta SHALL volver a consultarse después de crear, cancelar o cambiar el estado de un turno desde el panel. Los roles sin permiso MUST NOT ver la tarjeta.
 
 #### Scenario: Actualizar registro
-
-\- \*\*WHEN\*\* un usuario autorizado consulta el panel
-
-\- \*\*THEN\*\* la interfaz obtiene los mensajes mediante GET /api/registro
+- **WHEN** recepción abre la agenda del panel
+- **THEN** el panel consulta `GET /api/registro`
+- **AND** muestra los mensajes con fecha y hora de Argentina, del más reciente al más antiguo
 
 #### Scenario: Crear turno y actualizar registro
+- **WHEN** un turno se crea correctamente desde el panel
+- **THEN** la grilla se actualiza
+- **AND** la tarjeta "Lo que hizo el sistema" vuelve a consultar el registro
 
-\- \*\*WHEN\*\* un turno se crea correctamente
+#### Scenario: Registro vacío
+- **GIVEN** que no hay acciones registradas
+- **WHEN** admin abre la agenda
+- **THEN** la tarjeta muestra "Todavía no hay acciones registradas."
 
-\- \*\*THEN\*\* la interfaz actualiza la agenda
-
-\- \*\*AND\*\* vuelve a consultar el registro del sistema
+#### Scenario: Odontólogo no ve el registro
+- **GIVEN** un odontólogo con sesión
+- **WHEN** abre la agenda del panel
+- **THEN** la tarjeta "Lo que hizo el sistema" no se muestra y no se consulta `GET /api/registro`
 
 ### Requirement: Cancelación desde la agenda y aviso simulado
 
-La agenda SHALL permitir que recepción y administración soliciten la cancelación de un turno activo, indicando un motivo y confirmando la operación.
-
-La cancelación SHALL utilizar POST /api/turnos/:id/cancelar y respetar las validaciones y permisos del servidor.
-
-Cuando la cancelación sea exitosa, el sistema SHALL registrar un aviso en el WhatsApp simulado del paciente correspondiente.
+El detalle de un turno activo en la agenda del panel SHALL permitir que recepción y administración lo cancelen, escribiendo un motivo obligatorio y confirmando. La cancelación SHALL usar `POST /api/turnos/:id/cancelar` y respetar las validaciones y permisos del servidor. Cuando la cancelación sea exitosa, el sistema SHALL registrar un aviso en el WhatsApp simulado del paciente correspondiente.
 
 #### Scenario: Cancelación exitosa
-
 - **GIVEN** que existe un turno activo
 - **AND** el usuario tiene rol recepción o administración
-- **WHEN** selecciona el turno, escribe el motivo y confirma
-- **THEN** el sistema solicita su cancelación al servidor
-- **AND** actualiza la agenda y el registro de auditoría
-- **AND** registra un aviso de cancelación en el WhatsApp simulado del paciente
+- **WHEN** abre su detalle, elige "Cancelar turno…", escribe el motivo y confirma
+- **THEN** el panel solicita la cancelación al servidor
+- **AND** el turno sale de la grilla y la tarjeta del registro se actualiza
+- **AND** se registra un aviso de cancelación en el WhatsApp simulado del paciente
 
 #### Scenario: Cancelación rechazada
-
-- **GIVEN** que el servidor rechaza una cancelación
-- **WHEN** el usuario intenta cancelar el turno
-- **THEN** la agenda informa el error
+- **GIVEN** que el servidor rechaza una cancelación con `409`
+- **WHEN** el usuario confirma la cancelación
+- **THEN** el detalle muestra el mensaje del servidor y el turno no cambia
 - **AND** no se genera un aviso de cancelación
 
 #### Scenario: Rol sin permiso en la agenda
-
-- **GIVEN** que el usuario selecciona el rol odontólogo
-- **WHEN** consulta la agenda
-- **THEN** la interfaz no muestra el panel de cancelación
+- **GIVEN** un odontólogo con sesión
+- **WHEN** abre el detalle de un turno activo
+- **THEN** no ve la acción "Cancelar turno…"
 
 #### Scenario: Privacidad del aviso
-
 - **GIVEN** que un turno fue cancelado correctamente
 - **WHEN** se consulta el WhatsApp simulado de otro paciente
 - **THEN** no se muestra el aviso de ese turno
 - **AND** el mensaje de cancelación no incluye información clínica ni el motivo registrado
 
 ### Requirement: Marca de seña pagada
-La tarjeta de un turno con `senado` `true` SHALL mostrar el texto "Seña pagada", sin importar si la seña se pagó desde el bot de WhatsApp o desde el simulador de Mercado Pago. Un turno sin seña MUST NOT mostrarlo.
+
+Un turno con `senado` `true` SHALL mostrar la marca de seña en la agenda del panel: "$" en el bloque, "señado" en su nombre accesible y el chip "$ Señado" en el detalle. La leyenda SHALL explicar "Seña pagada (simulada)". La marca SHALL ser la misma si la seña se pagó desde el bot o desde el simulador de Mercado Pago. Un turno sin seña MUST NOT mostrarla.
 
 #### Scenario: Turno señado desde el bot
 - **GIVEN** un turno de `pac-01` reservado por WhatsApp con la seña aprobada
-- **WHEN** recepción abre la agenda del día del turno
-- **THEN** la tarjeta del turno muestra "Seña pagada" junto al ícono de WhatsApp
+- **WHEN** recepción abre la agenda del panel en la semana del turno
+- **THEN** el bloque muestra "$" junto al indicador de WhatsApp
+- **AND** el detalle muestra el chip "$ Señado"
 
 #### Scenario: Turno sin seña
 - **GIVEN** un turno con `senado` `false`
-- **WHEN** se muestra en la agenda
-- **THEN** su tarjeta no muestra "Seña pagada"
+- **WHEN** se muestra en la agenda del panel
+- **THEN** ni su bloque ni su detalle muestran la marca de seña
+
+### Requirement: Retiro de la agenda anterior
+
+La agenda del consultorio SHALL ser únicamente la del panel (`/admin/#/agenda`). `GET /` y `GET /index.html` SHALL responder `302` con `Location: /admin/`. Ninguna página servida desde `public/` SHALL tener un enlace "Agenda" que apunte a `/` o a `/index.html`. Esos enlaces SHALL apuntar a `/admin/#/agenda`.
+
+#### Scenario: La raíz redirige al panel
+- **WHEN** un navegador pide `GET /`
+- **THEN** el servidor responde `302` con `Location: /admin/`
+
+#### Scenario: Enlace guardado a la agenda vieja
+- **WHEN** se pide `GET /index.html`
+- **THEN** el servidor responde `302` con `Location: /admin/`
+
+#### Scenario: Navegación desde el bot
+- **GIVEN** la pantalla del bot de WhatsApp simulado
+- **WHEN** el usuario activa el enlace "Agenda" de su barra de navegación
+- **THEN** el enlace apunta a `/admin/#/agenda`
+
+#### Scenario: Sin enlaces a la agenda vieja
+- **WHEN** se revisan todas las páginas HTML de `public/`
+- **THEN** ninguna tiene un `href` igual a `/` o a `/index.html`
+
+#### Scenario: Otras páginas siguen sirviéndose
+- **WHEN** se piden `/bot.html`, `/sim/mercadopago.html`, `/sim/obras-sociales.html`, `/sim/arca.html` y `/styles/tokens.css`
+- **THEN** cada una responde `200`

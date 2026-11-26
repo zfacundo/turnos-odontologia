@@ -1,9 +1,9 @@
 # Handoff — `panel-admin-agenda`
 
 - **Modo**: SDD (OPSX). Apply ejecutado el 2026-11-25 con TDD estricto en backend y en la lógica pura del panel.
-- **Estado**: grupos 0–8 y 9.3 completos. **9.1 y 9.2 quedan abiertos en `tasks.md`** (verificación parcial, ver "Qué no se verificó").
+- **Estado**: 43/43 tareas completas (9.1 y 9.2 cerradas por el team lead el 2026-11-25, ver "Verificación final 9.1 / 9.2").
 - **Pendiente de la persona**: revisar, commit, rama `panel-admin-agenda`, PR con la plantilla, `engram sync` si corresponde y archive. No se hizo commit, push, rama ni PR.
-- **Change OPSX**: `openspec/changes/panel-admin-agenda/` (capabilities nuevas `autenticacion-simulada`, `historial-clinico`, `indicadores-panel`, `panel-admin`; `salud-api` modificada).
+- **Change OPSX**: `openspec/changes/archive/2026-11-25-panel-admin-agenda/` (capabilities nuevas `autenticacion-simulada`, `historial-clinico`, `indicadores-panel`, `panel-admin`; `salud-api` modificada).
 
 ## Aprobaciones registradas (gates)
 
@@ -55,7 +55,7 @@ Resumen de lo aprobado y vigente:
 - Reglas duras: dominio sin Express/`fs`/`Date.now()`; repos en memoria reales y solo `RelojFijo` + generador de token determinístico; nombres "dado … cuando … entonces …"; un test por escenario de los 5 specs.
 - **Prueba en navegador real** (servidor local efímero con `SIM_NOW=2026-12-01T08:00:00-03:00`, ya detenido): login por rol, restauración de sesión al recargar, logout (el token deja de servir: 401), sesión vencida (token inválido → login con aviso), guarda de rol sin llamadas a la API (recepción en `#/historial/pac-01`), dashboard con KPIs, agenda (semana, filtros, mini-calendario, simultáneos en carriles, drawer, confirmar, cancelar con motivo, `Escape` devuelve el foco), clientes (búsqueda, ficha, alta con 409 de DNI repetido, alta correcta), historial (validación en línea sin llamar a la API, alta, línea de tiempo), sidebar móvil (`aria-expanded`, `Escape`, `inert`).
 - **Verificaciones estáticas ejecutables** (`tests/panel/estatico-admin.test.ts`): prefijo `--adm-`, paleta, contraste AA de botón primario/estados/texto/enlaces, foco 3px, solo `transform`/`opacity`, ninguna duración > 300 ms, `prefers-reduced-motion`, `:hover` solo bajo `(hover: hover) and (pointer: fine)`, sin `innerHTML`/`eval`/`localStorage`/`X-Rol` en el JS, sin campo de contraseña.
-- **Capturas** 1440 y 390 (Edge headless; el 390 en un iframe de 390 px de ancho) en `openspec/changes/panel-admin-agenda/mockups/verify/`: login, dashboard, agenda, clientes e historial. Sin scroll horizontal de página a 390 px (medido en el navegador integrado en dashboard, agenda y clientes; historial se ve sin desborde en la captura).
+- **Capturas** 1440 y 390 (Edge headless; el 390 en un iframe de 390 px de ancho) en `openspec/changes/archive/2026-11-25-panel-admin-agenda/mockups/verify/`: login, dashboard, agenda, clientes e historial. Sin scroll horizontal de página a 390 px (medido en el navegador integrado en dashboard, agenda y clientes; historial se ve sin desborde en la captura).
 
 ## Desvíos respecto del diseño / mockups (para revisión)
 
@@ -70,16 +70,21 @@ Resumen de lo aprobado y vigente:
 
 ## Qué no se verificó
 
-- **9.1**: recorrido completo por teclado con `Tab` en todas las pantallas (se verificó por script: foco inicial del drawer, `Escape`, retorno del foco, `inert` del sidebar cerrado, trampa de foco implementada pero no recorrida a mano); `prefers-reduced-motion` solo por test estático del CSS (no se emuló en el navegador); contraste medido por cálculo sobre los tokens, no sobre píxeles renderizados; capturas de recepción/odontólogo-2 por pantalla no generadas (se capturó un rol por pantalla).
-- **9.2**: el recorrido manual se hizo con admin, recepción y `u-odonto-1`; **no** con `u-odonto-2`. `public/index.html`, `bot.html` y los simuladores no se abrieron en el navegador (sus tests de API/pantalla siguen en verde y `index.html`/`bot.html`/`styles/tokens.css` se sirven igual, ver `tests/api/admin-estaticos.test.ts`).
+- **9.1 / 9.2**: cerradas, ver la sección siguiente. Queda sin verificar el contraste sobre píxeles renderizados (se midió por cálculo sobre los tokens).
 - Navegadores: solo Edge/Chromium. Safari y Firefox no.
 - Conflicto 409 de una acción de estado desde el drawer: el código muestra el mensaje de la API, pero no se provocó un 409 real en el navegador (sí el de DNI repetido en clientes).
+
+## Verificación final 9.1 / 9.2 (team lead, 2026-11-25)
+
+- **9.2, recorrido por rol** (`npm run dev`, seed, `SIM_NOW=2026-12-01T08:00:00-03:00`, navegador integrado): los 4 usuarios ficticios entran por la UI; el menú coincide con D8 (recepción sin Historial clínico); "Acceso restringido" para recepción en `#/historial` y para recepción y admin en `#/odontograma/...` (la API también responde 403); `u-odonto-2` abre agenda, historial de `pac-03` y odontograma. Tras "Cerrar sesión", el token da 401 en `/api/auth/sesion` y `/api/turnos`, y `sessionStorage` queda vacío.
+- **Bot y simuladores**: `/bot.html` responde al mensaje; con headers simulados (sin token) se creó un turno, se aprobó la seña en `/sim/mercadopago.html` (`senado: true`), se consultó `AF-0001` en `/sim/obras-sociales.html` y se emitió la Factura C en `/sim/arca.html` después de confirmar y atender el turno. Los enlaces "Agenda" de bot y ARCA llevan a `/admin/#/agenda`.
+- **9.1, teclado y movimiento reducido real**: Edge headless con `--force-prefers-reduced-motion` y teclas enviadas por CDP. Login solo con teclado (flechas, `Tab`, `Enter`); `Tab` en dashboard (8 focos), agenda (55), clientes (19), historial (17) e historial de paciente (7) a 1440, y agenda a 390 (39): todos visibles y con outline de 3px. Drawer: foco inicial en "Cerrar detalle", 25 `Tab` sin salir del diálogo, `Escape` devuelve el foco al turno. Ningún elemento con transición > 300 ms, animación activa ni transición de `transform`. Sin scroll horizontal a 390. Script y salida: `openspec/changes/archive/2026-11-25-panel-admin-agenda/mockups/verify/a11y-teclado-reduced-motion.{mjs,json}`.
+- **Observación menor**: el formulario "Nueva entrada" del historial propone la fecha y hora del navegador, no la del reloj simulado (`SIM_NOW`). Sin impacto fuera de la demo con reloj fijo.
 
 ## Qué sigue
 
 1. Revisión humana de los desvíos 1, 2 y 5 y de los cambios en `knowledge-base/`.
-2. Cerrar 9.1 y 9.2 en el PR con la checklist (teclado completo, `reduced-motion` real, `u-odonto-2`, bot y simuladores a mano).
-3. Rama `panel-admin-agenda`, commits convencionales (`feat(panel-admin-agenda): …`), PR con la plantilla, `engram sync` si el repo versiona `.engram/` (confirmar con la persona si es público) y `/opsx:archive` cuando esté mergeado.
+2. Change archivado como `2026-11-25-panel-admin-agenda`.
 
 ## Preguntas abiertas
 
