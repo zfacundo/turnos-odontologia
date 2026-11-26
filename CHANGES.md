@@ -44,6 +44,10 @@ C-01 base-proyecto-y-modelo-dominio                    [Team lead]
         │
         ├── C-13 sobreturno-explicito                  [stretch — sin asignar]  (opcional)
         └── C-14 lista-de-espera-ofrece-huecos         [stretch — sin asignar]  (opcional, también C-03)
+
+Extensiones posteriores al roadmap (FASE 7, todas archivadas):
+  C-06 ──► C-06b bot-whatsapp-sena-y-obra-social       [Integrante 2]
+  C-09 + C-10 ──► panel-admin-agenda ──► panel-reemplaza-agenda-vieja   [Integrante 1]
 ```
 
 ### Paralelismo por fase
@@ -388,6 +392,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Responsable**: Integrante 4
 - **Objetivo**: agenda diaria y semanal filtrable por profesional y por sillón, con el panel "Lo que hizo el sistema".
 - **Resultado**: `public/index.html` muestra los turnos de `GET /api/turnos` en grilla de 15', con filtros y un panel de registro alimentado por `GET /api/registro`.
+- **Nota (2026-11-25)**: la UI de este change (`public/index.html`, `public/js/agenda.js`) se retiró en `panel-reemplaza-agenda-vieja`. La agenda vive ahora en el panel (`/admin/#/agenda`) y `/` redirige a `/admin/`. Siguen vigentes `src/application/auditoria/`, `src/api/routes/auditoria.ts` y la spec `vista-agenda`, actualizada por el panel (ver FASE 7).
 - **Scope**:
   - `public/index.html`, `public/js/agenda.js`: grilla días × horarios (bloques de 15'), vista día/semana, filtros profesional y sillón, colores por prestación, estado visible ("Sin confirmar", "Confirmó", "Atendido"), ícono de origen WhatsApp, horarios pasados atenuados, selector de rol simulado; formulario mínimo "Nuevo turno" que llama `POST /api/turnos` y muestra el error 409 con el conflicto.
   - `src/application/auditoria/`: `listarAuditoria` (solo lectura), `registroLegible` (traduce eventos a frases tipo "Turno creado: …").
@@ -415,6 +420,7 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Responsable**: Integrante 4
 - **Objetivo**: odontograma FDI donde el paciente toca la pieza que le duele y la agrega a su turno.
 - **Resultado**: `PUT /api/turnos/:id/piezas` guarda piezas FDI válidas con síntomas y `public/odontograma.html` las muestra en rojo (a revisar) / azul (hecho).
+- **Nota (2026-11-25)**: `public/odontograma.html` y `public/js/odontograma.js` se retiraron en `panel-reemplaza-agenda-vieja`. El odontograma es ahora la ruta `/admin/#/odontograma/<turnoId>`, a la que solo entra el odontólogo; `/odontograma.html` redirige a `/admin/#/agenda`. La API de piezas también pasó a ser solo para el odontólogo (otros roles reciben 403). Dominio, aplicación y API de este change siguen vigentes.
 - **Scope**:
   - `src/domain/odontograma/` (puro): piezas FDI permanentes (18-11, 21-28, 31-38, 48-41), nombres ("16 · Primer molar superior derecho"), 5 caras, síntomas, estado `a_revisar | hecho`.
   - `src/application/odontograma/`: `agregarPiezaAlTurno`, `marcarHecho` (odontólogo); repositorio de piezas propio en la zona.
@@ -543,6 +549,41 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 
 ---
 
+## FASE 7 — Extensiones posteriores al roadmap (archivadas)
+
+> No estaban en el plan original de 12 changes. Se agregaron el 2026-11-25, después de cerrar los asignados, y pasaron por el ciclo OPSX completo.
+
+### [C-06b] `bot-whatsapp-sena-y-obra-social`
+- **Estado**: `[x]` completado (2026-11-25) — mergeado (PR #20) y archivado; handoff en `knowledge-base/entrega/C-06b.md`
+- **Responsable**: Integrante 2
+- **Resultado**: el bot simulado agrega "Confirmar turno" / "Volver atrás" antes de reservar, el pago de la seña desde el chat (Mercado Pago simulado, C-11) y "Consultar mi obra social" (padrón ficticio, C-08). "Necesito cambiarlo" pasa a ser "Ver mi turno". Specs `bot-whatsapp` y `vista-agenda` sincronizadas.
+- **Change OPSX**: `openspec/changes/archive/2026-11-25-bot-whatsapp-sena-y-obra-social/`
+- **Depende de**: C-06, C-08, C-11
+
+### [panel-admin-agenda]
+- **Estado**: `[x]` completado (2026-11-25) — mergeado (PR #23), archivado (PR #24) y 43/43 tareas; handoff en `knowledge-base/entrega/panel-admin-agenda.md`
+- **Responsable**: Integrante 1 (`Yacosantoro`); el team lead mergeó y cerró la verificación 9.1/9.2.
+- **Objetivo**: un panel de administración único, con login simulado, en lugar de páginas sueltas por función.
+- **Resultado**: `/admin/` con login simulado por usuario ficticio, sin contraseñas, y token de sesión de 8 h. Incluye dashboard con el resumen del día, agenda semanal, clientes, historial clínico ficticio y navegación por rol (matriz D8).
+- **Scope**: `public/admin/`; `src/application/{auth,historia,panel}/`; `src/domain/{auth,historia}/`; `src/api/routes/{auth,historia,panel}.ts`; `src/api/middleware/identidad.ts`; seed de historial en `src/infrastructure/seed/`.
+- **Specs nuevas**: `autenticacion-simulada` (7 requisitos), `historial-clinico` (7), `indicadores-panel` (4), `panel-admin` (10); `salud-api` modificada.
+- **Governance**: CRITICAL (auth) / HIGH (historial clínico). Las decisiones de seguridad S-1 a S-10 se aprobaron antes de implementar (Gate 0.1).
+- **Depende de**: C-02..C-12 (consume sus APIs)
+- **Preguntas abiertas**: auth real, desactivar los headers simulados `X-Rol`/`X-Usuario`, y Ley 26.529 (historia clínica real). Ver el handoff.
+
+### [panel-reemplaza-agenda-vieja]
+- **Estado**: `[x]` completado (2026-11-25) — mergeado (PR #23) y archivado (PR #24); handoff en `knowledge-base/entrega/panel-reemplaza-agenda-vieja.md`
+- **Responsable**: Integrante 1 (`Yacosantoro`)
+- **Resultado**:
+  - Se retiran `public/index.html`, `public/js/agenda.js`, `public/odontograma.html` y `public/js/odontograma.js`. `/` y `/index.html` redirigen con 302 a `/admin/`.
+  - La agenda del panel suma "+ Nuevo turno" y "Lo que hizo el sistema".
+  - El odontograma pasa a `#/odontograma/<turnoId>`, solo para el odontólogo.
+  - Los enlaces "Agenda" de `bot.html` y `sim/arca.html` apuntan a `/admin/#/agenda`.
+- **Specs**: `odontograma` y `vista-agenda` actualizadas.
+- **Depende de**: `panel-admin-agenda`, C-09, C-10
+
+---
+
 ## Resumen
 
 | # | Slug | Responsable | Zona principal | Depende de | Governance |
@@ -555,12 +596,15 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 | C-06 | `bot-whatsapp-simulado` | Integrante 2 | `src/simulators/whatsapp/`, `public/bot.html` | C-03, C-04, C-05, C-08 | LOW |
 | C-07 | `configurar-agenda-del-consultorio` | Integrante 3 | `src/application/configuracion/`, `src/api/routes/configuracion.ts` | C-01 | MEDIUM |
 | C-08 | `ficha-paciente-y-cobertura-obra-social-sim` | Integrante 3 | `src/application/pacientes/`, `src/simulators/obras-sociales/` | C-01 | MEDIUM / LOW |
-| C-09 | `vista-agenda-y-registro-del-sistema` | Integrante 4 | `public/index.html`, `src/application/auditoria/` | C-02 | LOW |
-| C-10 | `odontograma-donde-te-duele` | Integrante 4 | `src/domain/odontograma/`, `public/odontograma.html` | C-02 | LOW |
+| C-09 | `vista-agenda-y-registro-del-sistema` | Integrante 4 | `src/application/auditoria/` (UI original retirada → panel) | C-02 | LOW |
+| C-10 | `odontograma-donde-te-duele` | Integrante 4 | `src/domain/odontograma/` (página suelta retirada → panel) | C-02 | LOW |
 | C-11 | `pagar-sena-mercadopago-sim` | Integrante 5 | `src/simulators/mercadopago/`, `public/sim/mercadopago.html` | C-02 | LOW |
 | C-12 | `emitir-factura-c-arca-sim` | Integrante 5 | `src/simulators/arca/`, `public/sim/arca.html` | C-02 | LOW |
 | C-13 | `sobreturno-explicito` (stretch) | sin asignar | `src/domain/agenda/sobreturno.ts` | C-02 | MEDIUM |
 | C-14 | `lista-de-espera-ofrece-huecos` (stretch) | sin asignar | `src/domain/lista-espera/`, `src/application/lista-espera/` | C-03 | MEDIUM |
+| C-06b | `bot-whatsapp-sena-y-obra-social` ✓ | Integrante 2 | `src/simulators/whatsapp/` | C-06, C-08, C-11 | LOW |
+| — | `panel-admin-agenda` ✓ | Integrante 1 | `public/admin/`, `src/application/{auth,historia,panel}/` | C-02..C-12 | CRITICAL / HIGH |
+| — | `panel-reemplaza-agenda-vieja` ✓ | Integrante 1 | `public/admin/js/`, retiro de `public/index.html` y `public/odontograma.html` | `panel-admin-agenda` | CRITICAL / HIGH |
 
 **Excluido a propósito** (etapas posteriores, `informe-discovery.md` §6.3): WhatsApp Business API real, Mercado Pago real, padrones reales de obras sociales, ARCA real, historia clínica completa/presupuestos, multisucursal, reportes de ocupación y ausentismo, Google Calendar/API pública. **Opcionales no incluidos**: indicadores/KPIs (US-021) y reglas de autogestión configurables (US-090); urgencia y "hablar con la doctora" del bot (US-053, US-054).
 
