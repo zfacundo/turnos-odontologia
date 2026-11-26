@@ -265,3 +265,118 @@ La agenda del consultorio SHALL ser únicamente la del panel (`/admin/#/agenda`)
 - **GIVEN** la pantalla del bot de WhatsApp simulado
 - **WHEN** se revisa su barra de navegación
 - **THEN** no tiene un enlace "Agenda" ni ningún `href` hacia `/admin/`
+
+### Requirement: Confirmación simulada por WhatsApp al crear un turno
+
+Cuando `POST /api/turnos` cree un turno de origen recepción y el usuario tenga rol recepción o administración, el sistema SHALL registrar una confirmación en el WhatsApp simulado del paciente, consultable con `GET /api/sim/whatsapp/avisos` para su teléfono. El sistema MUST NOT registrarla si el turno es de otro origen, si lo crea otro rol, si el paciente no tiene teléfono o si el alta es rechazada.
+
+#### Scenario: Recepción crea un turno
+- **GIVEN** recepción con sesión y un paciente ficticio con teléfono `+54 9 11 0000-0001`
+- **WHEN** crea un turno de origen recepción con `POST /api/turnos` y el servidor responde `201`
+- **THEN** `GET /api/sim/whatsapp/avisos` para ese teléfono devuelve una confirmación de ese turno
+- **AND** la respuesta sigue rotulada como simulación
+
+#### Scenario: Administración crea un turno
+- **GIVEN** administración con sesión y un paciente ficticio con teléfono
+- **WHEN** crea un turno de origen recepción y el servidor responde `201`
+- **THEN** se registra la confirmación en el WhatsApp simulado de ese paciente
+
+#### Scenario: Turno de origen WhatsApp
+- **GIVEN** un turno creado con origen `whatsapp` (por el bot o enviado así por la API)
+- **WHEN** el alta responde `201`
+- **THEN** no se registra ninguna confirmación para ese turno
+
+#### Scenario: Turno creado por el rol paciente
+- **GIVEN** un usuario con rol paciente
+- **WHEN** crea un turno y el alta responde `201`
+- **THEN** no se registra ninguna confirmación para ese turno
+
+#### Scenario: Paciente sin teléfono
+- **GIVEN** un paciente ficticio sin teléfono cargado
+- **WHEN** recepción le crea un turno de origen recepción
+- **THEN** el turno queda creado
+- **AND** no se registra ninguna confirmación
+
+#### Scenario: Alta rechazada
+- **GIVEN** un alta que el servidor rechaza con `409`, `400` o `403`
+- **WHEN** recepción o un odontólogo envían `POST /api/turnos`
+- **THEN** no se registra ninguna confirmación en el WhatsApp simulado
+
+#### Scenario: Privacidad de la confirmación
+- **GIVEN** que recepción creó un turno para el paciente con teléfono `+54 9 11 0000-0001`
+- **WHEN** se consulta el WhatsApp simulado del teléfono `+54 9 11 0000-0002`
+- **THEN** no se muestra la confirmación de ese turno
+
+### Requirement: Texto de la confirmación simulada
+
+La confirmación SHALL tener exactamente el texto `Hola, <paciente>. Tu turno del <fecha> con <profesional> para <prestación> fue agendado correctamente. ¡Te esperamos!`, con `<fecha>` en formato corto es-AR (fecha y hora) en zona `America/Argentina/Buenos_Aires`. Si el profesional o la prestación no se encuentran, SHALL usarse su identificador. El texto MUST NOT incluir información clínica.
+
+#### Scenario: Texto exacto con hora de Buenos Aires
+- **GIVEN** el paciente "Paciente Ficticio Uno", la profesional "Dra. Ficticia Perez" y la prestación "Control y limpieza"
+- **WHEN** se arma la confirmación de un turno con inicio `2026-12-01T13:00:00Z`
+- **THEN** el texto es `Hola, Paciente Ficticio Uno. Tu turno del 1/12/26, 10:00 a. m. con Dra. Ficticia Perez para Control y limpieza fue agendado correctamente. ¡Te esperamos!`
+
+#### Scenario: Cierre con signo de apertura correcto
+- **WHEN** se arma cualquier confirmación de turno
+- **THEN** el texto empieza con `Hola, <paciente>.`
+- **AND** termina con `¡Te esperamos!` y no contiene `?Te esperamos!`
+
+#### Scenario: Profesional o prestación inexistentes
+- **GIVEN** un turno cuyo profesional y prestación no se encuentran en el catálogo
+- **WHEN** se arma la confirmación
+- **THEN** el texto usa el identificador del profesional y el de la prestación en su lugar
+
+### Requirement: La confirmación no afecta el alta del turno
+
+Una falla al registrar la confirmación simulada MUST NOT deshacer ni rechazar el alta: el turno SHALL quedar creado y `POST /api/turnos` SHALL responder `201` con el turno. La confirmación SHALL registrarse solo después de un alta exitosa.
+
+#### Scenario: Falla al registrar la confirmación
+- **GIVEN** que el registro en el WhatsApp simulado falla
+- **WHEN** recepción crea un turno de origen recepción
+- **THEN** el turno queda guardado en la agenda
+- **AND** el alta se informa como exitosa (`201`)
+
+#### Scenario: Confirmación previa a la cancelación
+- **GIVEN** que recepción creó un turno y luego lo canceló correctamente
+- **WHEN** se consulta el WhatsApp simulado del paciente
+- **THEN** se ven dos avisos en orden: primero la confirmación y después el aviso de cancelación
+
+### Requirement: Texto del aviso simulado de cancelación
+
+El aviso de cancelación SHALL tener exactamente el texto `Hola, <paciente>. Te informamos que tu turno del <fecha> con <profesional> fue cancelado. Para solicitar otro turno, comunicate con recepción.`, con `<fecha>` en formato corto es-AR (fecha y hora) en zona `America/Argentina/Buenos_Aires`. Si el profesional no se encuentra, SHALL usarse su identificador. El texto MUST NOT incluir el motivo ni información clínica.
+
+#### Scenario: Texto exacto del aviso con hora de Buenos Aires
+- **GIVEN** el paciente "Paciente Ficticio Uno" y la profesional "Dra. Ficticia Perez"
+- **WHEN** se arma el aviso de cancelación de un turno con inicio `2026-12-01T13:00:00Z`
+- **THEN** el texto es `Hola, Paciente Ficticio Uno. Te informamos que tu turno del 1/12/26, 10:00 a. m. con Dra. Ficticia Perez fue cancelado. Para solicitar otro turno, comunicate con recepción.`
+
+#### Scenario: Acentos correctos en el aviso
+- **WHEN** se arma cualquier aviso de cancelación
+- **THEN** el texto termina con `comunicate con recepción.`
+- **AND** no contiene `recepci?n`
+
+#### Scenario: Profesional inexistente en el aviso
+- **GIVEN** un turno cancelado cuyo profesional no se encuentra en el catálogo
+- **WHEN** se arma el aviso de cancelación
+- **THEN** el texto usa el identificador del profesional en su lugar
+
+### Requirement: El aviso no afecta la cancelación
+
+Una falla al registrar el aviso simulado MUST NOT deshacer ni rechazar la cancelación: el turno SHALL quedar cancelado y `POST /api/turnos/:id/cancelar` SHALL responder `200` con el turno. El aviso SHALL registrarse solo después de una cancelación exitosa y solo si el paciente tiene teléfono.
+
+#### Scenario: Falla al registrar el aviso de cancelación
+- **GIVEN** que el registro en el WhatsApp simulado falla
+- **WHEN** se cancela correctamente un turno activo
+- **THEN** el turno queda cancelado en la agenda
+- **AND** no se propaga ningún error
+
+#### Scenario: Paciente sin teléfono al cancelar
+- **GIVEN** un turno activo de un paciente ficticio sin teléfono cargado
+- **WHEN** recepción lo cancela con motivo
+- **THEN** el turno queda cancelado
+- **AND** no se registra ningún aviso
+
+#### Scenario: Cancelación por API con aviso exacto
+- **GIVEN** recepción con sesión y un turno activo de `pac-01` con inicio `2026-12-01T13:00:00Z` con `prof-1`
+- **WHEN** lo cancela con `POST /api/turnos/:id/cancelar` y el servidor responde `200`
+- **THEN** `GET /api/sim/whatsapp/avisos` para `+54 9 11 0000-0001` incluye el aviso con el texto exacto
