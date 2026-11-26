@@ -93,3 +93,30 @@ describe('pantalla /bot.html - sin enlace a la agenda', () => {
     expect(nav).toMatch(/aria-current="page">Bot WhatsApp \(sim\.\)</);
   });
 });
+
+describe('pantalla /bot.html - selector de contactos sin caracteres rotos', () => {
+  it('dado el JS del bot cuando arma cada opcion del selector entonces separa telefono enmascarado y nombre con " · "', () => {
+    expect(JS).toMatch(/paciente\.telefonoEnmascarado \+ ' · ' \+ paciente\.nombre/);
+  });
+
+  it('dado el JS del bot cuando se revisan las opciones entonces no usa "?" como separador', () => {
+    expect(JS).not.toContain("' ? '");
+  });
+});
+
+describe('pantalla /bot.html - sin telefonos completos', () => {
+  it('dado el JS del bot cuando arma cada opcion del selector entonces el valor es el id del paciente', () => {
+    expect(JS).toMatch(/paciente\.telefonoEnmascarado \+ ' · ' \+ paciente\.nombre,\s*paciente\.id/);
+  });
+
+  it('dado el JS del bot cuando envia mensaje, recordatorio y consulta de avisos entonces usa pacienteId y no telefono', () => {
+    expect(JS.match(/\{ pacienteId: selTelefono\.value \}/g)).toHaveLength(2);
+    expect(JS).toMatch(/\/api\/sim\/whatsapp\/avisos\?pacienteId=/);
+  });
+
+  it('dado el JS del bot cuando se revisan sus usos del telefono entonces no queda ninguno completo', () => {
+    expect(JS).not.toMatch(/paciente\.telefono\b(?!Enmascarado)/);
+    expect(JS).not.toContain('?telefono=');
+    expect(JS).not.toMatch(/\{ telefono:/);
+  });
+});

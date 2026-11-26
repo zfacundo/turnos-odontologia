@@ -603,13 +603,14 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Depende de**: `panel-admin-agenda`, C-09, C-10
 
 ### [panel-tema-oscuro]
-- **Estado**: `[x]` implementado (2026-11-26), pendiente de revisión, PR y archive; handoff en `knowledge-base/entrega/panel-tema-oscuro.md`
+- **Estado**: `[x]` completado (2026-11-26) — mergeado (PR #33) y archivado; handoff en `knowledge-base/entrega/panel-tema-oscuro.md`
 - **Responsable**: Integrante 1 (`Yacosantoro`)
 - **Resultado**: tema oscuro grafito del panel `/admin/` con botón de tema (login y barra superior), elección guardada en `localStorage` (`adm.tema`), por defecto el del sistema, arranque sin destello (`tema-arranque.js`) y cambio instantáneo. Arregla además el foco de la barra superior en claro (1.70:1 → 3.81:1).
 - **Scope**: `public/admin/` (bloque aditivo al final de `admin.css`, `tema-arranque.js`, `js/tema.js`, `js/tema-calculos.js`, ediciones aditivas en `index.html`, `main.js`, `agenda.js`, `dashboard.js`); `tests/panel/`.
 - **Specs**: `panel-admin` modificada (delta en el change).
 - **Governance**: MEDIUM (UI; toca archivos compartidos del panel de forma aditiva, con revisión del equipo).
 - **Depende de**: `panel-admin-agenda`
+
 ### [panel-boton-emitir-factura]
 - **Estado**: `[x]` completado (2026-11-25) — mergeado y archivado (PR #30); handoff en `knowledge-base/entrega/panel-boton-emitir-factura.md`
 - **Responsable**: Team lead
@@ -636,6 +637,39 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 - **Spec**: `factura-c-simulada` (+15 requisitos, 1 modificado).
 - **Governance**: MEDIUM — API de simulador y UI en zona de otro integrante.
 - **Depende de**: C-12, `panel-boton-emitir-factura`
+
+### [sincronizar-pacientes-whatsapp]
+- **Estado**: `[x]` completado (2026-11-26) — mergeado y archivado (PR #35)
+- **Responsable**: Integrante 4 (`francisco-morales-hub`)
+- **Resultado**: los contactos del bot simulado salen del repositorio de pacientes (`GET /api/sim/whatsapp/contactos`), un paciente nuevo aparece en el bot sin recargar el seed, y el alta de "Clientes" sugiere DNI y teléfono ficticios válidos.
+- **Spec**: `sincronizacion-pacientes-whatsapp` (nueva).
+- **Nota**: el PR #35 también agregó, sin change ni spec, la confirmación por WhatsApp al crear un turno, con caracteres rotos ("?Te esperamos!", separador "?" en el bot). Lo corrigen los dos changes siguientes.
+- **Depende de**: C-06, C-08
+
+### [confirmacion-turno-whatsapp]
+- **Estado**: `[x]` completado (2026-11-26) — archivado; handoff en `knowledge-base/entrega/confirmacion-turno-whatsapp.md`
+- **Responsable**: Team lead (spec retroactiva de lo agregado por Integrante 4 en el PR #35)
+- **Resultado**:
+  - Cuando recepción o admin crean un turno desde la agenda, el paciente recibe en el bot "… fue agendado correctamente. ¡Te esperamos!" (antes decía "?Te esperamos!").
+  - La lógica sale de la ruta de Express a `src/simulators/whatsapp/confirmacionTurno.ts`, y la ruta `POST /turnos` queda en una llamada. La bandeja de mensajes simulados pasa a un módulo neutro (`bandejaSimulada.ts`).
+  - Se restaura el separador " · " del selector del bot.
+- **Spec**: `vista-agenda` (+3 requisitos).
+- **Governance**: MEDIUM — toca el archivo compartido `src/api/routes/turnos.ts`.
+- **Depende de**: `sincronizar-pacientes-whatsapp`, C-09
+
+### [whatsapp-contactos-y-aviso-cancelacion]
+- **Estado**: `[x]` completado (2026-11-26) — archivado; handoff en `knowledge-base/entrega/whatsapp-contactos-y-aviso-cancelacion.md`
+- **Responsable**: Team lead (cambio de contrato en la zona de Integrantes 2 y 4, con aviso en el handoff)
+- **Resultado**:
+  - El aviso de cancelación sale de la ruta de Express a `src/simulators/whatsapp/cancelacionTurno.ts`, con el mismo texto. La ruta de cancelar queda en una llamada.
+  - `GET /api/sim/whatsapp/contactos` devuelve `{ id, nombre, telefonoEnmascarado }` sin teléfonos completos.
+  - El bot identifica al contacto por `pacienteId` en mensaje, recordatorio y avisos. Los endpoints siguen aceptando `telefono`, exactamente uno de los dos.
+- **Specs**: `sincronizacion-pacientes-whatsapp`, `bot-whatsapp` y `vista-agenda`.
+- **Governance**: HIGH (privacidad y contrato de API, aprobado por el team lead) / MEDIUM (aviso).
+- **Depende de**: `confirmacion-turno-whatsapp`
+
+### Propuestas canceladas sin implementar (2026-11-26)
+- `bot-whatsapp-reprogramar-turno` y `registro-sistema-legible` (Integrante 1, PR #33): canceladas por decisión del team lead. Se borraron de `openspec/changes/`; se pueden recuperar del commit `58ced1b`.
 
 ---
 
@@ -664,6 +698,10 @@ Multi-agente: cada persona puede correr su change con un agente (Claude/Codex) u
 | — | `panel-reemplaza-agenda-vieja` ✓ | Integrante 1 | `public/admin/js/`, retiro de `public/index.html` y `public/odontograma.html` | `panel-admin-agenda` | CRITICAL / HIGH |
 | — | `panel-boton-emitir-factura` ✓ | Team lead | `public/admin/js/` (agenda, permisos) | `panel-admin-agenda`, C-12 | LOW |
 | — | `arca-ver-factura-y-confirmar-emision` ✓ | Team lead | `src/simulators/arca/`, `public/sim/arca.html` | C-12 | MEDIUM |
+| — | `panel-tema-oscuro` ✓ | Integrante 1 | `public/admin/` (tema) | `panel-admin-agenda` | MEDIUM |
+| — | `sincronizar-pacientes-whatsapp` ✓ | Integrante 4 | `src/simulators/whatsapp/router.ts`, `public/js/bot.js` | C-06, C-08 | LOW |
+| — | `confirmacion-turno-whatsapp` ✓ | Team lead | `src/simulators/whatsapp/` (confirmación, bandeja) | `sincronizar-pacientes-whatsapp` | MEDIUM |
+| — | `whatsapp-contactos-y-aviso-cancelacion` ✓ | Team lead | `src/simulators/whatsapp/` (cancelación, contactos), `public/js/bot.js` | `confirmacion-turno-whatsapp` | HIGH / MEDIUM |
 
 **Excluido a propósito** (etapas posteriores, `informe-discovery.md` §6.3): WhatsApp Business API real, Mercado Pago real, padrones reales de obras sociales, ARCA real, historia clínica completa/presupuestos, multisucursal, reportes de ocupación y ausentismo, Google Calendar/API pública. **Opcionales no incluidos**: indicadores/KPIs (US-021) y reglas de autogestión configurables (US-090); urgencia y "hablar con la doctora" del bot (US-053, US-054).
 

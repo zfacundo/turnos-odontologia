@@ -254,7 +254,7 @@ export async function montarClientes(contenedor, ctx) {
     });
 
     // PREFILL_FICTICIO
-    // Sugerimos valores v?lidos. El usuario puede cambiarlos.
+    // Sugerimos valores válidos. El usuario puede cambiarlos.
     if (!editando) {
       for (let n = 11; n <= 99; n++) {
         const sufijo = String(n).padStart(2, '0');

@@ -117,7 +117,7 @@
   }
 
   function enviar(extra) {
-    var cuerpo = { telefono: selTelefono.value };
+    var cuerpo = { pacienteId: selTelefono.value };
     Object.keys(extra).forEach(function (k) { cuerpo[k] = extra[k]; });
     return pedir(function () { return fetch('/api/sim/whatsapp/mensaje', opcionesPost(cuerpo)); });
   }
@@ -125,16 +125,16 @@
   var avisosVistos = new Set();
 
   function consultarAvisos() {
-    var telefono = selTelefono.value;
+    var pacienteId = selTelefono.value;
 
-    fetch('/api/sim/whatsapp/avisos?telefono=' +
-      encodeURIComponent(telefono))
+    fetch('/api/sim/whatsapp/avisos?pacienteId=' +
+      encodeURIComponent(pacienteId))
       .then(function (res) {
         if (!res.ok) throw new Error('No se pudieron consultar avisos');
         return res.json();
       })
       .then(function (datos) {
-        if (selTelefono.value !== telefono) return;
+        if (selTelefono.value !== pacienteId) return;
 
         datos.avisos.forEach(function (aviso) {
           if (!avisosVistos.has(aviso.id)) {
@@ -151,7 +151,7 @@
   function reiniciar() {
     lista.innerHTML = '';
     opciones.innerHTML = '';
-    cabecera.textContent = 'Consultorio (TBD) · ' + selTelefono.value;
+    cabecera.textContent = 'Consultorio (TBD) · ' + selTelefono.selectedOptions[0].text;
     pideTexto = true;
     actualizarEntrada();
     inputTexto.value = 'Hola! Quería sacar un turno';
@@ -170,7 +170,7 @@
 
   btnRecordatorio.addEventListener('click', function () {
     separador('24 h antes del turno · el bot escribe solo (demo)');
-    var cuerpo = { telefono: selTelefono.value };
+    var cuerpo = { pacienteId: selTelefono.value };
     pedir(function () { return fetch('/api/sim/whatsapp/recordatorio', opcionesPost(cuerpo)); });
   });
 
@@ -192,7 +192,7 @@
 
     if (firma === firmaAnterior) return;
 
-    const telefonoAnterior = selTelefono.value;
+    const idAnterior = selTelefono.value;
     const primeraCarga = firmaAnterior === null;
 
     firmaAnterior = firma;
@@ -200,17 +200,17 @@
 
     for (const paciente of contactos) {
       selTelefono.add(new Option(
-        paciente.telefono + ' ? ' + paciente.nombre,
-        paciente.telefono
+        paciente.telefonoEnmascarado + ' · ' + paciente.nombre,
+        paciente.id
       ));
     }
 
     const existe = contactos.some(
-      p => p.telefono === telefonoAnterior
+      p => p.id === idAnterior
     );
 
     if (existe) {
-      selTelefono.value = telefonoAnterior;
+      selTelefono.value = idAnterior;
     }
 
     selTelefono.disabled = contactos.length === 0;

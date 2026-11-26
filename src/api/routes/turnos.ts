@@ -12,7 +12,8 @@ import {
   type ErrorCambioEstado,
 } from '../../application/agenda/cambiarEstadoTurno';
 import { cancelarTurno } from '../../application/agenda/cancelarTurno';
-import { registrarAvisoCancelacion } from '../../simulators/whatsapp/avisosCancelacion';
+import { registrarAvisoCancelacionTurno } from '../../simulators/whatsapp/cancelacionTurno';
+import { registrarConfirmacionTurno } from '../../simulators/whatsapp/confirmacionTurno';
 import {
   reprogramarTurno,
   type EntradaReprogramarTurno,
@@ -163,50 +164,8 @@ export function turnosRouter(deps: Deps): Router {
       return;
     }
 
-    // CONFIRMACION_AGENDA_WHATSAPP
-    // Solo para turnos creados desde Agenda por recepci?n o administraci?n.
-    const turno = resultado.valor;
-
-    if (
-      turno.origen === 'recepcion' &&
-      (usuario?.rol === 'recepcion' || usuario?.rol === 'admin')
-    ) {
-      try {
-        const paciente = deps.pacientes.buscarPorId(turno.pacienteId);
-
-        if (paciente?.telefono) {
-          const fecha = new Intl.DateTimeFormat('es-AR', {
-            timeZone: 'America/Argentina/Buenos_Aires',
-            dateStyle: 'short',
-            timeStyle: 'short',
-          }).format(turno.inicio);
-
-          const profesional =
-            deps.profesionales.buscarPorId(turno.profesionalId)?.nombre
-            ?? turno.profesionalId;
-
-          const prestacion =
-            deps.prestaciones.buscarPorId(turno.prestacionId)?.nombre
-            ?? turno.prestacionId;
-
-          const mensaje =
-            'Hola, ' + paciente.nombre +
-            '. Tu turno del ' + fecha +
-            ' con ' + profesional +
-            ' para ' + prestacion +
-            ' fue agendado correctamente. ?Te esperamos!';
-
-          registrarAvisoCancelacion(
-            deps,
-            paciente.telefono,
-            mensaje
-          );
-        }
-      } catch (error) {
-        // El turno permanece creado aunque falle el aviso simulado.
-        console.error('Error al registrar confirmaci?n:', error);
-      }
-    }
+    // Confirmación simulada por WhatsApp; nunca lanza ni afecta el alta.
+    registrarConfirmacionTurno(deps, resultado.valor, usuario);
 
     res.status(201).json(resultado.valor);
   });
@@ -242,34 +201,8 @@ export function turnosRouter(deps: Deps): Router {
       responderErrorEstado(resultado.error, res, next);
       return;
     }
-    // El turno ya fue cancelado. La notificación no debe
-    // hacer fallar la operación si ocurre algún problema.
-    try {
-      const turno = resultado.valor.turno;
-      const paciente = deps.pacientes.buscarPorId(turno.pacienteId);
-
-      if (paciente?.telefono) {
-        const fecha = new Intl.DateTimeFormat('es-AR', {
-          timeZone: 'America/Argentina/Buenos_Aires',
-          dateStyle: 'short',
-          timeStyle: 'short',
-        }).format(turno.inicio);
-
-        const profesional =
-          deps.profesionales.buscarPorId(turno.profesionalId)?.nombre
-          ?? turno.profesionalId;
-
-        const texto = 'Hola, ' + paciente.nombre +
-          '. Te informamos que tu turno del ' + fecha +
-          ' con ' + profesional +
-          ' fue cancelado. Para solicitar otro turno, ' +
-          'comunicate con recepción.';
-
-        registrarAvisoCancelacion(deps, paciente.telefono, texto);
-      }
-    } catch (error) {
-      console.error('No se pudo registrar el aviso simulado:', error);
-    }
+    // El turno ya fue cancelado: el aviso simulado nunca debe hacer fallar la operación.
+    registrarAvisoCancelacionTurno(deps, resultado.valor.turno);
 
     res.status(200).json(resultado.valor.turno);
   });
