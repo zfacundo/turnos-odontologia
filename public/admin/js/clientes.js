@@ -253,6 +253,26 @@ export async function montarClientes(contenedor, ctx) {
       return h('div', { class: 'field' }, h('label', { for: `p-${c.clave}` }, c.etiqueta), input, h('span', { class: 'hint', id: `p-${c.clave}-ayuda` }, ayuda));
     });
 
+    // PREFILL_FICTICIO
+    // Sugerimos valores v?lidos. El usuario puede cambiarlos.
+    if (!editando) {
+      for (let n = 11; n <= 99; n++) {
+        const sufijo = String(n).padStart(2, '0');
+
+        const ocupado = estado.pacientes.some(p =>
+          p.dni.endsWith(sufijo) ||
+          p.telefono.endsWith(sufijo)
+        );
+
+        if (!ocupado) {
+          inputs.get('dni').value = '990000' + sufijo;
+          inputs.get('telefono').value =
+            '+54 9 11 0000-00' + sufijo;
+          break;
+        }
+      }
+    }
+
     const enviar = async (e) => {
       e.preventDefault();
       const cuerpo = {};
